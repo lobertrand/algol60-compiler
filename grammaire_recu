@@ -1,0 +1,64 @@
+<block head> ::= begin <declaration> | <block head> ; <declaration>
+->
+<block head> ::= begin <declaration> <block head b>
+<block head b> ::= ; <block head> <block head b> | <empty>
+
+<array list> ::= <array segment> | <array list> , <array segment>
+->
+<array list> ::= <array segment> <array list b>
+<array list b> ::= , <array segment> <array list b> | <empty>
+
+
+<switch list> ::= <designational expression> | <switch list> , <designational expression>
+-> 
+<switch list> ::= <designational expression> <switch list b>
+<switch list b> ::= , <designational expression> <switch list b> | <empty>
+
+
+<formal parameter list> ::= <formal parameter> | <formal parameter list> <parameter delimiter> <formal parameter>
+-> 
+<formal parameter list> ::= <formal parameter> <formal parameter list b> 
+<formal parameter list b> ::= <parameter delimiter> <formal parameter> <formal parameter list b> | <empty>
+
+<specification part> ::= <empty> | <specifier> <identifier list> ; | <specification part> <specifier> <identifier list>
+->
+<specification part> ::= <empty> | <specifier> <identifier list> ; <specification part b>
+<specification part b> ::= <specifier> <identifier list> <specification part b> | <empty>
+
+<identifier list> ::= <identifier> | <identifier list> , <identifier>
+->
+<identifier list> ::= <identifier> <identifier list b> 
+<identifier list b> ::= , <identifier> <identifier list b> | <empty>
+
+<left part list> ::= <left part> | <left part list> <left part>
+->
+<left part list> ::= <left part> <left part b>
+<left part b> ::= <left part> <left part b>
+
+<actual parameter list> ::= <actual parameter> | <actual parameter list> <parameter delimiter> <actual parameter>
+
+<for list> ::= <for list element> | <for list> , <for list element>
+
+<simple arithmetic expression> ::= <term> | <adding operator> <term> | <simple arithmetic expression> <adding operator> <term>
+
+<term> ::= <factor> | <term> <multiplying operator> <factor>
+
+<factor> ::= <primary> | <factor> | <factor> ↑ <primary>
+
+<unsigned integer> ::= <digit> | <unsigned integer> <digit>
+
+<simple Boolean> ::= <implication> | <simple Boolean> ≣ <implication>
+
+<implication> ::= <Boolean term> | <implication> ⊃ <Boolean term>
+
+<Boolean term> ::= <Boolean factor> | <Boolean term> ⋁ <Boolean factor>
+
+<Boolean factor> ::= <Boolean secondary> | <Boolean factor> ⋀ <Boolean secondary>
+
+<subscript list> ::= <subscript expression> | <subscript list> , <subscript expression>
+
+<open string> ::= <proper string> "<open string>" | <open string><open string>
+
+<letter string> ::= <letter> | <letter string> <letter>
+
+<identifier> ::= letter> | <identifier> <letter> | <identifier> <digit>
