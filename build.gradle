@@ -1,0 +1,38 @@
+
+plugins {
+    // Apply the java plugin to add support for Java
+    id 'java'
+
+    // Apply the application plugin to add support for building a CLI application
+    id 'application'
+
+    // Apply the ANTLR pugin to add support for using ANTLR
+    // More info here : https://docs.gradle.org/current/userguide/antlr_plugin.html
+    id 'antlr'
+}
+
+repositories {
+    // Use jcenter for resolving dependencies.
+    // You can declare any Maven/Ivy/file repository here.
+    mavenCentral()
+}
+
+dependencies {
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.12'
+
+    // use ANTLR version 3
+    antlr "org.antlr:antlr:3.5.2"
+    compile "org.antlr:antlr-runtime:3.5.2"
+}
+
+application {
+    // Define the main class for the application
+    mainClassName = 'eu.telecomnancy.App'
+    sourceCompatibility = 1.8
+}
+
+run {
+    standardInput = System.in 
+}
+
