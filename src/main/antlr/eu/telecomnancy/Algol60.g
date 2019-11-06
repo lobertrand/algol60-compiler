@@ -36,10 +36,9 @@ block
     ;
 
 statement
-    :   COMMENT
-    |   declaration
+    :   declaration
     |   assignment
-    |   if_clause
+    |   if_statement
     ;
 
 // Declaration
@@ -91,9 +90,27 @@ expression
     |   IDENTIFIER
     ;
 
-if_clause
-    :   'if' logical_statement 'then' ';'!
+if_statement
+    :   if_clause super_expression if_statement1
     ;
+
+if_statement1
+    :  'else' super_expression ';'
+    |
+    ;
+
+if_clause
+    :   'if' logical_statement 'then' 
+    ;
+
+
+
+super_expression
+    :   statement
+    |   block'
+    ;
+
+
 
 logical_statement
     :   expression boolean_operator expression
@@ -126,7 +143,7 @@ STRING
         { setText(getText().substring(1, getText().length() - 1)); }
     ;
 
-KEYWORD
+/*KEYWORD
     :   'if'
     |   'then'
     |   'else'
@@ -134,6 +151,7 @@ KEYWORD
     |   'do'
     |   'goto'
     ;
+*/
 
 LOGICAL_VALUE
     :   'true'

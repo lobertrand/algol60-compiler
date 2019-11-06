@@ -33,13 +33,21 @@
 <left part list> ::= <left part> | <left part list> <left part>
 ->
 <left part list> ::= <left part> <left part b>
-<left part b> ::= <left part> <left part b>
+<left part b> ::= <left part> <left part b> | <empty>
 
 <actual parameter list> ::= <actual parameter> | <actual parameter list> <parameter delimiter> <actual parameter>
+->
+<actual parameter list> ::= <actual parameter> <actual parameter list b>
+<actual parameter list b> <parameter delimiter> <actual parameter> <actual parameter list b> | <empty>
 
 <for list> ::= <for list element> | <for list> , <for list element>
+->
+<for list> ::= <for list element> <for list b>
+<for list b> ::= , <for list element> <for list b> | <empty>
 
 <simple arithmetic expression> ::= <term> | <adding operator> <term> | <simple arithmetic expression> <adding operator> <term>
+-> 
+<simple arithmetic expression> ::= <term> <simple arithmetic expression b> | <adding operator> <term> <simple arithmetic expression b>
 
 <term> ::= <factor> | <term> <multiplying operator> <factor>
 
@@ -62,3 +70,11 @@
 <letter string> ::= <letter> | <letter string> <letter>
 
 <identifier> ::= letter> | <identifier> <letter> | <identifier> <digit>
+
+
+entier
+réels
+séparateurs
+identifier
+délimiteurs
+valeurs logiques
