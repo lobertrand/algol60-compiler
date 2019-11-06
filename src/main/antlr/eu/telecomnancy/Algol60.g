@@ -10,6 +10,13 @@ tokens {
     ROOT;           // Program root
     BLOCK;          // Block of code
     VAR_DEC;        // Variable declaration
+    PROC_DEC;
+    PROC_HEADING;
+    PARAMS_DEC;
+    ID_LIST;
+    VALUE_PART;
+    PARAM_PART;
+    SPEC_PART;
 }
 
 @parser::header {
@@ -55,34 +62,30 @@ variable_declaration
 
 procedure_declaration
     :   'procedure' procedure_heading procedure_body
+        -> ^(PROC_DEC procedure_heading procedure_body)
     ;
 
 procedure_heading
     :   IDENTIFIER formal_parameter_part ';' value_part specification_part
+        -> ^(PROC_HEADING formal_parameter_part value_part specification_part)
     ;
 
 formal_parameter_part    
-    :   '(' identifier_list ')'
+    :   '(' identifier_list ')' ->^(PARAM_PART identifier_list)
     |    
     ;
 
 identifier_list
-    :   IDENTIFIER  identifier_list1
-    ;
-
-identifier_list1
-    :   ',' IDENTIFIER identifier_list1
-    |
+    :   IDENTIFIER ( ',' IDENTIFIER )* -> ^(ID_LIST IDENTIFIER*)
     ;
 
 value_part
-    :   'value' identifier_list ';' 
+    :   'value' identifier_list ';' -> ^(VALUE_PART identifier_list)
     |
     ;
 
 specification_part
-    :   TYPE identifier_list ';' specification_part
-    |
+    :   (TYPE identifier_list ';')* ->^(SPEC_PART identifier_list*)
     ;
 
 procedure_body
