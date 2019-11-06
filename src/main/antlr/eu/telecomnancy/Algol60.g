@@ -46,11 +46,38 @@ statement
 
 declaration
     :   variable_declaration
+    |   procedure_declaration
     ;
 
 variable_declaration
     :   TYPE IDENTIFIER ';' -> ^(VAR_DEC TYPE IDENTIFIER)
     ;
+
+procedure_declaration
+    :   'procedure' procedure_heading procedure_body
+    ;
+
+procedure_heading
+    :   IDENTIFIER formal_parameter_part ';' 
+    ;
+
+formal_parameter_part
+    :    
+    |   '(' formal_parameter_list ')'
+    ;
+
+formal_parameter_list
+    :   IDENTIFIER  formal_parameter_list1
+    ;
+
+formal_parameter_list1
+    :   ',' IDENTIFIER formal_parameter_list1
+    |
+    ;
+
+procedure_body
+    :   block
+    ; 
 
 // Assignment
 
@@ -87,7 +114,7 @@ TYPE:   'real'
     ;
 
 COMMENT
-    :   'comment' ~( ';' | '\r' | '\n' )* ';'
+    :   'comment' ~( ';' )* ';'
         // Ignore comments (not in the AST)
         { $channel=HIDDEN; }
     ;

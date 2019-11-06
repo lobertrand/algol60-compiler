@@ -1,6 +1,8 @@
 begin
   integer n;
-  comment ceci est un commentaire;
+  comment ceci est un commentaire
+  	ceci est toujours 1 commentaire
+  ;
   real x;
   string test;
   test := 'holala je suis un string`;
