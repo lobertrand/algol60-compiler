@@ -58,26 +58,37 @@ procedure_declaration
     ;
 
 procedure_heading
-    :   IDENTIFIER formal_parameter_part ';' 
+    :   IDENTIFIER formal_parameter_part ';' value_part specification_part
     ;
 
-formal_parameter_part
-    :    
-    |   '(' formal_parameter_list ')'
+formal_parameter_part    
+    :   '(' identifier_list ')'
+    |    
     ;
 
-formal_parameter_list
-    :   IDENTIFIER  formal_parameter_list1
+identifier_list
+    :   IDENTIFIER  identifier_list1
     ;
 
-formal_parameter_list1
-    :   ',' IDENTIFIER formal_parameter_list1
+identifier_list1
+    :   ',' IDENTIFIER identifier_list1
+    |
+    ;
+
+value_part
+    :   'value' identifier_list ';' 
+    |
+    ;
+
+specification_part
+    :   TYPE identifier_list ';' specification_part
     |
     ;
 
 procedure_body
     :   block
     ; 
+
 
 // Assignment
 
@@ -120,7 +131,7 @@ COMMENT
     ;
 
 STRING
-    :   '\'' ~( '`' | '\r' | '\n' )* '`'
+    :   '"' ~( '"' | '\r' | '\n' )* '"'
         // Strips the string from its quotes in the lexer
         // https://theantlrguy.atlassian.net/wiki/spaces/ANTLR3/pages/2687006/How+do+I+strip+quotes
         { setText(getText().substring(1, getText().length() - 1)); }
