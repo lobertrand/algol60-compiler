@@ -1,8 +1,8 @@
 begin
   
-  procedure TestProcedure(taille, phrase);
+  procedure TestProcedure(taille, nombre, phrase);
   	value taille, phrase;
-  	integer taille; string phrase;
+  	integer taille, nombre; string phrase;
   begin
 	integer n;
 	comment ceci est un commentaire

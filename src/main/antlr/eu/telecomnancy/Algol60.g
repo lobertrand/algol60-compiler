@@ -17,6 +17,7 @@ tokens {
     VALUE_PART;
     PARAM_PART;
     SPEC_PART;
+    ARG_TYPE;
 }
 
 @parser::header {
@@ -57,7 +58,7 @@ declaration
     ;
 
 variable_declaration
-    :   TYPE IDENTIFIER ';' -> ^(VAR_DEC TYPE IDENTIFIER)
+    :   TYPE identifier_list ';' -> ^(VAR_DEC TYPE identifier_list)
     ;
 
 procedure_declaration
@@ -67,7 +68,7 @@ procedure_declaration
 
 procedure_heading
     :   IDENTIFIER formal_parameter_part ';' value_part specification_part
-        -> ^(PROC_HEADING formal_parameter_part value_part specification_part)
+        -> ^(PROC_HEADING formal_parameter_part? value_part? specification_part?)
     ;
 
 formal_parameter_part    
@@ -85,7 +86,7 @@ value_part
     ;
 
 specification_part
-    :   (TYPE identifier_list ';')* ->^(SPEC_PART identifier_list*)
+    :   (TYPE identifier_list ';')* ->^(SPEC_PART ^(ARG_TYPE TYPE identifier_list)*)
     ;
 
 procedure_body
