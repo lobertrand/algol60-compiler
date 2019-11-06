@@ -2,8 +2,8 @@ grammar Algol60;
 
 options {
 	output = AST;
-	backtrack=false;
-	k=1;
+	//backtrack=false;
+	//k=1;
 }
 
 tokens {
@@ -18,6 +18,8 @@ tokens {
     PARAM_PART;
     SPEC_PART;
     ARG_TYPE;
+    PARAM_LIST;
+    PROC_CALL;
 }
 
 @parser::header {
@@ -70,7 +72,7 @@ procedure_heading
         -> ^(PROC_HEADING formal_parameter_part? value_part? specification_part?)
     ;
 
-formal_parameter_part    
+formal_parameter_part // Liste d'identificateurs   
     :   '(' identifier_list ')' ->^(PARAM_PART identifier_list)
     |    
     ;
@@ -85,13 +87,25 @@ value_part
     ;
 
 specification_part
-    :   (TYPE identifier_list ';')* ->^(SPEC_PART ^(ARG_TYPE TYPE identifier_list)*)
+    :   ( TYPE identifier_list ';' )* ->^(SPEC_PART ^(ARG_TYPE TYPE identifier_list)*)
     ;
 
 procedure_body
     :   block
-    ; 
+    ;
 
+
+// Procedure call
+
+/*
+procedure_call
+    :   IDENTIFIER '(' actual_parameter_list ')' -> ^(PROC_CALL actual_parameter_list)
+    ;
+
+actual_parameter_list
+    :   expression ( ',' expression )* -> ^(PARAM_LIST expression*)
+    ;
+*/
 
 // Assignment
 
