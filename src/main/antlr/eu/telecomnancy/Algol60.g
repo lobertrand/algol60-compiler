@@ -39,6 +39,7 @@ statement
     :   COMMENT
     |   declaration
     |   assignment
+    |   if_clause
     ;
 
 // Declaration
@@ -63,6 +64,20 @@ expression
     |   IDENTIFIER
     ;
 
+if_clause
+    :   'if' logical_statement 'then' ';'!
+    ;
+
+logical_statement
+    :   expression boolean_operator expression
+    |   LOGICAL_VALUE
+    ;
+
+boolean_operator
+    :   RELATIONAL_OPERATOR
+    |   LOGICAL_OPERATOR
+    ;
+
 // LEXER RULES
 
 TYPE:   'real'
@@ -84,14 +99,55 @@ STRING
         { setText(getText().substring(1, getText().length() - 1)); }
     ;
 
+KEYWORD
+    :   'if'
+    |   'then'
+    |   'else'
+    |   'for'
+    |   'do'
+    |   'goto'
+    ;
+
+LOGICAL_VALUE
+    :   'true'
+    |   'false'
+    ;
+
+
 IDENTIFIER
-    :   ('a'..'z'|'A'..'Z'|'_')
-        ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+    :   ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+    ;
+
+ARITHMETIC_OPERATOR
+    :   '+'
+    |   '-'
+    |   '*'
+    |   '/'
+    |   '//'
+    |   '**'
+    ;
+    
+RELATIONAL_OPERATOR
+    :   '<'
+    |   '<='
+    |   '='
+    |   '<>'
+    |   '>'
+    |   '>='
+    ;
+
+LOGICAL_OPERATOR
+    :   '<=>'
+    |   '=>'
+    |   '\\/'
+    |   '/\\'
+    |   '~'
     ;
 
 INTEGER
     :   ('+'|'-')?('1'..'9')('0'..'9')*
     ;
+
 
 WS  :   (' '|'\t'|'\r'|'\n')+
         // Ignore whitespace (not in the AST)
