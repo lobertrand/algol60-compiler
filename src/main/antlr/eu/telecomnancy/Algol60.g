@@ -2,8 +2,8 @@ grammar Algol60;
 
 options {
 	output = AST;
-	//backtrack=false;
-	//k=1;
+	backtrack=false;
+	k=1;
 }
 
 tokens {
@@ -136,7 +136,7 @@ if_clause
 
 super_expression
     :   statement
-    |   block'
+    |   block
     ;
 
 
