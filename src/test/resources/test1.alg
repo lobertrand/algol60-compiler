@@ -5,7 +5,7 @@ begin
   ;
   real x;
   string test;
-  test := 'holala je suis un string`;
+  test := "holala je suis un string";
   n := -42;
   x := n;
 end

@@ -10,6 +10,14 @@ tokens {
     ROOT;           // Program root
     BLOCK;          // Block of code
     VAR_DEC;        // Variable declaration
+    PROC_DEC;
+    PROC_HEADING;
+    PARAMS_DEC;
+    ID_LIST;
+    VALUE_PART;
+    PARAM_PART;
+    SPEC_PART;
+    ARG_TYPE;
 }
 
 @parser::header {
@@ -49,34 +57,41 @@ declaration
     ;
 
 variable_declaration
-    :   TYPE IDENTIFIER ';' -> ^(VAR_DEC TYPE IDENTIFIER)
+    :   TYPE identifier_list ';' -> ^(VAR_DEC TYPE identifier_list)
     ;
 
 procedure_declaration
     :   'procedure' procedure_heading procedure_body
+        -> ^(PROC_DEC procedure_heading procedure_body)
     ;
 
 procedure_heading
-    :   IDENTIFIER formal_parameter_part ';' 
+    :   IDENTIFIER formal_parameter_part ';' value_part specification_part
+        -> ^(PROC_HEADING formal_parameter_part? value_part? specification_part?)
     ;
 
-formal_parameter_part
-    :    
-    |   '(' formal_parameter_list ')'
+formal_parameter_part    
+    :   '(' identifier_list ')' ->^(PARAM_PART identifier_list)
+    |    
     ;
 
-formal_parameter_list
-    :   IDENTIFIER  formal_parameter_list1
+identifier_list
+    :   IDENTIFIER ( ',' IDENTIFIER )* -> ^(ID_LIST IDENTIFIER*)
     ;
 
-formal_parameter_list1
-    :   ',' IDENTIFIER formal_parameter_list1
+value_part
+    :   'value' identifier_list ';' -> ^(VALUE_PART identifier_list)
     |
+    ;
+
+specification_part
+    :   (TYPE identifier_list ';')* ->^(SPEC_PART ^(ARG_TYPE TYPE identifier_list)*)
     ;
 
 procedure_body
     :   block
     ; 
+
 
 // Assignment
 
@@ -137,7 +152,7 @@ COMMENT
     ;
 
 STRING
-    :   '\'' ~( '`' | '\r' | '\n' )* '`'
+    :   '"' ~( '"' | '\r' | '\n' )* '"'
         // Strips the string from its quotes in the lexer
         // https://theantlrguy.atlassian.net/wiki/spaces/ANTLR3/pages/2687006/How+do+I+strip+quotes
         { setText(getText().substring(1, getText().length() - 1)); }
