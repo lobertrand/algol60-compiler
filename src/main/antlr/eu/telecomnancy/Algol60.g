@@ -7,9 +7,9 @@
 grammar Algol60;
 
 options {
-	output = AST;
-	backtrack=false;
-	k=1;
+    output = AST;
+    backtrack=false;
+    k=1;
 }
 
 tokens {
@@ -74,16 +74,6 @@ id_statement_end[Token id]
     |   assignment_end[$id] -> assignment_end
     ;
 
-// 2 repetitions to allow the use of specific statements
-
-assignment
-    :   IDENTIFIER! assignment_end[$IDENTIFIER]
-    ;
-
-procedure_call
-    :   IDENTIFIER! procedure_call_end[$IDENTIFIER]
-    ;
-
 // Declaration
 
 declaration
@@ -92,13 +82,13 @@ declaration
     ;
 
 variable_declaration
-    :   TYPE identifier_list_head -> ^(VAR_DEC TYPE identifier_list_head)	
+    :   TYPE identifier_list_head -> ^(VAR_DEC TYPE identifier_list_head)   
     ;
     
 identifier_list_head
- 	:    identifier_list
- 	|    'array' IDENTIFIER '[' (INTEGER|IDENTIFIER) ':' (INTEGER|IDENTIFIER)(',' (INTEGER|IDENTIFIER) ':' (INTEGER|IDENTIFIER))* ']' 
- 	;   
+    :   identifier_list
+    |   'array' IDENTIFIER '[' (INTEGER|IDENTIFIER) ':' (INTEGER|IDENTIFIER)(',' (INTEGER|IDENTIFIER) ':' (INTEGER|IDENTIFIER))* ']' 
+    ;
 
 // Procedure declaration
 
@@ -136,6 +126,10 @@ procedure_body
 
 // Procedure call
 
+procedure_call
+    :   IDENTIFIER! procedure_call_end[$IDENTIFIER]
+    ;
+
 procedure_call_end[Token id]
     :   '(' actual_parameter_list ')' ->^(PROC_CALL {new CommonTree($id)} actual_parameter_list)
     ;
@@ -146,10 +140,16 @@ actual_parameter_list
 
 // Assignment
 
+assignment
+    :   IDENTIFIER! assignment_end[$IDENTIFIER]
+    ;
+
 assignment_end[Token id]
     :   ':=' expression -> ^(ASSIGNMENT {new CommonTree($id)} expression)
     |   ('['(INTEGER|IDENTIFIER)']')+ ':=' expression
     ;
+
+// Expression
 
 expression
     :   INTEGER
@@ -160,19 +160,22 @@ expression
 // If clause
 
 if_clause
-    :   'if' logical_statement 'then' statement (options{greedy=true;}:'else' statement)? -> ^(IF_STATEMENT ^(IF_DEF logical_statement) ^(THEN_DEF statement) ^(ELSE_DEF statement)*)
+    :   'if' logical_statement 'then' statement (options{greedy=true;}:'else' statement)? 
+        -> ^(IF_STATEMENT ^(IF_DEF logical_statement) ^(THEN_DEF statement) ^(ELSE_DEF statement)*)
     ;
 
 // For clause
 
 for_clause
-    :	'for' assignment 'step' REAL 'until' expression 'do' statement -> ^(FOR_CLAUSE ^(INIT assignment) ^(STEP REAL) ^(UNTIL expression) ^(DO statement))
+    :   'for' assignment 'step' REAL 'until' expression 'do' statement 
+        -> ^(FOR_CLAUSE ^(INIT assignment) ^(STEP REAL) ^(UNTIL expression) ^(DO statement))
     ;
 
 // While clause
 
 while_clause 
-    : 'while'  logical_statement 'do' statement -> ^(WHILE_CLAUSE ^(CONDITION logical_statement) ^(DO statement))
+    :   'while'  logical_statement 'do' statement 
+        -> ^(WHILE_CLAUSE ^(CONDITION logical_statement) ^(DO statement))
     ;
 
 logical_statement
@@ -227,8 +230,8 @@ INTEGER
     ;
 
 SIGNED_INTEGER 
-    : '+' INTEGER 
-    | '-' INTEGER 
+    :   '+' INTEGER 
+    |   '-' INTEGER 
     ;
     
 REAL 
