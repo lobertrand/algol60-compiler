@@ -53,7 +53,7 @@ statement
     |   assignment
     |   if_clause
     |   block
-    |   IDENTIFIER id_statement ->^(id_statement IDENTIFIER)
+    |   IDENTIFIER id_statement ->^(id_statement IDENTIFIER id_statement)
         ;
     
 id_statement
