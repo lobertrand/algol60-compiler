@@ -31,6 +31,9 @@ tokens {
     DO;
     WHILE_CLAUSE;
     CONDITION;
+    ID_STATEMENT;
+    ASSIGNMENT;
+    ID;
 }
 
 @parser::header {
@@ -53,7 +56,7 @@ prog:   block -> ^(ROOT block)
     ;
 
 block 
-    :   'begin' statement (';' statement)* 'end' -> ^(BLOCK statement*)
+    :   'begin' statement (';' statement)* 'end' -> ^(BLOCK statement+)
     ;
 
 statement
@@ -63,13 +66,19 @@ statement
     |   for_clause
     |   while_clause
     |   block
+    |   IDENTIFIER id_statement ->^(id_statement IDENTIFIER id_statement)
+        ;
+    
+id_statement
+    :   procedure_call 
+    |   assignment
     ;
 
 // Declaration
 
 declaration
-    :   variable_declaration
-    |   procedure_declaration
+    :   variable_declaration 
+    |   procedure_declaration 
     ;
 
 variable_declaration
@@ -101,7 +110,7 @@ value_part
     ;
 
 specification_part
-    :   ( TYPE identifier_list ';' )* ->^(SPEC_PART ^(ARG_TYPE TYPE identifier_list)*)
+    :   ( TYPE identifier_list ';' )* -> ^(SPEC_PART ^(ARG_TYPE TYPE identifier_list)*)
     ;
 
 procedure_body
@@ -112,19 +121,19 @@ procedure_body
 // Procedure call
 
 
-procedure_call
-    :   IDENTIFIER '(' actual_parameter_list ')' -> ^(PROC_CALL actual_parameter_list)
+procedure_call // IDENTIFIER in id_statement
+    :   '(' actual_parameter_list ')' ->^(PROC_CALL actual_parameter_list)
     ;
 
 actual_parameter_list
-    :   expression ( ',' expression )* -> ^(PARAM_LIST expression*)
+    :   expression ( ',' expression )*  -> ^(PARAM_LIST expression*)
     ;
 
 
 // Assignment
 
-assignment
-    :   IDENTIFIER ':='^ expression
+assignment // IDENTIFIER in id_statement
+    :   ':=' expression -> ^(ASSIGNMENT expression)
     ;
 
 expression
@@ -200,8 +209,10 @@ SIGNED_INTEGER
     ;
     	
 INTEGER
-    :   ('1'..'9')('0'..'9')*
+    :   ('+'|'-')?('1'..'9')('0'..'9')*
+    |   '0'
     ;
+    
 REAL 
     :   ('0'..'9')*'.'('0'..'9')*
     ;
@@ -235,8 +246,6 @@ LOGICAL_OPERATOR
     |   '/\\'
     |   '~'
     ;
-
-
    
 WS  :   (' '|'\t'|'\r'|'\n')+
         // Ignore whitespace (not in the AST)

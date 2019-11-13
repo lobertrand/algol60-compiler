@@ -10,7 +10,7 @@ begin
 		c'est un string magnifique !
 	;
 	real x;
-	string test;
+	string test
 
   end
 
