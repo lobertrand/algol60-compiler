@@ -20,6 +20,17 @@ tokens {
     ARG_TYPE;
     PARAM_LIST;
     PROC_CALL;
+    IF_STATEMENT;
+    IF_DEF;
+    THEN_DEF;
+    ELSE_DEF;
+    FOR_CLAUSE;
+    INIT;
+    STEP;
+    UNTIL;
+    DO;
+    WHILE_CLAUSE;
+    CONDITION;
     ID_STATEMENT;
     ASSIGNMENT;
     ID;
@@ -52,6 +63,8 @@ statement
     :   declaration
     |   assignment
     |   if_clause
+    |   for_clause
+    |   while_clause
     |   block
     |   IDENTIFIER id_statement ->^(id_statement IDENTIFIER id_statement)
         ;
@@ -138,13 +151,15 @@ expression
 
 
 if_clause
-    :   'if' logical_statement 'then' statement (options{greedy=true;}:'else' statement)?
+    :   'if' logical_statement 'then' statement (options{greedy=true;}:'else' statement)? ->^(IF_STATEMENT ^(IF_DEF logical_statement) ^(THEN_DEF statement) ^(ELSE_DEF statement)*)
     ;
 
-
-
-
-
+for_clause
+    :	'for' assignment 'step' REAL 'until' expression 'do' statement ->^(FOR_CLAUSE ^(INIT assignment) ^(STEP REAL) ^(UNTIL expression) ^(DO statement))
+    ;
+while_clause 
+: 'while'  logical_statement 'do' statement ->^(WHILE_CLAUSE ^(CONDITION logical_statement) ^(DO statement))
+;
 logical_statement
     :   expression boolean_operator expression
     |   LOGICAL_VALUE
@@ -168,6 +183,8 @@ COMMENT
         // Ignore comments (not in the AST)
         { $channel=HIDDEN; }
     ;
+
+
 
 STRING
     :   '"' ~( '"' | '\r' | '\n' )* '"'
@@ -194,6 +211,20 @@ LOGICAL_VALUE
 INTEGER
     :   ('+'|'-')?('1'..'9')('0'..'9')*
     | '0'
+    ;
+
+SIGNED_INTEGER 
+    : '+' INTEGER 
+    | '-' INTEGER 
+    ;
+    	
+INTEGER
+    :   ('+'|'-')?('1'..'9')('0'..'9')*
+    |   '0'
+    ;
+    
+REAL 
+    :   ('0'..'9')*'.'('0'..'9')*
     ;
 
 IDENTIFIER
@@ -225,7 +256,6 @@ LOGICAL_OPERATOR
     |   '/\\'
     |   '~'
     ;
-
 
 WS  :   (' '|'\t'|'\r'|'\n')+
         // Ignore whitespace (not in the AST)
