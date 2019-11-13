@@ -49,7 +49,8 @@ block
 
 statement
     :   declaration
-    |   if_statement
+    |   assignment
+    |   if_clause
     |   block
     |   IDENTIFIER id_statement -> ^(id_statement IDENTIFIER)
     ;
@@ -127,25 +128,13 @@ expression
     |   IDENTIFIER
     ;
 
-if_statement
-    :   if_clause super_expression if_statement1
-    ;
 
-if_statement1
-    :  'else' super_expression ';'
-    |
-    ;
 
 if_clause
-    :   'if' logical_statement 'then' 
+    :   'if' logical_statement 'then' statement (options{greedy=true;}:'else' statement)?
     ;
 
 
-
-super_expression
-    :   statement
-//    |   block
-    ;
 
 
 
