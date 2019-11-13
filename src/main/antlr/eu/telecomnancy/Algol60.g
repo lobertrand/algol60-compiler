@@ -41,14 +41,19 @@ package eu.telecomnancy;
 prog:   block -> ^(ROOT block)
     ;
 
-block
-    :   'begin' statement* 'end' -> ^(BLOCK statement*)
+block 
+    :   'begin' statement block_tail -> ^(BLOCK statement block_tail)
+    ;
+
+block_tail
+    :   (';' statement)* 'end' -> statement*
     ;
 
 statement
     :   declaration
     |   assignment
     |   if_statement
+    |   block
     ;
 
 // Declaration
@@ -59,7 +64,7 @@ declaration
     ;
 
 variable_declaration
-    :   TYPE identifier_list ';' -> ^(VAR_DEC TYPE identifier_list)
+    :   TYPE identifier_list -> ^(VAR_DEC TYPE identifier_list)
     ;
 
 procedure_declaration
@@ -97,7 +102,7 @@ procedure_body
 
 // Procedure call
 
-/*
+
 procedure_call
     :   IDENTIFIER '(' actual_parameter_list ')' -> ^(PROC_CALL actual_parameter_list)
     ;
@@ -105,12 +110,12 @@ procedure_call
 actual_parameter_list
     :   expression ( ',' expression )* -> ^(PARAM_LIST expression*)
     ;
-*/
+
 
 // Assignment
 
 assignment
-    :   IDENTIFIER ':='^ expression ';'!
+    :   IDENTIFIER ':='^ expression
     ;
 
 expression
@@ -136,7 +141,7 @@ if_clause
 
 super_expression
     :   statement
-    |   block
+//    |   block
     ;
 
 
