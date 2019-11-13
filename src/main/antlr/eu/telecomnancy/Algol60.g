@@ -20,6 +20,8 @@ tokens {
     ARG_TYPE;
     PARAM_LIST;
     PROC_CALL;
+    ID_STATEMENT;
+    ASSIGNMENT;
 }
 
 @parser::header {
@@ -42,18 +44,19 @@ prog:   block -> ^(ROOT block)
     ;
 
 block 
-    :   'begin' statement block_tail -> ^(BLOCK statement block_tail)
-    ;
-
-block_tail
-    :   (';' statement)* 'end' -> statement*
+    :   'begin' statement (';' statement)* 'end' -> ^(BLOCK statement*)
     ;
 
 statement
     :   declaration
-    |   assignment
     |   if_statement
     |   block
+    |   IDENTIFIER id_statement -> ^(id_statement IDENTIFIER)
+    ;
+    
+id_statement
+    :   procedure_call //-> ^(PROC_CALL procedure_call)
+    |   assignment //-> ^(ASSIGNMENT assignment)
     ;
 
 // Declaration
@@ -92,7 +95,7 @@ value_part
     ;
 
 specification_part
-    :   ( TYPE identifier_list ';' )* ->^(SPEC_PART ^(ARG_TYPE TYPE identifier_list)*)
+    :   ( TYPE identifier_list ';' )* -> ^(SPEC_PART ^(ARG_TYPE TYPE identifier_list)*)
     ;
 
 procedure_body
@@ -103,19 +106,19 @@ procedure_body
 // Procedure call
 
 
-procedure_call
-    :   IDENTIFIER '(' actual_parameter_list ')' -> ^(PROC_CALL actual_parameter_list)
+procedure_call // IDENTIFIER in id_statement
+    :   '(' actual_parameter_list ')' -> ^(PROC_CALL actual_parameter_list)
     ;
 
 actual_parameter_list
-    :   expression ( ',' expression )* -> ^(PARAM_LIST expression*)
+    :   expression ( ',' expression )*  -> ^(PARAM_LIST expression*)
     ;
 
 
 // Assignment
 
-assignment
-    :   IDENTIFIER ':='^ expression
+assignment // IDENTIFIER in id_statement
+    :   ':=' expression -> ^(ASSIGNMENT expression)
     ;
 
 expression
