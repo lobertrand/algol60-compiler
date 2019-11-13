@@ -22,6 +22,7 @@ tokens {
     PROC_CALL;
     ID_STATEMENT;
     ASSIGNMENT;
+    ID;
 }
 
 @parser::header {
@@ -44,7 +45,7 @@ prog:   block -> ^(ROOT block)
     ;
 
 block 
-    :   'begin' statement (';' statement)* 'end' -> ^(BLOCK statement*)
+    :   'begin' statement (';' statement)* 'end' -> ^(BLOCK statement+)
     ;
 
 statement
@@ -52,19 +53,19 @@ statement
     |   assignment
     |   if_clause
     |   block
-    |   IDENTIFIER id_statement -> ^(id_statement IDENTIFIER)
-    ;
+    |   IDENTIFIER id_statement ->^(id_statement IDENTIFIER)
+        ;
     
 id_statement
-    :   procedure_call //-> ^(PROC_CALL procedure_call)
-    |   assignment //-> ^(ASSIGNMENT assignment)
+    :   procedure_call 
+    |   assignment
     ;
 
 // Declaration
 
 declaration
-    :   variable_declaration
-    |   procedure_declaration
+    :   variable_declaration 
+    |   procedure_declaration 
     ;
 
 variable_declaration
@@ -108,7 +109,7 @@ procedure_body
 
 
 procedure_call // IDENTIFIER in id_statement
-    :   '(' actual_parameter_list ')' -> ^(PROC_CALL actual_parameter_list)
+    :   '(' actual_parameter_list ')' ->^(PROC_CALL actual_parameter_list)
     ;
 
 actual_parameter_list
@@ -217,6 +218,7 @@ LOGICAL_OPERATOR
 
 INTEGER
     :   ('+'|'-')?('1'..'9')('0'..'9')*
+    | '0'
     ;
 
 
