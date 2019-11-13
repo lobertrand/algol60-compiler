@@ -69,8 +69,13 @@ declaration
     ;
 
 variable_declaration
-    :   TYPE identifier_list -> ^(VAR_DEC TYPE identifier_list)
+    :   TYPE identifier_list_head -> ^(VAR_DEC TYPE identifier_list_head)	
     ;
+    
+ identifier_list_head
+ 	:    identifier_list
+ 	|    'array' IDENTIFIER '[' (INTEGER|IDENTIFIER) ':' (INTEGER|IDENTIFIER)(',' (INTEGER|IDENTIFIER) ':' (INTEGER|IDENTIFIER))* ']' 
+ 	;   
 
 procedure_declaration
     :   'procedure' procedure_heading procedure_body
@@ -121,6 +126,7 @@ actual_parameter_list
 
 assignment // IDENTIFIER in id_statement
     :   ':=' expression -> ^(ASSIGNMENT expression)
+    |('['(INTEGER|IDENTIFIER)']')+ ':=' expression
     ;
 
 expression
@@ -185,6 +191,10 @@ LOGICAL_VALUE
     |   'false'
     ;
 
+INTEGER
+    :   ('+'|'-')?('1'..'9')('0'..'9')*
+    | '0'
+    ;
 
 IDENTIFIER
     :   ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
@@ -214,11 +224,6 @@ LOGICAL_OPERATOR
     |   '\\/'
     |   '/\\'
     |   '~'
-    ;
-
-INTEGER
-    :   ('+'|'-')?('1'..'9')('0'..'9')*
-    | '0'
     ;
 
 
