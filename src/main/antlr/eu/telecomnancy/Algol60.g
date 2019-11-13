@@ -58,19 +58,30 @@ block
     :   'begin' statement (';' statement)* 'end' -> ^(BLOCK statement+)
     ;
 
+// Statement
+
 statement
     :   declaration
-    |   assignment
     |   if_clause
     |   for_clause
     |   while_clause
     |   block
-    |   IDENTIFIER id_statement -> ^(id_statement IDENTIFIER id_statement)
+    |   IDENTIFIER id_statement_end[$IDENTIFIER] -> id_statement_end
     ;
     
-id_statement
-    :   procedure_call 
-    |   assignment
+id_statement_end[Token id]
+    :   procedure_call_end[$id] -> procedure_call_end
+    |   assignment_end[$id] -> assignment_end
+    ;
+
+// 2 repetitions to allow the use of specific statements
+
+assignment
+    :   IDENTIFIER! assignment_end[$IDENTIFIER]
+    ;
+
+procedure_call
+    :   IDENTIFIER! procedure_call_end[$IDENTIFIER]
     ;
 
 // Declaration
@@ -89,7 +100,7 @@ identifier_list_head
  	|    'array' IDENTIFIER '[' (INTEGER|IDENTIFIER) ':' (INTEGER|IDENTIFIER)(',' (INTEGER|IDENTIFIER) ':' (INTEGER|IDENTIFIER))* ']' 
  	;   
 
-// Procedure
+// Procedure declaration
 
 procedure_declaration
     :   'procedure' procedure_heading procedure_body
@@ -125,8 +136,8 @@ procedure_body
 
 // Procedure call
 
-procedure_call // IDENTIFIER in id_statement
-    :   '(' actual_parameter_list ')' ->^(PROC_CALL actual_parameter_list)
+procedure_call_end[Token id]
+    :   '(' actual_parameter_list ')' ->^(PROC_CALL {new CommonTree($id)} actual_parameter_list)
     ;
 
 actual_parameter_list
@@ -135,9 +146,9 @@ actual_parameter_list
 
 // Assignment
 
-assignment // IDENTIFIER in id_statement
-    :   ':=' expression -> ^(ASSIGNMENT expression)
-    |('['(INTEGER|IDENTIFIER)']')+ ':=' expression
+assignment_end[Token id]
+    :   ':=' expression -> ^(ASSIGNMENT {new CommonTree($id)} expression)
+    |   ('['(INTEGER|IDENTIFIER)']')+ ':=' expression
     ;
 
 expression
