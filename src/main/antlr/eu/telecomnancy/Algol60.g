@@ -42,17 +42,13 @@ prog:   block -> ^(ROOT block)
     ;
 
 block 
-    :   'begin' statement block_tail -> ^(BLOCK statement block_tail)
-    ;
-
-block_tail
-    :   (';' statement)* 'end' -> statement*
+    :   'begin' statement (';' statement)* 'end' -> ^(BLOCK statement*)
     ;
 
 statement
     :   declaration
     |   assignment
-    |   if_statement
+    |   if_clause
     |   block
     ;
 
@@ -124,25 +120,13 @@ expression
     |   IDENTIFIER
     ;
 
-if_statement
-    :   if_clause super_expression if_statement1
-    ;
 
-if_statement1
-    :  'else' super_expression ';'
-    |
-    ;
 
 if_clause
-    :   'if' logical_statement 'then' 
+    :   'if' logical_statement 'then' statement (options{greedy=true;}:'else' statement)?
     ;
 
 
-
-super_expression
-    :   statement
-//    |   block
-    ;
 
 
 
