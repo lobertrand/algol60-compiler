@@ -20,6 +20,17 @@ tokens {
     ARG_TYPE;
     PARAM_LIST;
     PROC_CALL;
+    IF_STATEMENT;
+    IF_DEF;
+    THEN_DEF;
+    ELSE_DEF;
+    FOR_CLAUSE;
+    INIT;
+    STEP;
+    UNTIL;
+    DO;
+    WHILE_CLAUSE;
+    CONDITION;
 }
 
 @parser::header {
@@ -49,6 +60,8 @@ statement
     :   declaration
     |   assignment
     |   if_clause
+    |   for_clause
+    |   while_clause
     |   block
     ;
 
@@ -123,13 +136,15 @@ expression
 
 
 if_clause
-    :   'if' logical_statement 'then' statement (options{greedy=true;}:'else' statement)?
+    :   'if' logical_statement 'then' statement (options{greedy=true;}:'else' statement)? ->^(IF_STATEMENT ^(IF_DEF logical_statement) ^(THEN_DEF statement) ^(ELSE_DEF statement)*)
     ;
 
-
-
-
-
+for_clause
+    :	'for' assignment 'step' REAL 'until' expression 'do' statement ->^(FOR_CLAUSE ^(INIT assignment) ^(STEP REAL) ^(UNTIL expression) ^(DO statement))
+    ;
+while_clause 
+: 'while'  logical_statement 'do' statement ->^(WHILE_CLAUSE ^(CONDITION logical_statement) ^(DO statement))
+;
 logical_statement
     :   expression boolean_operator expression
     |   LOGICAL_VALUE
@@ -154,6 +169,8 @@ COMMENT
         { $channel=HIDDEN; }
     ;
 
+
+
 STRING
     :   '"' ~( '"' | '\r' | '\n' )* '"'
         // Strips the string from its quotes in the lexer
@@ -176,6 +193,18 @@ LOGICAL_VALUE
     |   'false'
     ;
 
+
+SIGNED_INTEGER 
+    : '+' INTEGER 
+    | '-' INTEGER 
+    ;
+    	
+INTEGER
+    :   ('1'..'9')('0'..'9')*
+    ;
+REAL 
+    :   ('0'..'9')*'.'('0'..'9')*
+    ;
 
 IDENTIFIER
     :   ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
@@ -207,11 +236,8 @@ LOGICAL_OPERATOR
     |   '~'
     ;
 
-INTEGER
-    :   ('+'|'-')?('1'..'9')('0'..'9')*
-    ;
 
-
+   
 WS  :   (' '|'\t'|'\r'|'\n')+
         // Ignore whitespace (not in the AST)
         { $channel=HIDDEN; }
