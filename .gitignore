@@ -21,3 +21,6 @@ obj/
 
 # Generated
 *.dot
+
+# AntlrWorks
+output/
