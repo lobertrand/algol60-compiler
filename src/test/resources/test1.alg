@@ -7,5 +7,5 @@ begin
   string test;
   test := "holala je suis un string";
   n := -42;
-  x := n;
+  x := n
 end

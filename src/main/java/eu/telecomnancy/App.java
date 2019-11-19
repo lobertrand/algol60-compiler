@@ -22,12 +22,19 @@ public class App {
         String dotTree = st.toString();
 
         // Write dot tree in a file
-        File file = new File("Algol60.dot");
+        File file = new File("AST.dot");
         file.createNewFile();
         FileWriter writer = new FileWriter(file); 
         writer.write(dotTree); 
         writer.flush();
         writer.close();
+
+        // Create pdf from dot tree file (if dot command exists)
+        ProcessBuilder processBuilder = new ProcessBuilder();
+        processBuilder.command("dot", "-Tpdf", "AST.dot", "-o", "AST.pdf");
+        try {
+            processBuilder.start();
+        } catch (Exception e) {}
     }
 
 }

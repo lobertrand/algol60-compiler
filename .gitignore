@@ -20,7 +20,8 @@ local.properties
 obj/
 
 # Generated
-*.dot
+AST.dot
+AST.pdf
 
 # AntlrWorks
 output/
