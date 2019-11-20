@@ -10,6 +10,7 @@ options {
     output = AST;
     backtrack=false;
     k=1;
+    ASTLabelType=CommonTree;
 }
 
 tokens {
@@ -50,6 +51,10 @@ tokens {
     FACTOR;	// factor in expression
     LABEL_DEC;
     GOTO;
+    MINUS;
+    DIV;
+    INTDIV;
+
 }
 
 @parser::header {
@@ -183,33 +188,32 @@ expression
 
 // arithmetic
 
-arithmetic_operator 
-    : ADDING_OPERATOR
-    | MULTIPLYING_OPERATOR	
-    ;	
+
     
+arithmetic_expression
+    : term! arithmetic_expression1[$term.tree]
+    ;
+
+arithmetic_expression1[CommonTree t2]
+    : '+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
+    | '-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
+    | -> {$t2}
+    ;    
     
 term
-    : STRING term1
-    | INTEGER term1
-    | IDENTIFIER term1
+    : expression! term1[$expression.tree]
     ;
 
 
-term1
-    : MULTIPLYING_OPERATOR expression term1 -> ^(MULT expression term1?)
-    | 
+term1[CommonTree t2]
+    : '*' term -> ^(MULT {$t2} term?)
+    | '/' term -> ^(DIV {$t2} term?)
+    | '//' term -> ^(INTDIV {$t2} term?)
+    | -> {$t2}
     ;
 
 
-arithmetic_expression
-    : term arithmetic_expression1 
-    ;
 
-arithmetic_expression1
-    : ADDING_OPERATOR term arithmetic_expression1 -> ^(ADD term arithmetic_expression1?)
-    |
-    ;
 
 
 
@@ -298,16 +302,7 @@ IDENTIFIER
     :   ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
     ;
 
-ADDING_OPERATOR
-    : '+'
-    | '-'
-    ;
 
-MULTIPLYING_OPERATOR
-   : '*'
-   | '/'
-   | '//'	
-   ;
 
     
 RELATIONAL_OPERATOR
