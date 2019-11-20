@@ -39,6 +39,10 @@ tokens {
     CONDITION;      // While loop condition
     ID_STATEMENT;   // Statement begining with an identifier
     ASSIGNMENT;     // Assignment
+    MULT;	// multiplying expression
+    ADD;	// addition
+    TERM;	// term in expression
+    FACTOR;	// factor in expression
 }
 
 @parser::header {
@@ -145,17 +149,49 @@ assignment
     ;
 
 assignment_end[Token id]
-    :   ':=' expression -> ^(ASSIGNMENT {new CommonTree($id)} expression)
-    |   ('['(INTEGER|IDENTIFIER)']')+ ':=' expression
+    :   ':=' arithmetic_expression -> ^(ASSIGNMENT {new CommonTree($id)} arithmetic_expression)
+    |   ('['(INTEGER|IDENTIFIER)']')+ ':=' arithmetic_expression
     ;
 
 // Expression
 
 expression
-    :   INTEGER
-    |   STRING
-    |   IDENTIFIER
+    : STRING
+    | INTEGER
+    | IDENTIFIER
     ;
+
+// arithmetic
+
+arithmetic_operator 
+    : ADDING_OPERATOR
+    | MULTIPLYING_OPERATOR	
+    ;	
+    
+    
+term
+    : STRING term1
+    | INTEGER term1
+    | IDENTIFIER term1
+    ;
+
+
+term1
+    : MULTIPLYING_OPERATOR expression term1 -> ^(MULT expression term1?)
+    | 
+    ;
+
+
+arithmetic_expression
+    : term arithmetic_expression1 
+    ;
+
+arithmetic_expression1
+    : ADDING_OPERATOR term arithmetic_expression1 -> ^(ADD term arithmetic_expression1?)
+    |
+    ;
+
+
 
 // If clause
 
@@ -179,7 +215,7 @@ while_clause
     ;
 
 logical_statement
-    :   expression boolean_operator expression
+    :   arithmetic_expression boolean_operator arithmetic_expression
     |   LOGICAL_VALUE
     ;
 
@@ -225,7 +261,7 @@ LOGICAL_VALUE
     ;
 
 INTEGER
-    :   ('+'|'-')?('1'..'9')('0'..'9')*
+    :   ('-')?('1'..'9')('0'..'9')*
     |   '0'
     ;
 
@@ -242,14 +278,17 @@ IDENTIFIER
     :   ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
     ;
 
-ARITHMETIC_OPERATOR
-    :   '+'
-    |   '-'
-    |   '*'
-    |   '/'
-    |   '//'
-    |   '**'
+ADDING_OPERATOR
+    : '+'
+    | '-'
     ;
+
+MULTIPLYING_OPERATOR
+   : '*'
+   | '/'
+   | '//'	
+   ;
+
     
 RELATIONAL_OPERATOR
     :   '<'
