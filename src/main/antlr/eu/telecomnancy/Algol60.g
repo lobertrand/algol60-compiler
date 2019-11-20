@@ -46,8 +46,6 @@ tokens {
     INDICES;        //Indices of an ellement of an array
     MULT;	// multiplying expression
     ADD;	// addition
-    TERM;	// term in expression
-    FACTOR;	// factor in expression
 }
 
 @parser::header {
@@ -184,6 +182,14 @@ arithmetic_operator
     | MULTIPLYING_OPERATOR	
     ;	
     
+arithmetic_expression
+    : term arithmetic_expression1 
+    ;
+
+arithmetic_expression1
+    : ADDING_OPERATOR term arithmetic_expression1 -> ^(ADD term arithmetic_expression1?)
+    |
+    ;    
     
 term
     : STRING term1
@@ -198,14 +204,7 @@ term1
     ;
 
 
-arithmetic_expression
-    : term arithmetic_expression1 
-    ;
 
-arithmetic_expression1
-    : ADDING_OPERATOR term arithmetic_expression1 -> ^(ADD term arithmetic_expression1?)
-    |
-    ;
 
 
 
