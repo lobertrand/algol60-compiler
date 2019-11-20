@@ -50,6 +50,7 @@ tokens {
     MINUS;
     DIV;
     INTDIV;
+    POW;
 }
 
 @parser::header {
@@ -173,24 +174,28 @@ bound
 
 // Expression
 
+
 expression
     : STRING
     | INTEGER
     | IDENTIFIER
     ;
 
+
+
+
 // arithmetic
 
 
     
 arithmetic_expression
-    : term! arithmetic_expression1[$term.tree]
+    : term! arithmetic_expression_end[$term.tree]
     ;
 
-arithmetic_expression1[CommonTree t2]
+arithmetic_expression_end[CommonTree t2]
     : '+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
     | '-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
-    | -> {$t2}
+    |                           -> {$t2}
     ;    
     
 term
@@ -202,6 +207,8 @@ term1[CommonTree t2]
     : '*' term -> ^(MULT {$t2} term?)
     | '/' term -> ^(DIV {$t2} term?)
     | '//' term -> ^(INTDIV {$t2} term?)
+    | '**' term -> ^(POW {$t2} term?)
+
     | -> {$t2}
     ;
 
