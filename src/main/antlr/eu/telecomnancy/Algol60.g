@@ -39,6 +39,12 @@ tokens {
     CONDITION;      // While loop condition
     ID_STATEMENT;   // Statement begining with an identifier
     ASSIGNMENT;     // Assignment
+    ARRAY_DEC;      // Array Declaration
+    BOUND_DEC;      //Declaration of the boundaries of an array
+    BOUND_LIST;     //List of Bound_Dec
+    ARRAY_ASSIGNMENT; //Assignment of an array
+    INDICES;        //Indices of an ellement of an array
+
 }
 
 @parser::header {
@@ -82,12 +88,13 @@ declaration
     ;
 
 variable_declaration
-    :   TYPE identifier_list_head -> ^(VAR_DEC TYPE identifier_list_head)   
+    :   TYPE identifier_list_head[$TYPE]  ->identifier_list_head
     ;
     
-identifier_list_head
-    :   identifier_list
-    |   'array' IDENTIFIER '[' (INTEGER|IDENTIFIER) ':' (INTEGER|IDENTIFIER)(',' (INTEGER|IDENTIFIER) ':' (INTEGER|IDENTIFIER))* ']' 
+identifier_list_head[Token type]
+    :   identifier_list -> ^(VAR_DEC {new CommonTree($type)} identifier_list)
+    |   'array' IDENTIFIER '[' boundaries(',' boundaries)* ']' 
+    	->^(ARRAY_DEC {new CommonTree($type)} IDENTIFIER  ^(BOUND_LIST boundaries+))
     ;
 
 // Procedure declaration
@@ -146,8 +153,18 @@ assignment
 
 assignment_end[Token id]
     :   ':=' expression -> ^(ASSIGNMENT {new CommonTree($id)} expression)
-    |   ('['(INTEGER|IDENTIFIER)']')+ ':=' expression
+    |   '[' bound (',' bound)* ']' ':=' expression ->^(ARRAY_ASSIGNMENT {new CommonTree($id)} ^(INDICES bound+) expression)
     ;
+
+
+boundaries
+	: bound ':' bound ->^(BOUND_DEC bound bound)
+	;
+
+bound
+	:	INTEGER 
+	|	IDENTIFIER
+	;
 
 // Expression
 
