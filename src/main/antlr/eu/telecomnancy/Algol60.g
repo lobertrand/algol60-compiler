@@ -48,6 +48,8 @@ tokens {
     ADD;	// addition
     TERM;	// term in expression
     FACTOR;	// factor in expression
+    LABEL_DEC;
+    GOTO;
 }
 
 @parser::header {
@@ -71,6 +73,7 @@ block
 
 statement
     :   declaration
+    |   'goto' IDENTIFIER ->^(GOTO IDENTIFIER)
     |   if_clause
     |   for_clause
     |   while_clause
@@ -81,6 +84,7 @@ statement
 id_statement_end[Token id]
     :   procedure_call_end[$id] -> procedure_call_end
     |   assignment_end[$id] -> assignment_end
+    |   ':' -> ^(LABEL_DEC {new CommonTree($id)})
     ;
 
 // Declaration
