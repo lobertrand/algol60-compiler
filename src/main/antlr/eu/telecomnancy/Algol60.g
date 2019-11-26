@@ -55,6 +55,8 @@ tokens {
     DIV;
     INTDIV;
     POW;
+    INT;
+    POW10;
 }
 
 @parser::header {
@@ -172,7 +174,7 @@ procedure_call_end[Token id]
     ;
 
 actual_parameter_list
-    :   expression ( ',' expression )*  -> ^(PARAM_LIST expression*)
+    :   arithmetic_expression ( ',' arithmetic_expression )*  -> ^(PARAM_LIST arithmetic_expression*)
     ;
 
 // Assignment
@@ -200,9 +202,9 @@ bound
 
 expression
     : STRING
-    | INTEGER
+    | integer
     | IDENTIFIER expression_end
-    | REAL
+    | scientific_expression
     ;
 
 expression_end
@@ -222,8 +224,8 @@ arithmetic_expression
     ;
 
 arithmetic_expression_end[CommonTree t2]
-    : '+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
-    | '-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
+    : '+'arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
+    | '-'arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
     |                           -> {$t2}
     ;    
     
@@ -237,7 +239,6 @@ term1[CommonTree t2]
     | '/' term -> ^(DIV {$t2} term?)
     | '//' term -> ^(INTDIV {$t2} term?)
     | '**' term -> ^(POW {$t2} term?)
-
     | -> {$t2}
     ;
 
@@ -277,8 +278,23 @@ boolean_operator
     |   LOGICAL_OPERATOR
     ;
 
-// LEXER RULES
 
+// Integer
+
+integer
+    :   '-'? INTEGER ->^(INT '-'? INTEGER)
+    ;
+
+
+// LEXER RULES
+scientific_expression
+    : REAL! real_end[$REAL]
+    ;
+
+real_end[Token real]
+   : '#' INTEGER ->^(POW10{new CommonTree($real)}INTEGER)
+   | -> {new CommonTree($real)}
+   ;
 TYPE:   'real'
     |   'integer'
     |   'boolean'
@@ -298,37 +314,22 @@ STRING
         { setText(getText().substring(1, getText().length() - 1)); }
     ;
 
-/*KEYWORD
-    :   'if'
-    |   'then'
-    |   'else'
-    |   'for'
-    |   'do'
-    |   'goto'
-    ;
-*/
-
 LOGICAL_VALUE
     :   'true'
     |   'false'
     ;
 
 INTEGER
-    :   ('-')?('1'..'9')('0'..'9')*
+    :   ('1'..'9')('0'..'9')*
     |   '0'
     ;
 
-SIGNED_INTEGER 
-    :   '+' INTEGER 
-    |   '-' INTEGER 
-    ;
-    
 REAL 
     :   ('0'..'9')*'.'('0'..'9')*
     ;
 
 IDENTIFIER
-    :   ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+    :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
     ;
 
 
