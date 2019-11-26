@@ -174,8 +174,7 @@ boundaries
 	;
 
 bound
-	:	INTEGER 
-	|	IDENTIFIER
+	:	arithmetic_expression
 	;
 
 // Expression
@@ -184,9 +183,15 @@ bound
 expression
     : STRING
     | INTEGER
-    | IDENTIFIER
+    | IDENTIFIER expression_end
+    | REAL
     ;
 
+expression_end
+	:'[' bound (',' bound)* ']'
+	|'('arithmetic_expression (',' arithmetic_expression)*')'
+	|
+	;
 
 
 
@@ -233,8 +238,8 @@ if_clause
 // For clause
 
 for_clause
-    :   'for' assignment 'step' REAL 'until' expression 'do' statement 
-        -> ^(FOR_CLAUSE ^(INIT assignment) ^(STEP REAL) ^(UNTIL expression) ^(DO statement))
+    :   'for' assignment 'step' expression 'until' expression 'do' statement 
+        -> ^(FOR_CLAUSE ^(INIT assignment) ^(STEP expression) ^(UNTIL expression) ^(DO statement))
     ;
 
 // While clause
