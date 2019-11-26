@@ -95,12 +95,21 @@ id_statement_end[Token id]
 // Declaration
 
 declaration
-    :   variable_declaration 
-    |   procedure_declaration 
+    :   TYPE type_declaration_end[$TYPE] -> type_declaration_end
+    |   procedure_declaration_no_type
+    ;
+
+type_declaration_end[Token type]
+    :   variable_declaration_end[$type]
+    |   procedure_declaration_end[$type]
     ;
 
 variable_declaration
-    :   TYPE identifier_list_head[$TYPE]  ->identifier_list_head
+    :   TYPE identifier_list_head[$TYPE] -> identifier_list_head
+    ;
+
+variable_declaration_end[Token type]
+    :   identifier_list_head[$type] -> identifier_list_head
     ;
     
 identifier_list_head[Token type]
@@ -112,6 +121,15 @@ identifier_list_head[Token type]
 // Procedure declaration
 
 procedure_declaration
+    :   TYPE? procedure_declaration_end[$TYPE]
+    ;
+
+procedure_declaration_end[Token type]
+    :   'procedure' procedure_heading procedure_body
+        -> ^(PROC_DEC {new CommonTree($type)} procedure_heading procedure_body)
+    ;
+
+procedure_declaration_no_type
     :   'procedure' procedure_heading procedure_body
         -> ^(PROC_DEC procedure_heading procedure_body)
     ;
