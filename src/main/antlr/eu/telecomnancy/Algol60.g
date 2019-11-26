@@ -211,14 +211,14 @@ array_call_end[Token id]
 expression
     : STRING
     | integer
-    | IDENTIFIER expression_end
+    | IDENTIFIER! expression_end[$IDENTIFIER]
     | scientific_expression
     ;
 
 expression_end[Token id]
 	:	array_call_end[$id]
 	|	procedure_call_end[$id]
-	|
+	|   -> {new CommonTree($id)}
 	;
 
 
