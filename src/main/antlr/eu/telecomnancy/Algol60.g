@@ -55,6 +55,7 @@ tokens {
     DIV;
     INTDIV;
     POW;
+    ARRAY_CALL;
 }
 
 @parser::header {
@@ -154,7 +155,8 @@ procedure_call_end[Token id]
     ;
 
 actual_parameter_list
-    :   expression ( ',' expression )*  -> ^(PARAM_LIST expression*)
+    :   arithmetic_expression ( ',' arithmetic_expression )*  -> ^(PARAM_LIST arithmetic_expression*)
+    |
     ;
 
 // Assignment
@@ -170,26 +172,32 @@ assignment_end[Token id]
 
 
 boundaries
-	: bound ':' bound ->^(BOUND_DEC bound bound)
+	: 	bound ':' bound ->^(BOUND_DEC bound bound)
 	;
 
 bound
 	:	arithmetic_expression
 	;
 
+
+
+array_call_end[Token id]
+    :   '[' actual_parameter_list ']' ->^(ARRAY_CALL {new CommonTree($id)} actual_parameter_list)
+	;
+
 // Expression
 
 
 expression
-    : STRING
-    | INTEGER
-    | IDENTIFIER expression_end
-    | REAL
+    : 	STRING
+    | 	INTEGER
+    | 	IDENTIFIER! expression_end[$IDENTIFIER]
+    | 	REAL
     ;
 
-expression_end
-	:'[' bound (',' bound)* ']'
-	|'('arithmetic_expression (',' arithmetic_expression)*')'
+expression_end[Token id]
+	:	array_call_end[$id]
+	|	procedure_call_end[$id]
 	|
 	;
 
@@ -200,27 +208,26 @@ expression_end
 
     
 arithmetic_expression
-    : term! arithmetic_expression_end[$term.tree]
+    : 	term! arithmetic_expression_end[$term.tree]
     ;
 
 arithmetic_expression_end[CommonTree t2]
-    : '+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
-    | '-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
+    : 	'+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
+    | 	'-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
     |                           -> {$t2}
     ;    
     
 term
-    : expression! term1[$expression.tree]
+    : 	expression! term1[$expression.tree]
     ;
 
 
 term1[CommonTree t2]
-    : '*' term -> ^(MULT {$t2} term?)
-    | '/' term -> ^(DIV {$t2} term?)
-    | '//' term -> ^(INTDIV {$t2} term?)
-    | '**' term -> ^(POW {$t2} term?)
-
-    | -> {$t2}
+    : 	'*' term -> ^(MULT {$t2} term?)
+    | 	'/' term -> ^(DIV {$t2} term?)
+    | 	'//' term -> ^(INTDIV {$t2} term?)
+    | 	'**' term -> ^(POW {$t2} term?)
+    | 	-> {$t2}
     ;
 
 
