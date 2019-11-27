@@ -58,7 +58,7 @@ tokens {
     POW_10;             // Scientific notation
     ARRAY_CALL;         // Access to a value of an array
     STR;                // String
-//    ID;                 // Identifier
+    REAL;               // Real number
 }
 
 @parser::header {
@@ -296,12 +296,12 @@ integer
     ;
 
 scientific_expression
-    :   REAL! real_end[$REAL]
+    :   REAL! scientific_expression_end[$REAL]
     ;
 
-real_end[Token real]
+scientific_expression_end[Token real]
     :   '#' INTEGER -> ^(POW_10 {new CommonTree($real)} INTEGER)
-    |   -> {new CommonTree($real)}
+    |   -> ^(REAL {new CommonTree($real)})
     ;
 
 string
