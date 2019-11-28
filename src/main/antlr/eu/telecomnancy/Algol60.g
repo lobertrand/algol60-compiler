@@ -14,48 +14,51 @@ options {
 }
 
 tokens {
-    ROOT;           // Program root
-    BLOCK;          // Block of code
-    VAR_DEC;        // Variable declaration
-    PROC_DEC;       // Procedure declaration
-    PROC_HEADING;   // Procedure heading
-    PARAMS_DEC;     // Parameters
-    ID_LIST;        // List of identifiers
-    VALUE_PART;     // Procedure's parameters passed by value
-    PARAM_PART;     // Procedure's parameters passed by reference
-    SPEC_PART;      // Procedure's parameters names
-    ARG_TYPE;       // Type of a procedure's argument
-    PARAM_LIST;     // List of parameters
-    PROC_CALL;      // Procedure call
-    IF_STATEMENT;   // If statement
-    IF_DEF;         // First part of an if statement
-    THEN_DEF;       // Then part of an if statement
-    ELSE_DEF;       // Else part of an if statement
-    FOR_CLAUSE;     // For loop
-    INIT;           // Initialization part of for loop
-    STEP;           // Step part of for loop
-    UNTIL;          // Condition part of for loop
-    DO;             // Code part of for loop
-    WHILE_CLAUSE;   // While loop
-    CONDITION;      // While loop condition
-    ID_STATEMENT;   // Statement begining with an identifier
-    ASSIGNMENT;     // Assignment
-    ARRAY_DEC;      // Array Declaration
-    BOUND_DEC;      //Declaration of the boundaries of an array
-    BOUND_LIST;     //List of Bound_Dec
-    ARRAY_ASSIGNMENT; //Assignment of an array
-    INDICES;        //Indices of an ellement of an array
-    MULT;	// multiplying expression
-    ADD;	// addition
-    TERM;	// term in expression
-    FACTOR;	// factor in expression
-    LABEL_DEC;
-    GOTO;
-    MINUS;
-    DIV;
-    INTDIV;
-    POW;
-    ARRAY_CALL;
+    ROOT;               // Program root
+    BLOCK;              // Block of code
+    VAR_DEC;            // Variable declaration
+    PROC_DEC;           // Procedure declaration
+    PROC_HEADING;       // Procedure heading
+    PARAMS_DEC;         // Parameters
+    ID_LIST;            // List of identifiers
+    VALUE_PART;         // Procedure's parameters passed by value
+    PARAM_PART;         // Procedure's parameters passed by reference
+    SPEC_PART;          // Procedure's parameters names
+    ARG_TYPE;           // Type of a procedure's argument
+    PARAM_LIST;         // List of parameters
+    PROC_CALL;          // Procedure call
+    IF_STATEMENT;       // If statement
+    IF_DEF;             // First part of an if statement
+    THEN_DEF;           // Then part of an if statement
+    ELSE_DEF;           // Else part of an if statement
+    FOR_CLAUSE;         // For loop
+    INIT;               // Initialization part of for loop
+    STEP;               // Step part of for loop
+    UNTIL;              // Condition part of for loop
+    DO;                 // Code part of for loop
+    WHILE_CLAUSE;       // While loop
+    CONDITION;          // While loop condition
+    ASSIGNMENT;         // Assignment
+    ARRAY_DEC;          // Array Declaration
+    BOUND_DEC;          // Declaration of the boundaries of an array
+    BOUND_LIST;         // List of BOUND_DEC
+    ARRAY_ASSIGNMENT;   // Assignment of an array
+    INDICES;            // Indices of an element of an array
+    MULT;               // Multiplication
+    DIV;                // Division
+    INT_DIV;            // Integer division
+    ADD;                // Addition
+    MINUS;              // Substraction
+    TERM;               // Term in expression
+    FACTOR;             // Factor in expression
+    LABEL_DEC;          // Label declaration
+    GOTO;               // Goto statement
+    POW;                // Power
+    INT;                // Integer
+    POW_10;             // Scientific notation
+    ARRAY_CALL;         // Access to a value of an array
+    STR;                // String
+    REAL;               // Real number
 }
 
 @parser::header {
@@ -79,24 +82,34 @@ block
 
 statement
     :   declaration
-    |   'goto' IDENTIFIER ->^(GOTO IDENTIFIER)
+    |   goto_statement
     |   if_clause
     |   for_clause
     |   while_clause
     |   block
-    |   IDENTIFIER id_statement_end[$IDENTIFIER] -> id_statement_end
+    |   identifier! id_statement_end[$identifier.tree]
     ;
     
-id_statement_end[Token id]
-    :   procedure_call_end[$id] -> procedure_call_end
-    |   assignment_end[$id] -> assignment_end
-    |   ':' -> ^(LABEL_DEC {new CommonTree($id)})
+id_statement_end[CommonTree id]
+    :   procedure_call_end[$id]
+    |   assignment_end[$id]
+    |   label_dec_end[$id]
+    ;
+
+// Label / goto statement
+
+goto_statement
+    :   'goto' identifier -> ^(GOTO identifier)
+    ;
+
+label_dec_end[CommonTree id]
+    :   ':' -> ^(LABEL_DEC {$id})
     ;
 
 // Declaration
 
 declaration
-    :   TYPE type_declaration_end[$TYPE] -> type_declaration_end
+    :   TYPE! type_declaration_end[$TYPE]
     |   procedure_declaration_no_type
     ;
 
@@ -106,17 +119,17 @@ type_declaration_end[Token type]
     ;
 
 variable_declaration
-    :   TYPE identifier_list_head[$TYPE] -> identifier_list_head
+    :   TYPE! identifier_list_head[$TYPE]
     ;
 
 variable_declaration_end[Token type]
-    :   identifier_list_head[$type] -> identifier_list_head
+    :   identifier_list_head[$type]
     ;
     
 identifier_list_head[Token type]
     :   identifier_list -> ^(VAR_DEC {new CommonTree($type)} identifier_list)
-    |   'array' IDENTIFIER '[' boundaries(',' boundaries)* ']' 
-    	->^(ARRAY_DEC {new CommonTree($type)} IDENTIFIER  ^(BOUND_LIST boundaries+))
+    |   'array' identifier '[' boundaries(',' boundaries)* ']' 
+        -> ^(ARRAY_DEC {new CommonTree($type)} identifier ^(BOUND_LIST boundaries+))
     ;
 
 // Procedure declaration
@@ -136,17 +149,17 @@ procedure_declaration_no_type
     ;
 
 procedure_heading
-    :   IDENTIFIER formal_parameter_part ';' value_part specification_part
+    :   identifier formal_parameter_part ';' value_part specification_part
         -> ^(PROC_HEADING formal_parameter_part? value_part? specification_part?)
     ;
 
 formal_parameter_part   
-    :   '(' identifier_list ')' ->^(PARAM_PART identifier_list)
-    |    
+    :   '(' identifier_list ')' -> ^(PARAM_PART identifier_list)
+    |   
     ;
 
 identifier_list
-    :   IDENTIFIER ( ',' IDENTIFIER )* -> ^(ID_LIST IDENTIFIER*)
+    :   identifier ( ',' identifier )* -> ^(ID_LIST identifier*)
     ;
 
 value_part
@@ -155,7 +168,8 @@ value_part
     ;
 
 specification_part
-    :   ( TYPE identifier_list ';' )* -> ^(SPEC_PART ^(ARG_TYPE TYPE identifier_list)*)
+    :   ( TYPE identifier_list ';' )*
+        -> ^(SPEC_PART ^(ARG_TYPE TYPE identifier_list)*)
     ;
 
 procedure_body
@@ -165,93 +179,84 @@ procedure_body
 // Procedure call
 
 procedure_call
-    :   IDENTIFIER! procedure_call_end[$IDENTIFIER]
+    :   identifier! procedure_call_end[$identifier.tree]
     ;
 
-procedure_call_end[Token id]
-    :   '(' actual_parameter_list ')' ->^(PROC_CALL {new CommonTree($id)} actual_parameter_list)
+procedure_call_end[CommonTree id]
+    :   '(' actual_parameter_list ')'
+        -> ^(PROC_CALL {$id} actual_parameter_list)
     ;
 
 actual_parameter_list
-    :   arithmetic_expression ( ',' arithmetic_expression )*  -> ^(PARAM_LIST arithmetic_expression*)
-    |
+    :   arithmetic_expression ( ',' arithmetic_expression )*
+        -> ^(PARAM_LIST arithmetic_expression*)
+    |   -> ^(PARAM_LIST)
     ;
 
 // Assignment
 
 assignment
-    :   IDENTIFIER! assignment_end[$IDENTIFIER]
+    :   identifier! assignment_end[$identifier.tree]
     ;
 
-assignment_end[Token id]
-    :   ':=' arithmetic_expression -> ^(ASSIGNMENT {new CommonTree($id)} arithmetic_expression)
-    |   '[' bound (',' bound)* ']' ':=' arithmetic_expression ->^(ARRAY_ASSIGNMENT {new CommonTree($id)} ^(INDICES bound+) arithmetic_expression)
+assignment_end[CommonTree id]
+    :   ':=' arithmetic_expression -> ^(ASSIGNMENT {$id} arithmetic_expression)
+    |   '[' bound (',' bound)* ']' ':=' arithmetic_expression
+        -> ^(ARRAY_ASSIGNMENT {$id} ^(INDICES bound+) arithmetic_expression)
     ;
 
 
 boundaries
-	: 	bound ':' bound ->^(BOUND_DEC bound bound)
-	;
+    :   bound ':' bound -> ^(BOUND_DEC bound bound)
+    ;
 
 bound
-	:	arithmetic_expression
-	;
+    :   arithmetic_expression
+    ;
 
-
-
-array_call_end[Token id]
-    :   '[' actual_parameter_list ']' ->^(ARRAY_CALL {new CommonTree($id)} actual_parameter_list)
-	;
+array_call_end[CommonTree id]
+    :   '[' actual_parameter_list ']'
+        -> ^(ARRAY_CALL {$id} actual_parameter_list)
+    ;
 
 // Expression
 
-
 expression
-    : 	STRING
-    | 	INTEGER
-    | 	IDENTIFIER! expression_end[$IDENTIFIER]
-    | 	REAL
+    :   string
+    |   integer
+    |   identifier! id_expression_end[$identifier.tree]
+    |   scientific_expression
     ;
 
-expression_end[Token id]
-	:	array_call_end[$id]
-	|	procedure_call_end[$id]
-	|
-	;
+id_expression_end[CommonTree id]
+    :   array_call_end[$id]
+    |   procedure_call_end[$id]
+    |   -> {$id}
+    ;
 
-
-
-// arithmetic
-
-
+// Arithmetic
     
 arithmetic_expression
-    : 	term! arithmetic_expression_end[$term.tree]
+    :   term! arithmetic_expression_end[$term.tree]
     ;
 
 arithmetic_expression_end[CommonTree t2]
-    : 	'+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
-    | 	'-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
-    |                           -> {$t2}
+    :   '+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
+    |   '-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
+    |   -> {$t2}
     ;    
     
 term
-    : 	expression! term1[$expression.tree]
+    :   expression! term1[$expression.tree]
     ;
-
 
 term1[CommonTree t2]
-    : 	'*' term -> ^(MULT {$t2} term?)
-    | 	'/' term -> ^(DIV {$t2} term?)
-    | 	'//' term -> ^(INTDIV {$t2} term?)
-    | 	'**' term -> ^(POW {$t2} term?)
-    | 	-> {$t2}
+    :   '*' term -> ^(MULT {$t2} term?)
+    |   '/' term -> ^(DIV {$t2} term?)
+    |   '//' term -> ^(INT_DIV {$t2} term?)
+    |   '**' term -> ^(POW {$t2} term?)
+    |   -> {$t2}
     ;
-
-
-
-
-
 
 // If clause
 
@@ -284,6 +289,29 @@ boolean_operator
     |   LOGICAL_OPERATOR
     ;
 
+// Intermediate parser rules
+
+integer
+    :   '-'? INTEGER -> ^(INT '-'? INTEGER)
+    ;
+
+scientific_expression
+    :   REAL! scientific_expression_end[$REAL]
+    ;
+
+scientific_expression_end[Token real]
+    :   '#' INTEGER -> ^(POW_10 {new CommonTree($real)} INTEGER)
+    |   -> ^(REAL {new CommonTree($real)})
+    ;
+
+string
+    :   STRING -> ^(STR STRING)
+    ;
+
+identifier
+    :   IDENTIFIER //-> ^(ID IDENTIFIER)
+    ;
+
 // LEXER RULES
 
 TYPE:   'real'
@@ -305,41 +333,23 @@ STRING
         { setText(getText().substring(1, getText().length() - 1)); }
     ;
 
-/*KEYWORD
-    :   'if'
-    |   'then'
-    |   'else'
-    |   'for'
-    |   'do'
-    |   'goto'
-    ;
-*/
-
 LOGICAL_VALUE
     :   'true'
     |   'false'
     ;
 
 INTEGER
-    :   ('-')?('1'..'9')('0'..'9')*
+    :   ('1'..'9')('0'..'9')*
     |   '0'
     ;
 
-SIGNED_INTEGER 
-    :   '+' INTEGER 
-    |   '-' INTEGER 
-    ;
-    
 REAL 
     :   ('0'..'9')*'.'('0'..'9')*
     ;
 
 IDENTIFIER
-    :   ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
+    :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
     ;
-
-
-
     
 RELATIONAL_OPERATOR
     :   '<'
