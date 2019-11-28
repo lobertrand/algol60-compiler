@@ -1,14 +1,12 @@
 begin
-  integer n, nn;
-  
-  integer procedure sqr(m);
-  value m; integer m;
-  begin
-    sqr := m * m
-  end;
-    
-  n := 123;
-  nn := sqr(n);
-  outinteger (1,nn)
-  
+comment variable declarations must be before procedures definitions!;
+	real y;
+	
+	real procedure poly2(a0,a1,a2,x); real a0,a1,a2; real x;
+	begin
+		poly2 := a0 + a1*x + a2*x*x
+	end;
+	
+	y := poly2(0,0,1.0, 2.0);
+	outreal(1, y)
 end
