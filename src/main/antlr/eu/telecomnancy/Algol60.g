@@ -280,7 +280,7 @@ while_clause
     ;
 
 logical_statement
-    :   arithmetic_expression boolean_operator arithmetic_expression
+    :   arithmetic_expression boolean_operator arithmetic_expression -> ^(boolean_operator ^(arithmetic_expression) ^(arithmetic_expression))
     |   LOGICAL_VALUE
     ;
 
