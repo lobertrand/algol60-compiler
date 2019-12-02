@@ -222,8 +222,8 @@ array_call_end[CommonTree id]
 // Expression
 
 expression
-    :   string
-    |   integer
+    :   string 
+    |   integer 
     |   identifier! id_expression_end[$identifier.tree]
     |   scientific_expression
     ;
@@ -280,16 +280,23 @@ while_clause
     ;
 
 logical_statement
-    :   arithmetic_expression boolean_operator arithmetic_expression -> ^(boolean_operator ^(arithmetic_expression) ^(arithmetic_expression))
+    :   arithmetic_expression! logical_statement_end[$arithmetic_expression.tree]
     |   LOGICAL_VALUE
     ;
+logical_statement_end[CommonTree t2]
+   :  boolean_operator arithmetic_expression-> ^(boolean_operator {$t2} arithmetic_expression)
+   ;
 
+//logical_statement
+//    :   arithmetic_expression boolean_operator arithmetic_expression -> ^(boolean_operator ^(arithmetic_expression) ^(arithmetic_expression))
+//    |   LOGICAL_VALUE
+//    ;
 boolean_operator
     :   RELATIONAL_OPERATOR
     |   LOGICAL_OPERATOR
     ;
 
-// Intermediate parser rules
+// Intermediate parser rules	
 
 integer
     :   '-'? INTEGER -> ^(INT '-'? INTEGER)
