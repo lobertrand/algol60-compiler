@@ -71,7 +71,7 @@ package eu.telecomnancy;
 
 // PARSER RULES
 
-prog:   block -> ^(ROOT block)
+prog:   block EOF -> ^(ROOT block)
     ;
 
 block 
