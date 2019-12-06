@@ -9,6 +9,9 @@ plugins {
     // Apply the ANTLR pugin to add support for using ANTLR
     // More info here : https://docs.gradle.org/current/userguide/antlr_plugin.html
     id 'antlr'
+
+    // Code formatting
+    id "com.diffplug.gradle.spotless" version "3.26.1"
 }
 
 repositories {
@@ -32,6 +35,17 @@ application {
     sourceCompatibility = 1.8
 }
 
+spotless {
+    java {
+        target 'src/**/*.java'
+        googleJavaFormat().aosp()
+    }
+}
+
+processResources {
+    dependsOn spotlessJavaApply
+}
+
 run {
     standardInput = System.in 
 }
@@ -40,4 +54,3 @@ generateGrammarSource {
     maxHeapSize = "64m"
     arguments += ["-visitor", "-long-messages"]
 }
-
