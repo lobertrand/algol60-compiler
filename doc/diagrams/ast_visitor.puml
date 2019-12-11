@@ -1,0 +1,54 @@
+@startuml ast_visitor
+
+skinparam Shadowing false
+skinparam ArrowColor #222
+skinparam ClassBorderColor #bbb
+skinparam ClassBackgroundColor white
+skinparam DefaultFontName Liberation Mono
+skinparam RoundCorner 8
+
+hide empty methods
+hide empty fields
+
+package eu.telecomnancy.ast {
+
+class ASTAdaptor {
+    + @Override\nObject create(Token t)
+}
+org.antlr.runtime.tree.CommonTreeAdaptor <|-- ASTAdaptor
+
+class DefaultAST {
+    + <R> R accept(ASTVisitor v)
+}
+DefaultAST <|-- RootAST
+DefaultAST <|-- BlockAST
+DefaultAST <|-- VarDecAST
+DefaultAST -up-|> org.antlr.runtime.tree.CommonTree
+DefaultAST .up.|> java.util.Iterable: <DefaultAST>
+
+interface java.util.Iterable<E> {
+    + Iterator<E> iterator()
+}
+
+class RootAST {
+    + @Override\n<R> R accept(ASTVisitor v)
+}
+class BlockAST {
+    + @Override\n<R> R accept(ASTVisitor v)
+}
+class VarDecAST {
+    + @Override\n<R> R accept(ASTVisitor v)
+}
+
+interface ASTVisitor<R> {
+    + R visit(DefaultAST b)
+    + R visit(RootAST r)
+    + R visit(BlockAST b)
+    + R visit(VarDecAST v)
+}
+ASTVisitor <|.up. eu.telecomnancy.semantic.SemanticAnalysisVisitor: <Type>
+
+}
+' package end
+
+@enduml

@@ -1,10 +1,19 @@
-@startuml
+@startuml symbol_table
+
+skinparam Shadowing false
+skinparam ArrowColor #222
+skinparam ClassBorderColor #bbb
+skinparam ClassBackgroundColor white
+skinparam DefaultFontName Liberation Mono
+skinparam RoundCorner 8
+
+package eu.telecomnancy.symbols {
 
 class SymbolTable {
     + define(Symbol s)
     + Symbol resolve(String idf)
 }
-SymbolTable o-- "*" Symbol: - symbols: HashMap<Symbol>
+SymbolTable o-- "*" Symbol: - symbols:\nHashMap<Symbol>
 SymbolTable --> "1" SymbolTable: - parent
 SymbolTable --> "*" SymbolTable: - children
 
@@ -13,26 +22,22 @@ abstract class Symbol {
     + Type getType()
     + Kind getKind()
 }
-
-Symbol <|-- Variable
+Symbol <|-up- Variable
 Symbol <|-- Procedure
-Symbol <|-- Label
+Symbol <|-up- Label
+Symbol -right-> "1" Kind: # kind
+Symbol -left-> "1" Type: # type
 
 class Variable {
     - String identifier
     - int offset
 }
-Variable --> "1" Type: type
-Variable --> "1" Kind: kind
-
 
 class Procedure {
     - String identifier
 }
-Procedure --> "1" SymbolTable: - blockSymbolTable
-Procedure -left-> "1" Type: - returnType
-Procedure ---> "*" Type: - parameterTypes
-Procedure -right-> "1" Kind: - kind
+Procedure -right-> "1" SymbolTable: - blockSymbolTable
+Procedure o-left-> "*" Type: - parameterTypes
 
 class Label {
     - String identifier
@@ -40,15 +45,19 @@ class Label {
 }
 
 enum Kind {
-    PROCEDURE,
-    VARIABLE,
+    PROCEDURE
+    VARIABLE
     LABEL
 }
 
 enum Type {
-    INTEGER,
-    REAL,
+    VOID
+    INTEGER
+    REAL
     STRING
 }
+
+}
+' package end
 
 @enduml
