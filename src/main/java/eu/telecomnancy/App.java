@@ -1,10 +1,9 @@
 package eu.telecomnancy;
 
+import java.io.*;
 import org.antlr.runtime.*;
 import org.antlr.runtime.tree.*;
 import org.antlr.stringtemplate.*;
-import java.io.*;
-
 
 public class App {
 
@@ -24,8 +23,8 @@ public class App {
         // Write dot tree in a file
         File file = new File("AST.dot");
         file.createNewFile();
-        FileWriter writer = new FileWriter(file); 
-        writer.write(dotTree); 
+        FileWriter writer = new FileWriter(file);
+        writer.write(dotTree);
         writer.flush();
         writer.close();
 
@@ -34,8 +33,16 @@ public class App {
         processBuilder.command("dot", "-Tpdf", "AST.dot", "-o", "AST.pdf");
         try {
             processBuilder.start();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
+
+        parcours(tree, "");
     }
 
+    public static void parcours(Tree tree, String space) {
+        System.out.println(space + tree.toString() + " : " + tree.getLine());
+        for (int i = 0; i < tree.getChildCount(); i++) {
+            parcours(tree.getChild(i), space + "  ");
+        }
+    }
 }
-
