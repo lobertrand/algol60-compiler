@@ -13,42 +13,33 @@ class SymbolTable {
     + define(Symbol s)
     + Symbol resolve(String idf)
 }
-SymbolTable o-- "*" Symbol: - symbols:\nHashMap<Symbol>
+SymbolTable o-- "*" Symbol: - symbols: HashMap\n<String,Symbol>
 SymbolTable --> "1" SymbolTable: - parent
 SymbolTable --> "*" SymbolTable: - children
 
 abstract class Symbol {
+    # String identifier
+    + Symbol(String idf, Type t)
     + String getIdentifier()
     + Type getType()
-    + Kind getKind()
+    + {abstract} Kind getKind()
 }
-Symbol <|-up- Variable
+Symbol <|-- Variable
 Symbol <|-- Procedure
-Symbol <|-up- Label
-Symbol -right-> "1" Kind: # kind
-Symbol -left-> "1" Type: # type
+Symbol <|-- Label
 
-class Variable {
-    - String identifier
-    - int offset
-}
-
-class Procedure {
-    - String identifier
-}
-Procedure -right-> "1" SymbolTable: - blockSymbolTable
-Procedure o-left-> "*" Type: - parameterTypes
-
-class Label {
-    - String identifier
-    - int offset
-}
+class Label
+class Variable
+class Procedure
+Procedure --> "1" SymbolTable: - blockSymbolTable
+Procedure o--> "*" Type: - parameterTypes
 
 enum Kind {
     PROCEDURE
     VARIABLE
     LABEL
 }
+Kind .. Symbol
 
 enum Type {
     VOID

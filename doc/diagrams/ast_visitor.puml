@@ -7,9 +7,6 @@ skinparam ClassBackgroundColor white
 skinparam DefaultFontName Liberation Mono
 skinparam RoundCorner 8
 
-hide empty methods
-hide empty fields
-
 package eu.telecomnancy.ast {
 
 class ASTAdaptor {
