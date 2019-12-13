@@ -13,7 +13,7 @@ class ASTAdaptor {
     + @Override\nObject create(Token t)
 }
 org.antlr.runtime.tree.CommonTreeAdaptor <|-- ASTAdaptor
-
+org.antlr.runtime.tree.CommonTreeAdaptor .[hidden]right. org.antlr.runtime.tree.CommonTree
 class DefaultAST {
     + <R> R accept(ASTVisitor v)
 }
@@ -43,8 +43,20 @@ interface ASTVisitor<R> {
     + R visit(BlockAST b)
     + R visit(VarDecAST v)
 }
-ASTVisitor <|.up. eu.telecomnancy.semantic.SemanticAnalysisVisitor: <Type>
+ASTVisitor <|.down. eu.telecomnancy.semantic.SemanticAnalysisVisitor: <Type>
 
+}
+' package end
+
+package eu.telecomnancy.semantic {
+    class SemanticException {
+        - int line = -1
+        + SemanticException(String msg)
+        + SemanticException(String msg, int line)
+        + print()
+    }
+    java.lang.RuntimeException <|-- SemanticException
+    SemanticAnalysisVisitor .up.> SemanticException: (throws)
 }
 ' package end
 
