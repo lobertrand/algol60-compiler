@@ -19,7 +19,6 @@ tokens {
     VAR_DEC;            // Variable declaration
     PROC_DEC;           // Procedure declaration
     PROC_HEADING;       // Procedure heading
-    PARAMS_DEC;         // Parameters
     ID_LIST;            // List of identifiers
     VALUE_PART;         // Procedure's parameters passed by value
     PARAM_PART;         // Procedure's parameters passed by reference
@@ -50,7 +49,6 @@ tokens {
     ADD;                // Addition
     MINUS;              // Substraction
     TERM;               // Term in expression
-    FACTOR;             // Factor in expression
     LABEL_DEC;          // Label declaration
     GOTO;               // Goto statement
     POW;                // Power

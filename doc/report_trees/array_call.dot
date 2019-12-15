@@ -1,0 +1,29 @@
+digraph {
+
+	ordering=out;
+	ranksep=.4;
+  margin=0;
+	bgcolor="white"; node [shape=box, fixedsize=false, fontsize=12, fontname="Helvetica-bold", fontcolor="black"
+		width=.25, height=.25, color="#444444", fillcolor="white", style="filled, solid"];
+	edge [arrowsize=.5, color="#444444"]
+
+  n4 [label="ARRAY_CALL"];
+  n4 [label="ARRAY_CALL"];
+  n5 [label="a"];
+  n6 [label="PARAM_LIST"];
+  n6 [label="PARAM_LIST"];
+  n7 [label="INT"];
+  n7 [label="INT"];
+  n8 [label="5"];
+  n9 [label="INT"];
+  n9 [label="INT"];
+  n10 [label="12"];
+
+  n4 -> n5 // "ARRAY_CALL" -> "a"
+  n4 -> n6 // "ARRAY_CALL" -> "PARAM_LIST"
+  n6 -> n7 // "PARAM_LIST" -> "INT"
+  n7 -> n8 // "INT" -> "5"
+  n6 -> n9 // "PARAM_LIST" -> "INT"
+  n9 -> n10 // "INT" -> "12"
+
+}

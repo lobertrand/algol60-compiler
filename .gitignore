@@ -23,6 +23,7 @@ obj/
 # Generated
 AST.dot
 AST.pdf
+doc/report_trees/*.pdf
 
 # AntlrWorks
 output/
