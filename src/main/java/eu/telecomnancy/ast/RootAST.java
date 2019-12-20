@@ -6,4 +6,5 @@ public class RootAST extends DefaultAST {
     public <R> R accept(ASTVisitor<R> v) {
         return v.visit(this);
     }
+    
 }
