@@ -1,10 +1,9 @@
 package eu.telecomnancy;
 
-import org.antlr.runtime.*;
-import org.antlr.runtime.tree.*;
-import org.antlr.stringtemplate.*;
-import java.io.*;
-
+import eu.telecomnancy.tools.IOUtils;
+import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.tree.Tree;
 
 public class App {
 
@@ -15,27 +14,16 @@ public class App {
         Algol60Parser parser = new Algol60Parser(tokens);
         Algol60Parser.prog_return pr = parser.prog();
 
-        // Get the tree in dot tree format
-        CommonTree tree = (CommonTree) pr.getTree();
-        DOTTreeGenerator gen = new DOTTreeGenerator();
-        StringTemplate st = gen.toDOT(tree);
-        String dotTree = st.toString();
+        Tree tree = pr.getTree();
+        IOUtils.generateDotTree(tree, "AST");
 
-        // Write dot tree in a file
-        File file = new File("AST.dot");
-        file.createNewFile();
-        FileWriter writer = new FileWriter(file); 
-        writer.write(dotTree); 
-        writer.flush();
-        writer.close();
-
-        // Create pdf from dot tree file (if dot command exists)
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("dot", "-Tpdf", "AST.dot", "-o", "AST.pdf");
-        try {
-            processBuilder.start();
-        } catch (Exception e) {}
+        // parcours(tree, "");
     }
 
+    public static void parcours(Tree tree, String space) {
+        System.out.println(space + tree.toString() + " : " + tree.getLine());
+        for (int i = 0; i < tree.getChildCount(); i++) {
+            parcours(tree.getChild(i), space + "  ");
+        }
+    }
 }
-
