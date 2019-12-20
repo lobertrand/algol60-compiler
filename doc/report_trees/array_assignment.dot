@@ -1,0 +1,34 @@
+digraph {
+
+	ordering=out;
+	ranksep=.4;
+  margin=0;
+	bgcolor="white"; node [shape=box, fixedsize=false, fontsize=12, fontname="Helvetica-bold", fontcolor="black"
+		width=.25, height=.25, color="#444444", fillcolor="white", style="filled, solid"];
+	edge [arrowsize=.5, color="#444444"]
+
+  n2 [label="ARRAY_ASSIGNMENT"];
+  n2 [label="ARRAY_ASSIGNMENT"];
+  n3 [label="a"];
+  n4 [label="INDICES"];
+  n4 [label="INDICES"];
+  n5 [label="INT"];
+  n5 [label="INT"];
+  n6 [label="5"];
+  n7 [label="INT"];
+  n7 [label="INT"];
+  n8 [label="12"];
+  n9 [label="INT"];
+  n9 [label="INT"];
+  n10 [label="45"];
+
+  n2 -> n3 // "ARRAY_ASSIGNMENT" -> "a"
+  n2 -> n4 // "ARRAY_ASSIGNMENT" -> "INDICES"
+  n4 -> n5 // "INDICES" -> "INT"
+  n5 -> n6 // "INT" -> "5"
+  n4 -> n7 // "INDICES" -> "INT"
+  n7 -> n8 // "INT" -> "12"
+  n2 -> n9 // "ARRAY_ASSIGNMENT" -> "INT"
+  n9 -> n10 // "INT" -> "45"
+
+}

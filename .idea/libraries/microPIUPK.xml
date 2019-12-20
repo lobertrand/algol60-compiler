@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="microPIUPK">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/microPIUPK.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
