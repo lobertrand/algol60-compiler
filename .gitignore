@@ -12,7 +12,6 @@ local.properties
 # Eclipse project files
 .classpath
 .project
-.settings/
 
 # Gradle
 .gradle
@@ -26,7 +25,3 @@ AST.pdf
 
 # AntlrWorks
 output/
-*.dot
-doc/report_trees/*.pdf
-
-

@@ -1,4 +1,0 @@
-begin
-  	if -4 < 2 then
-	a:=3
-end
