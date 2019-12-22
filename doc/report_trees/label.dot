@@ -1,0 +1,16 @@
+digraph {
+
+	ordering=out;
+	ranksep=.4;
+  margin=0;
+	bgcolor="white"; node [shape=box, fixedsize=false, fontsize=12, fontname="Helvetica-bold", fontcolor="black"
+		width=.25, height=.25, color="#444444", fillcolor="white", style="filled, solid"];
+	edge [arrowsize=.5, color="#444444"]
+
+
+  n2 [label="LABEL_DEC"];
+  n3 [label="myLabel"];
+  
+  n2 -> n3 // "LABEL_DEC" -> "myLabel"
+
+}

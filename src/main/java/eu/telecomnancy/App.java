@@ -1,9 +1,13 @@
 package eu.telecomnancy;
 
 import eu.telecomnancy.tools.IOUtils;
+import java.io.*;
+import org.antlr.runtime.*;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
+import org.antlr.runtime.tree.*;
 import org.antlr.runtime.tree.Tree;
+import org.antlr.stringtemplate.*;
 
 public class App {
 
@@ -16,14 +20,12 @@ public class App {
 
         Tree tree = pr.getTree();
         IOUtils.generateDotTree(tree, "AST");
-
-        // parcours(tree, "");
     }
 
-    public static void parcours(Tree tree, String space) {
+    public static void depthFirstSearch(Tree tree, String space) {
         System.out.println(space + tree.toString() + " : " + tree.getLine());
         for (int i = 0; i < tree.getChildCount(); i++) {
-            parcours(tree.getChild(i), space + "  ");
+            depthFirstSearch(tree.getChild(i), space + "  ");
         }
     }
 }

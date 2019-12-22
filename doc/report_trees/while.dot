@@ -1,0 +1,37 @@
+digraph {
+
+	ordering=out;
+	ranksep=.4;
+  margin=0;
+	bgcolor="white"; node [shape=box, fixedsize=false, fontsize=12, fontname="Helvetica-bold", fontcolor="black"
+		width=.25, height=.25, color="#444444", fillcolor="white", style="filled, solid"];
+	edge [arrowsize=.5, color="#444444"]
+
+  n2 [label="WHILE_CLAUSE"];
+  n3 [label="CONDITION"];
+  n4 [label="<="];
+  n5 [label="n"];
+  n6 [label="INT"];
+  n7 [label="DO"];
+  n8 [label="BLOCK"];
+  n9 [label="ASSIGNMENT"];
+  n10 [label="n"];
+  n11 [label="ADD"];
+  n12 [label="n"];
+  n13 [label="INT"];
+  n14 [label="1"];
+
+  n2 -> n3 // "WHILE_CLAUSE" -> "CONDITION"
+  n3 -> n4 // "CONDITION" -> "<="
+  n4 -> n5 // "<=" -> "n"
+  n4 -> n6 // "<=" -> "INT"
+  n2 -> n7 // "WHILE_CLAUSE" -> "DO"
+  n7 -> n8 // "DO" -> "BLOCK"
+  n8 -> n9 // "BLOCK" -> "ASSIGNMENT"
+  n9 -> n10 // "ASSIGNMENT" -> "n"
+  n9 -> n11 // "ASSIGNMENT" -> "ADD"
+  n11 -> n12 // "ADD" -> "n"
+  n11 -> n13 // "ADD" -> "INT"
+  n13 -> n14 // "INT" -> "1"
+
+}

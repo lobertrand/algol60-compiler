@@ -1,0 +1,21 @@
+digraph {
+
+	ordering=out;
+	ranksep=.4;
+  margin=0;
+	bgcolor="white"; node [shape=box, fixedsize=false, fontsize=12, fontname="Helvetica-bold", fontcolor="black"
+		width=.25, height=.25, color="#444444", fillcolor="white", style="filled, solid"];
+	edge [arrowsize=.5, color="#444444"]
+
+  n2 [label="ASSIGNMENT"];
+  n2 [label="ASSIGNMENT"];
+  n3 [label="n"];
+  n4 [label="INT"];
+  n4 [label="INT"];
+  n5 [label="456"];
+
+  n2 -> n3 // "ASSIGNMENT" -> "n"
+  n2 -> n4 // "ASSIGNMENT" -> "INT"
+  n4 -> n5 // "INT" -> "456"
+
+}

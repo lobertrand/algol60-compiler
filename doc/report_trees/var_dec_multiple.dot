@@ -1,0 +1,24 @@
+digraph {
+
+	ordering=out;
+	ranksep=.4;
+  margin=0;
+	bgcolor="white"; node [shape=box, fixedsize=false, fontsize=12, fontname="Helvetica-bold", fontcolor="black"
+		width=.25, height=.25, color="#444444", fillcolor="white", style="filled, solid"];
+	edge [arrowsize=.5, color="#444444"]
+
+ 
+  n2 [label="VAR_DEC"];
+  n3 [label="string"];
+  n4 [label="ID_LIST"];
+  n5 [label="a"];
+  n6 [label="b"];
+  n7 [label="c"];
+
+  n2 -> n3 // "VAR_DEC" -> "string"
+  n2 -> n4 // "VAR_DEC" -> "ID_LIST"
+  n4 -> n5 // "ID_LIST" -> "a"
+  n4 -> n6 // "ID_LIST" -> "b"
+  n4 -> n7 // "ID_LIST" -> "c"
+
+}
