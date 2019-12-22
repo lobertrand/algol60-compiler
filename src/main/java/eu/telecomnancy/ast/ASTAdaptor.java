@@ -8,13 +8,15 @@ public class ASTAdaptor extends CommonTreeAdaptor {
 
     @Override
     public Object create(Token t) {
-        switch (t.getType()) {
-            case Algol60Parser.ROOT:
-                return new RootAST();
+        if (t != null) {
+            switch (t.getType()) {
+                case Algol60Parser.ROOT:
+                    return new RootAST(t);
 
-            default:
-                break;
+                default:
+                    break;
+            }
         }
-        return new DefaultAST();
+        return new DefaultAST(t);
     }
 }

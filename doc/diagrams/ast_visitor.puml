@@ -15,6 +15,7 @@ class ASTAdaptor {
 org.antlr.runtime.tree.CommonTreeAdaptor <|-- ASTAdaptor
 org.antlr.runtime.tree.CommonTreeAdaptor .[hidden]right. org.antlr.runtime.tree.CommonTree
 class DefaultAST {
+    + DefaultAST(Token t)
     + <R> R accept(ASTVisitor v)
 }
 DefaultAST <|-- RootAST
@@ -28,12 +29,15 @@ interface java.util.Iterable<E> {
 }
 
 class RootAST {
+    + RootAST(Token t)
     + @Override\n<R> R accept(ASTVisitor v)
 }
 class BlockAST {
+    + BlockAST(Token t)
     + @Override\n<R> R accept(ASTVisitor v)
 }
 class VarDecAST {
+    + VarDecAST(Token t)
     + @Override\n<R> R accept(ASTVisitor v)
 }
 

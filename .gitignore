@@ -29,5 +29,5 @@ output/
 .idea/
 *.dot
 doc/report_trees/*.pdf
-
+out/
 

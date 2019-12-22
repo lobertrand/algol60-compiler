@@ -1,6 +1,6 @@
 /*
     ANTLR grammar and AST based on the original Algol60 grammar.
-    Developped by  Loïc Bertrand, Timon Fugier, Tony Zhou and 
+    Developped by Loïc Bertrand, Timon Fugier, Tony Zhou and
     Zineb Ziani El Idrissi. 
 */
 
@@ -69,6 +69,12 @@ package eu.telecomnancy;
 package eu.telecomnancy;
 }
 
+@rulecatch {
+    catch (RecognitionException e) {
+        throw e;
+    }
+}
+
 // PARSER RULES
 
 prog:   block EOF -> ^(ROOT block)
@@ -125,7 +131,7 @@ variable_declaration
 variable_declaration_end[Token type]
     :   identifier_list_head[$type]
     ;
-    
+
 identifier_list_head[Token type]
     :   identifier_list -> ^(VAR_DEC {new CommonTree($type)} identifier_list)
     |   'array' identifier '[' boundaries(',' boundaries)* ']' 
@@ -153,9 +159,9 @@ procedure_heading
         -> ^(PROC_HEADING formal_parameter_part? value_part? specification_part?)
     ;
 
-formal_parameter_part   
+formal_parameter_part
     :   '(' identifier_list ')' -> ^(PARAM_PART identifier_list)
-    |   
+    |
     ;
 
 identifier_list
@@ -283,14 +289,11 @@ logical_statement
     :   arithmetic_expression! logical_statement_end[$arithmetic_expression.tree]
     |   LOGICAL_VALUE
     ;
-logical_statement_end[CommonTree t2]
-   :  boolean_operator arithmetic_expression-> ^(boolean_operator {$t2} arithmetic_expression)
-   ;
 
-//logical_statement
-//    :   arithmetic_expression boolean_operator arithmetic_expression -> ^(boolean_operator ^(arithmetic_expression) ^(arithmetic_expression))
-//    |   LOGICAL_VALUE
-//    ;
+logical_statement_end[CommonTree t2]
+    :   boolean_operator arithmetic_expression-> ^(boolean_operator {$t2} arithmetic_expression)
+    ;
+
 boolean_operator
     :   RELATIONAL_OPERATOR
     |   LOGICAL_OPERATOR
