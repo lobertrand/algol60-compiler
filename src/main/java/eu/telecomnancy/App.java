@@ -56,7 +56,7 @@ public class App {
     }
 
     public static void depthFirstSearch(Tree tree, String space) {
-        System.out.println(space + tree.toString());
+        System.out.println(space + tree.toString() + ": " + tree.getClass().getSimpleName());
         for (int i = 0; i < tree.getChildCount(); i++) {
             depthFirstSearch(tree.getChild(i), space + "  ");
         }
