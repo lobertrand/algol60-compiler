@@ -37,6 +37,20 @@ public class ASTAdaptor extends CommonTreeAdaptor {
                     return new MultAST(t);
                 case Algol60Parser.DIV:
                     return new DivAST(t);
+
+                case Algol60Parser.ARRAY_CALL:
+                    return new ArrayCallAST(t);
+                case Algol60Parser.INT:
+                    return new IntAST(t);
+                case Algol60Parser.POW_10:
+                    return new Pow10AST(t);
+                case Algol60Parser.POW:
+                    return new PowAST(t);
+                case Algol60Parser.REAL:
+                    return new RealAST(t);
+                case Algol60Parser.STR:
+                    return new StrAST(t);
+
                 default:
                     break;
             }

@@ -30,4 +30,16 @@ public interface ASTVisitor<R> {
 
     R visit(DivAST ast);
 
+    R visit(ArrayCallAST ast);
+
+    R visit(IntAST ast);
+
+    R visit(Pow10AST ast);
+
+    R visit(PowAST ast);
+
+    R visit(RealAST ast);
+
+    R visit(SrtAST ast);
+
 }
