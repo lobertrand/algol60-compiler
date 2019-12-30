@@ -1,5 +1,6 @@
 package eu.telecomnancy.ast;
 
+import com.sun.org.apache.bcel.internal.generic.RETURN;
 import eu.telecomnancy.Algol60Parser;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
@@ -24,6 +25,18 @@ public class ASTAdaptor extends CommonTreeAdaptor {
                     return new IfStatementAST(t);
                 case Algol60Parser.FOR_CLAUSE:
                     return new ForClauseAST(t);
+                case Algol60Parser.WHILE_CLAUSE:
+                    return new WhileClauseAST(t);
+                case Algol60Parser.ASSIGNMENT:
+                    return new AssignmentAST(t);
+                case Algol60Parser.ARRAY_DEC:
+                    return new ArrayDecAST(t);
+                case Algol60Parser.ARRAY_ASSIGNMENT:
+                    return new AssignmentAST(t);
+                case Algol60Parser.MULT:
+                    return new MultAST(t);
+                case Algol60Parser.DIV:
+                    return new DivAST(t);
                 default:
                     break;
             }

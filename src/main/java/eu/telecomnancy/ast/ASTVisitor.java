@@ -17,4 +17,17 @@ public interface ASTVisitor<R> {
     R visit(IfStatementAST ast);
 
     R visit(ForClauseAST ast);
+
+    R visit(WhileClauseAST ast);
+
+    R visit(AssignmentAST ast);
+
+    R visit(ArrayDecAST ast);
+
+    R visit(ArrayAssignmentAST ast);
+
+    R visit(MultAST ast);
+
+    R visit(DivAST ast);
+
 }
