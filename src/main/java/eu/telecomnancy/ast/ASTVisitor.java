@@ -40,6 +40,5 @@ public interface ASTVisitor<R> {
 
     R visit(RealAST ast);
 
-    R visit(SrtAST ast);
-
+    R visit(StrAST ast);
 }

@@ -1,5 +1,5 @@
-import eu.telecomnancy.Algol60Lexer;
-import eu.telecomnancy.Algol60Parser;
+package eu.telecomnancy;
+
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;

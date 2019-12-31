@@ -1,8 +1,9 @@
+package eu.telecomnancy.ast;
+
 import static org.junit.Assert.*;
 
 import eu.telecomnancy.Algol60Lexer;
 import eu.telecomnancy.Algol60Parser;
-import eu.telecomnancy.ast.*;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;

@@ -1,6 +1,5 @@
 package eu.telecomnancy.ast;
 
-import com.sun.org.apache.bcel.internal.generic.RETURN;
 import eu.telecomnancy.Algol60Parser;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
