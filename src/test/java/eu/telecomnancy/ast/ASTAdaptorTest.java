@@ -11,7 +11,7 @@ import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.junit.Test;
 
-public class ASTVisitorTest {
+public class ASTAdaptorTest {
 
     private Tree parse(String content) throws RecognitionException {
         ANTLRStringStream stream = new ANTLRStringStream(content);
