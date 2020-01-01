@@ -2,8 +2,8 @@ package eu.telecomnancy.ast;
 
 import org.antlr.runtime.Token;
 
-public class DivAST extends DefaultAST {
-    public DivAST(Token t) {
+public class GoToAST extends DefaultAST {
+    public GoToAST(Token t) {
         super(t);
     }
 

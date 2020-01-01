@@ -1,6 +1,3 @@
 package eu.telecomnancy.symbols;
 
-public class Label extends Symbol {
-
-
-}
+public class Label extends Symbol {}

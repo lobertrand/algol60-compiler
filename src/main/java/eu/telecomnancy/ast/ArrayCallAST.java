@@ -2,7 +2,7 @@ package eu.telecomnancy.ast;
 
 import org.antlr.runtime.Token;
 
-public class ArrayCallAST extends DefaultAST{
+public class ArrayCallAST extends DefaultAST {
 
     public ArrayCallAST(Token t) {
         super(t);

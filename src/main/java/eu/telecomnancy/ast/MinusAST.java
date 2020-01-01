@@ -2,8 +2,8 @@ package eu.telecomnancy.ast;
 
 import org.antlr.runtime.Token;
 
-public class DivAST extends DefaultAST {
-    public DivAST(Token t) {
+public class MinusAST extends DefaultAST {
+    public MinusAST(Token t) {
         super(t);
     }
 
