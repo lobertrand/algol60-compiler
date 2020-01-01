@@ -5,8 +5,10 @@ public abstract class Symbol {
     private Type type;
     private Kind kind;
 
-    public Symbol(String idf, Type t) {
+    public Symbol(String idf, Type type, Kind kind) {
         this.identifier = idf;
+        this.type = type;
+        this.kind = kind;
     }
 
     public String getIdentifier() {
