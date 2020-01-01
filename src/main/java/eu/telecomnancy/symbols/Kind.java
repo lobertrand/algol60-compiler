@@ -1,3 +1,3 @@
 package eu.telecomnancy.symbols;
 
-public class Label {}
+public class Kind {}
