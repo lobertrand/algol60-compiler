@@ -41,4 +41,16 @@ public interface ASTVisitor<R> {
     R visit(RealAST ast);
 
     R visit(StrAST ast);
+
+    R visit(IntDivAST ast);
+
+    R visit(AddAST ast);
+
+    R visit(MinusAST ast);
+
+    R visit(TermAST ast);
+
+    R visit(LabelDecAST ast);
+
+    R visit(GoToAST ast);
 }

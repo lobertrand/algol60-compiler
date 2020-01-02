@@ -64,4 +64,26 @@ public class ASTAdaptorTest {
         assertTrue(
                 "ID_LIST child 1 should be a DefaultAST", idList.getChild(1) instanceof DefaultAST);
     }
+
+    @Test
+    public void testProcDec() throws RecognitionException {
+        String content = "";
+        content += "begin\n";
+        content += "  integer procedure max(a, b);\n";
+        content += "  value a, b;\n";
+        content += "  begin\n";
+        content += "    if a > b then max := a\n";
+        content += "    else max := b\n";
+        content += "  end\n";
+        content += "end\n";
+        Tree root = parse(content);
+        Tree block = root.getChild(0);
+        Tree procDec = block.getChild(0);
+        assertTrue("Child should be a ProcDecAST", procDec instanceof ProcDecAST);
+        assertEquals("PROC_DEC should have 3 children", 3, procDec.getChildCount());
+        Tree procedureBlock = procDec.getChild(2);
+        assertTrue(
+                "Third child should be a BlockAST for the procedure",
+                procedureBlock instanceof BlockAST);
+    }
 }

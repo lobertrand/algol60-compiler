@@ -31,12 +31,11 @@ public class ASTAdaptor extends CommonTreeAdaptor {
                 case Algol60Parser.ARRAY_DEC:
                     return new ArrayDecAST(t);
                 case Algol60Parser.ARRAY_ASSIGNMENT:
-                    return new AssignmentAST(t);
+                    return new ArrayAssignmentAST(t);
                 case Algol60Parser.MULT:
                     return new MultAST(t);
                 case Algol60Parser.DIV:
                     return new DivAST(t);
-
                 case Algol60Parser.ARRAY_CALL:
                     return new ArrayCallAST(t);
                 case Algol60Parser.INT:
@@ -49,7 +48,18 @@ public class ASTAdaptor extends CommonTreeAdaptor {
                     return new RealAST(t);
                 case Algol60Parser.STR:
                     return new StrAST(t);
-
+                case Algol60Parser.INT_DIV:
+                    return new IntDivAST(t);
+                case Algol60Parser.ADD:
+                    return new AddAST(t);
+                case Algol60Parser.MINUS:
+                    return new MinusAST(t);
+                case Algol60Parser.TERM:
+                    return new TermAST(t);
+                case Algol60Parser.LABEL_DEC:
+                    return new LabelDecAST(t);
+                case Algol60Parser.GOTO:
+                    return new GoToAST(t);
                 default:
                     break;
             }
