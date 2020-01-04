@@ -1,3 +1,7 @@
 package eu.telecomnancy.symbols;
 
-public class Kind {}
+public enum Kind {
+    PROCEDURE,
+    VARIABLE,
+    LABEL
+}
