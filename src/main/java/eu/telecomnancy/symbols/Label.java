@@ -8,6 +8,6 @@ public class Label extends Symbol {
 
     @Override
     public String toString() {
-        return "Label{" + "identifier=" + getIdentifier() + '}';
+        return String.format("Label: %s", getIdentifier());
     }
 }

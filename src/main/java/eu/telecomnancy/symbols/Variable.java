@@ -8,6 +8,6 @@ public class Variable extends Symbol {
 
     @Override
     public String toString() {
-        return "Variable{" + "identifier=" + getIdentifier() + ", type=" + getType() + '}';
+        return "Variable: " + getType() + " " + getIdentifier();
     }
 }
