@@ -53,6 +53,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(VarDecAST ast) {
+
         return Type.VOID;
     }
 

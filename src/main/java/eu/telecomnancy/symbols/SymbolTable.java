@@ -26,6 +26,15 @@ public class SymbolTable {
         symbols.put(symbol.getIdentifier(), symbol);
     }
 
+    public boolean isDeclaredInScope(String idf) {
+        boolean idfInScope = false;
+        Symbol result = symbols.get(idf);
+        if(result!= null){
+            idfInScope = true ;
+        }
+        return idfInScope;
+    }
+
     public Symbol resolve(String identifier) {
         Symbol result = symbols.get(identifier);
         if (result != null) {
