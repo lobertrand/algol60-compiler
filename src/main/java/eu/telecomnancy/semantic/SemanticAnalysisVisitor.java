@@ -6,6 +6,7 @@ import eu.telecomnancy.symbols.Symbol;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.symbols.Type;
 import eu.telecomnancy.symbols.UndeclaredLabel;
+import eu.telecomnancy.symbols.Variable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,19 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(VarDecAST ast) {
+        Type type = Type.fromString(ast.getChild(0).getText());
+        DefaultAST idList = ast.getChildAST(1);
+
+        for (DefaultAST t : idList) {
+            String name = t.getText();
+            if (currentSymbolTable.isDeclaredInScope(name)) {
+                System.out.println("already declared");
+                throw new SymbolRedeclarationException(
+                        "Variable " + name + " already declared in scope", t.getLine());
+            }
+            Variable variable = new Variable(name, type);
+            currentSymbolTable.define(variable);
+        }
 
         return Type.VOID;
     }

@@ -9,7 +9,6 @@ import java.io.FileInputStream;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.tree.Tree;
 
 public class App {
 
@@ -65,23 +64,14 @@ public class App {
         // Semantic analysis
         SemanticAnalysisVisitor semanticAnalysisVisitor = new SemanticAnalysisVisitor(symbolTable);
         ast.accept(semanticAnalysisVisitor);
+        System.out.println(symbolTable);
+
         if (semanticAnalysisVisitor.getExceptions().isEmpty()) {
             System.out.println("Algol60> Semantic analysis successful");
         } else {
             for (Exception e : semanticAnalysisVisitor.getExceptions()) {
-                System.err.println(e);
+                System.out.println(e);
             }
-        }
-
-        System.out.println(symbolTable);
-
-        // depthFirstSearch(ast, "");
-    }
-
-    public static void depthFirstSearch(Tree tree, String space) {
-        System.out.println(space + tree.toString() + ": " + tree.getClass().getSimpleName());
-        for (int i = 0; i < tree.getChildCount(); i++) {
-            depthFirstSearch(tree.getChild(i), space + "  ");
         }
     }
 }
