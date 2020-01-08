@@ -3,5 +3,6 @@ package eu.telecomnancy.symbols;
 public enum Kind {
     PROCEDURE,
     VARIABLE,
-    LABEL
+    LABEL,
+    UNDECLARED_LABEL
 }

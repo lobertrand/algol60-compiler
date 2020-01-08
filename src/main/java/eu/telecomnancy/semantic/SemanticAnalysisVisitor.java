@@ -2,8 +2,10 @@ package eu.telecomnancy.semantic;
 
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.Label;
+import eu.telecomnancy.symbols.Symbol;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.symbols.Type;
+import eu.telecomnancy.symbols.UndeclaredLabel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -173,6 +175,10 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(GoToAST ast) {
+        if (currentSymbolTable.resolve(ast.getText()) == null) {
+            Symbol symbol = new UndeclaredLabel(ast.getChildAST(0).getText());
+            currentSymbolTable.define(symbol);
+        }
         return Type.VOID;
     }
 }
