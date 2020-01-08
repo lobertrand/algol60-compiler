@@ -1,6 +1,7 @@
 package eu.telecomnancy.semantic;
 
 import eu.telecomnancy.ast.*;
+import eu.telecomnancy.symbols.Label;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.symbols.Type;
 import java.util.ArrayList;
@@ -159,6 +160,14 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(LabelDecAST ast) {
+        String name = ast.getChildAST(0).getText();
+        if (currentSymbolTable.isDeclaredInScope(name)) {
+            throw new SymbolRedeclarationException(
+                    String.format("Label %s already declared", name), ast.getLine());
+        }
+        Label label = new Label(name);
+        currentSymbolTable.define(label);
+
         return Type.VOID;
     }
 

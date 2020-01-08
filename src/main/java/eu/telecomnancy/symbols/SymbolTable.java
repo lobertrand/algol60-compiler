@@ -29,8 +29,8 @@ public class SymbolTable {
     public boolean isDeclaredInScope(String idf) {
         boolean idfInScope = false;
         Symbol result = symbols.get(idf);
-        if(result!= null){
-            idfInScope = true ;
+        if (result != null) {
+            idfInScope = true;
         }
         return idfInScope;
     }
