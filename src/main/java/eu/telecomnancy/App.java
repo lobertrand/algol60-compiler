@@ -3,6 +3,7 @@ package eu.telecomnancy;
 import eu.telecomnancy.ast.ASTAdaptor;
 import eu.telecomnancy.ast.DefaultAST;
 import eu.telecomnancy.semantic.SemanticAnalysisVisitor;
+import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.symbols.*;
 import eu.telecomnancy.tools.IOUtils;
 import java.io.FileInputStream;
@@ -46,7 +47,7 @@ public class App {
             System.err.format(
                     "Algol60> %s (line %d) at token \"%s\"\n",
                     e.getClass().getSimpleName(), e.line, e.token.getText());
-            System.exit(1);
+            System.exit(0);
         }
 
         // AST generation
@@ -66,11 +67,12 @@ public class App {
         ast.accept(semanticAnalysisVisitor);
         System.out.println(symbolTable);
 
-        if (semanticAnalysisVisitor.getExceptions().isEmpty()) {
+        if (semanticAnalysisVisitor.getExceptions().isEmpty()
+                && semanticAnalysisVisitor.getUndeclaredLabels().isEmpty()) {
             System.out.println("Algol60> Semantic analysis successful");
         } else {
-            for (Exception e : semanticAnalysisVisitor.getExceptions()) {
-                System.out.println(e);
+            for (SemanticException e : semanticAnalysisVisitor.getExceptions()) {
+                System.out.println("Algol60> " + e);
             }
         }
     }

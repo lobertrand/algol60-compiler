@@ -8,6 +8,6 @@ public class MissingReturnException extends SemanticException {
 
     @Override
     public String toString() {
-        return String.format("Algol60> Missing return at line %d: %s", line, getMessage());
+        return String.format("Missing return at line %d: %s", line, getMessage());
     }
 }

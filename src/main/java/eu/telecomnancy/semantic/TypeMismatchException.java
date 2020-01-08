@@ -8,6 +8,6 @@ public class TypeMismatchException extends SemanticException {
 
     @Override
     public String toString() {
-        return String.format("Algol60> Type mismatch at line %d: %s", line, getMessage());
+        return String.format("Type mismatch at line %d: %s", line, getMessage());
     }
 }

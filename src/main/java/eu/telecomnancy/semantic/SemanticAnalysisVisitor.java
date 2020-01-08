@@ -2,7 +2,6 @@ package eu.telecomnancy.semantic;
 
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.Label;
-import eu.telecomnancy.symbols.Symbol;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.symbols.Type;
 import eu.telecomnancy.symbols.UndeclaredLabel;
@@ -14,6 +13,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     private List<SemanticException> exceptions;
     private SymbolTable currentSymbolTable;
+    private List<UndeclaredLabel> undeclaredLabels;
 
     public SemanticAnalysisVisitor(SymbolTable symbolTable) {
         if (symbolTable == null) {
@@ -21,10 +21,23 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
         this.currentSymbolTable = symbolTable;
         this.exceptions = new ArrayList<>();
+        this.undeclaredLabels = new ArrayList<>();
     }
 
     public List<SemanticException> getExceptions() {
         return exceptions;
+    }
+
+    public List<UndeclaredLabel> getUndeclaredLabels() {
+        return undeclaredLabels;
+    }
+
+    private void removeUndeclaredLabelsWithName(String name) {
+        for (int i = undeclaredLabels.size() - 1; i >= 0; i--) {
+            if (undeclaredLabels.get(i).getIdentifier().equals(name)) {
+                undeclaredLabels.remove(i);
+            }
+        }
     }
 
     @Override
@@ -38,6 +51,16 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     @Override
     public Type visit(RootAST ast) {
         ast.getChildAST(0).accept(this);
+        // Ending operations
+        for (UndeclaredLabel l : undeclaredLabels) {
+            SymbolNotDeclaredException e =
+                    new SymbolNotDeclaredException(
+                            String.format(
+                                    "Label '%s' is used but never declared in scope",
+                                    l.getIdentifier()),
+                            l.getLine());
+            exceptions.add(e);
+        }
         return Type.VOID;
     }
 
@@ -65,7 +88,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             if (currentSymbolTable.isDeclaredInScope(name)) {
                 System.out.println("already declared");
                 throw new SymbolRedeclarationException(
-                        "Variable " + name + " already declared in scope", t.getLine());
+                        String.format("Variable '%s' is already declared in scope", name),
+                        t.getLine());
             }
             Variable variable = new Variable(name, type);
             currentSymbolTable.define(variable);
@@ -177,21 +201,26 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     @Override
     public Type visit(LabelDecAST ast) {
         String name = ast.getChildAST(0).getText();
+
         if (currentSymbolTable.isDeclaredInScope(name)) {
             throw new SymbolRedeclarationException(
-                    String.format("Label %s already declared", name), ast.getLine());
+                    String.format("Label '%s' already declared in scope", name), ast.getLine());
         }
+
         Label label = new Label(name);
         currentSymbolTable.define(label);
+        removeUndeclaredLabelsWithName(name);
 
         return Type.VOID;
     }
 
     @Override
     public Type visit(GoToAST ast) {
-        if (currentSymbolTable.resolve(ast.getText()) == null) {
-            Symbol symbol = new UndeclaredLabel(ast.getChildAST(0).getText());
-            currentSymbolTable.define(symbol);
+        String name = ast.getChild(0).getText();
+        if (currentSymbolTable.resolve(name) == null) {
+            UndeclaredLabel uLabel = new UndeclaredLabel(name, ast.getLine());
+            // We don't know yet the scope of this label
+            undeclaredLabels.add(uLabel);
         }
         return Type.VOID;
     }

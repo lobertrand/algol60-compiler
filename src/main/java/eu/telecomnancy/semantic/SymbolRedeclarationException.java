@@ -8,6 +8,6 @@ public class SymbolRedeclarationException extends SemanticException {
 
     @Override
     public String toString() {
-        return String.format("Algol60> Symbol already declared at line %d: %s", line, getMessage());
+        return String.format("Symbol redeclaration at line %d: %s", line, getMessage());
     }
 }

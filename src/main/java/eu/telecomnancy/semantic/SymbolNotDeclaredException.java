@@ -8,6 +8,6 @@ public class SymbolNotDeclaredException extends SemanticException {
 
     @Override
     public String toString() {
-        return String.format("Algol60> Variable not declared at line %d: %s", line, getMessage());
+        return String.format("Symbol not declared at line %d: %s", line, getMessage());
     }
 }
