@@ -1,12 +1,11 @@
 package eu.telecomnancy.symbols;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import eu.telecomnancy.tools.StringTools;
+import java.util.*;
 
 public class SymbolTable {
 
-    private HashMap<String, Symbol> symbols;
+    private Map<String, Symbol> symbols;
     private SymbolTable parent;
     private List<SymbolTable> children;
     private int tableNumber;
@@ -15,7 +14,8 @@ public class SymbolTable {
     private static int nextTableNumber = 0;
 
     public SymbolTable() {
-        symbols = new HashMap<>();
+        // LinkedHashMap keeps the keys in the order they are stored
+        symbols = new LinkedHashMap<>();
         parent = null;
         children = new ArrayList<>();
         tableNumber = nextTableNumber++;
@@ -88,8 +88,8 @@ public class SymbolTable {
         for (Symbol s : symbols.values()) {
             width = Math.max(s.toString().length(), width);
         }
-        String line = repeat("─", width);
-        String indent = repeat(" ", level * 4);
+        String line = StringTools.repeat("─", width);
+        String indent = StringTools.repeat(" ", level * 4);
 
         // Making of the table
         StringBuilder res = new StringBuilder();
@@ -106,9 +106,5 @@ public class SymbolTable {
             res.append(child.toString());
         }
         return res.toString();
-    }
-
-    private String repeat(String s, int n) {
-        return new String(new char[n]).replace("\0", s);
     }
 }

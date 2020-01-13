@@ -1,9 +1,11 @@
 package eu.telecomnancy.semantic;
 
+import org.antlr.runtime.tree.Tree;
+
 public class TypeMismatchException extends SemanticException {
 
-    public TypeMismatchException(String message, int line) {
-        super(message, line);
+    public TypeMismatchException(String message, Tree tree) {
+        super(message, tree);
     }
 
     @Override

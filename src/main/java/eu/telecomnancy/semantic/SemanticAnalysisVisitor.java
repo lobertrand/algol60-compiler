@@ -58,7 +58,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                             String.format(
                                     "Label '%s' is used but never declared in scope",
                                     l.getIdentifier()),
-                            l.getLine());
+                            l.getTree());
             exceptions.add(e);
         }
         return Type.VOID;
@@ -86,10 +86,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         for (DefaultAST t : idList) {
             String name = t.getText();
             if (currentSymbolTable.isDeclaredInScope(name)) {
-                System.out.println("already declared");
                 throw new SymbolRedeclarationException(
-                        String.format("Variable '%s' is already declared in scope", name),
-                        t.getLine());
+                        String.format("Variable '%s' is already declared in scope", name), t);
             }
             Variable variable = new Variable(name, type);
             currentSymbolTable.define(variable);
@@ -204,7 +202,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
         if (currentSymbolTable.isDeclaredInScope(name)) {
             throw new SymbolRedeclarationException(
-                    String.format("Label '%s' already declared in scope", name), ast.getLine());
+                    String.format("Label '%s' already declared in scope", name), ast);
         }
 
         Label label = new Label(name);
@@ -218,7 +216,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     public Type visit(GoToAST ast) {
         String name = ast.getChild(0).getText();
         if (currentSymbolTable.resolve(name) == null) {
-            UndeclaredLabel uLabel = new UndeclaredLabel(name, ast.getLine());
+            UndeclaredLabel uLabel = new UndeclaredLabel(name, ast);
             // We don't know yet the scope of this label
             undeclaredLabels.add(uLabel);
         }

@@ -22,19 +22,4 @@ public abstract class Symbol {
     public Kind getKind() {
         return kind;
     }
-
-    //    @Override
-    //    public boolean equals(Object o) {
-    //        if (this == o) return true;
-    //        if (o == null || getClass() != o.getClass()) return false;
-    //        Symbol symbol = (Symbol) o;
-    //        return Objects.equals(identifier, symbol.identifier) &&
-    //                type == symbol.type &&
-    //                kind == symbol.kind;
-    //    }
-    //
-    //    @Override
-    //    public int hashCode() {
-    //        return Objects.hash(identifier, type, kind);
-    //    }
 }

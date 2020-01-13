@@ -1,34 +1,22 @@
 package eu.telecomnancy.symbols;
 
+import org.antlr.runtime.tree.Tree;
+
 public class UndeclaredLabel extends Symbol {
 
-    private int line;
+    private Tree tree;
 
-    public UndeclaredLabel(String idf, int line) {
+    public UndeclaredLabel(String idf, Tree tree) {
         super(idf, Type.VOID, Kind.LABEL);
-        this.line = line;
+        this.tree = tree;
     }
 
-    public int getLine() {
-        return line;
+    public Tree getTree() {
+        return tree;
     }
 
     @Override
     public String toString() {
-        return String.format("UndeclaredLabel: %s (line %d)", getIdentifier(), line);
+        return String.format("UndeclaredLabel: %s (line %d)", getIdentifier(), tree.getLine());
     }
-
-    //    @Override
-    //    public boolean equals(Object o) {
-    //        if (this == o) return true;
-    //        if (o == null || getClass() != o.getClass()) return false;
-    //        if (!super.equals(o)) return false;
-    //        UndeclaredLabel that = (UndeclaredLabel) o;
-    //        return line == that.line;
-    //    }
-    //
-    //    @Override
-    //    public int hashCode() {
-    //        return Objects.hash(super.hashCode(), line);
-    //    }
 }
