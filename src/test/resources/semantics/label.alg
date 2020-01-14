@@ -1,23 +1,7 @@
 begin
-comment label visibility in blocks;
-	real x;
-	x := 1.234;
-	
+  comment label visibility in blocks;
 	begin
-		goto lbl;
-		outreal(1,x)
+		lbl:
 	end;
-	
-lbl:;
-	begin
-		real x;
-		goto lbl2;
-		x := 9.876;
-		outreal(1,x);
-		lbl2:
-	end;
-	
-	outreal(1,x)
-
-	end 
-
+	goto lbl
+end

@@ -1,7 +1,9 @@
 package eu.telecomnancy.ast;
 
 import eu.telecomnancy.Algol60Parser;
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
+import org.antlr.runtime.TokenStream;
 import org.antlr.runtime.tree.CommonTreeAdaptor;
 
 public class ASTAdaptor extends CommonTreeAdaptor {
@@ -65,5 +67,14 @@ public class ASTAdaptor extends CommonTreeAdaptor {
             }
         }
         return new DefaultAST(t);
+    }
+
+    public Object dupNode(Object t) {
+        if (t == null) return null;
+        return create(((DefaultAST) t).token);
+    }
+
+    public Object errorNode(TokenStream input, Token start, Token stop, RecognitionException e) {
+        return new ErrorAST(input, start, stop, e);
     }
 }
