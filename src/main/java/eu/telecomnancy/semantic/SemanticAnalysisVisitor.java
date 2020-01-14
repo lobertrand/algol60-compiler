@@ -1,12 +1,8 @@
 package eu.telecomnancy.semantic;
 
 import eu.telecomnancy.ast.*;
-import eu.telecomnancy.symbols.Label;
-import eu.telecomnancy.symbols.Symbol;
-import eu.telecomnancy.symbols.SymbolTable;
-import eu.telecomnancy.symbols.Type;
-import eu.telecomnancy.symbols.UndeclaredLabel;
-import eu.telecomnancy.symbols.Variable;
+import eu.telecomnancy.symbols.*;
+import eu.telecomnancy.tools.ASTTools;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,6 +72,41 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ProcDecAST ast) {
+        int n = ast.getChildCount();
+        String procname = null;
+        Procedure proc;
+        List<Type> args = new ArrayList<Type>();
+        DefaultAST dst = null;
+        Type type = Type.VOID;
+        if (n == 2) {
+            dst = ast.getChildAST(0);
+        } else if (n == 3) {
+            dst = ast.getChildAST(1);
+            type = Type.fromString(ast.getChild(0).getText());
+        }
+        int nbre = dst.getChild(2).getChildCount();
+        List<Symbol> variables = new ArrayList<>();
+        for (int i = 0; i < nbre; i++) {
+            for (int j = 0; j < dst.getChild(2).getChild(i).getChild(1).getChildCount(); j++) {
+                args.add(Type.fromString(dst.getChild(2).getChild(i).getChild(0).getText()));
+                variables.add(
+                        new Variable(
+                                dst.getChild(2).getChild(i).getChild(1).getChild(j).toString(),
+                                Type.fromString(
+                                        dst.getChild(2).getChild(i).getChild(0).getText())));
+            }
+        }
+        proc = new Procedure(procname, type, args);
+        currentSymbolTable.define(proc);
+
+        currentSymbolTable = currentSymbolTable.createChild();
+        for (int u = 0; u < variables.size(); u++) {
+            currentSymbolTable.define(variables.get(u));
+        }
+
+        // currentSymbolTable = currentSymbolTable.getParent();
+        ASTTools.depthFirstSearch(ast);
+
         return Type.VOID;
     }
 

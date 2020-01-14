@@ -15,7 +15,7 @@ public enum Type {
             case "string":
                 return STRING;
             default:
-                return VOID;
+                return null;
         }
     }
 }
