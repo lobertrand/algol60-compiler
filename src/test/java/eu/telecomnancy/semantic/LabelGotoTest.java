@@ -4,18 +4,17 @@ import static eu.telecomnancy.semantic.Helper.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import eu.telecomnancy.symbols.Symbol;
+import eu.telecomnancy.symbols.Label;
 import eu.telecomnancy.symbols.SymbolTable;
-import eu.telecomnancy.symbols.Type;
 import java.util.Set;
 import org.antlr.runtime.RecognitionException;
 import org.junit.Test;
 
-public class VarDecTest {
+public class LabelGotoTest {
 
     @Test
     public void testSimple() throws RecognitionException {
-        String content = "begin integer a end";
+        String content = "begin a: end";
 
         Result result = checkSemantics(content);
         assertTrue("There should be no exception", result.exceptions.isEmpty());
@@ -23,14 +22,17 @@ public class VarDecTest {
 
         SymbolTable first = result.symbolTable.getChildren().get(0);
         assertTrue("a should be declared in first scope", first.isDeclaredInScope("a"));
+        assertTrue("a should be a Label", first.resolve("a") instanceof Label);
     }
 
     @Test
-    public void testInnerBlock() throws RecognitionException {
+    public void testInnerBlockDeclaredAfter() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
-        c.line("  integer a;");
-        c.line("  begin real a, b end");
+        c.line("  begin");
+        c.line("    goto a");
+        c.line("  end;");
+        c.line("  a:");
         c.line("end");
 
         Result result = checkSemantics(c);
@@ -40,16 +42,16 @@ public class VarDecTest {
         SymbolTable first = result.symbolTable.getChildren().get(0);
         SymbolTable second = first.getChildren().get(0);
         assertTrue("a should be declared in first scope", first.isDeclaredInScope("a"));
-        assertTrue("a should be declared in second scope", second.isDeclaredInScope("a"));
-        assertTrue("b should be declared in second scope", second.isDeclaredInScope("b"));
     }
 
     @Test
-    public void testTypes() throws RecognitionException {
+    public void testInnerBlockDeclaredBefore() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
-        c.line("  integer a;");
-        c.line("  begin real a; string b end");
+        c.line("  a:;");
+        c.line("  begin");
+        c.line("    goto a");
+        c.line("  end");
         c.line("end");
 
         Result result = checkSemantics(c);
@@ -59,33 +61,59 @@ public class VarDecTest {
         SymbolTable first = result.symbolTable.getChildren().get(0);
         SymbolTable second = first.getChildren().get(0);
         assertTrue("a should be declared in first scope", first.isDeclaredInScope("a"));
-        assertTrue("a should be declared in second scope", second.isDeclaredInScope("a"));
-        assertTrue("b should be declared in second scope", second.isDeclaredInScope("b"));
+    }
 
-        Symbol a1 = first.resolve("a");
-        Symbol a2 = second.resolve("a");
-        Symbol b = second.resolve("b");
-        assertEquals("a in first scope should be an integer", a1.getType(), Type.INTEGER);
-        assertEquals("a in second scope should be a real", a2.getType(), Type.REAL);
-        assertEquals("b should be a string", b.getType(), Type.STRING);
+    @Test
+    public void testInnerBlockUsedBefore() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  goto a;");
+        c.line("  begin");
+        c.line("    a:");
+        c.line("  end");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        Set<Integer> lines = getLines(result.exceptions);
+        assertEquals("There should be 1 exception", 1, result.exceptions.size());
+        assertEquals("There should be 2 sub tables", 2, subTables(result.symbolTable));
+        assertTrue("There should be an exception at line 2", lines.contains(2));
+    }
+
+    @Test
+    public void testInnerBlockUsedAfter() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  begin");
+        c.line("    a:");
+        c.line("  end;");
+        c.line("  goto a");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        Set<Integer> lines = getLines(result.exceptions);
+        assertEquals("There should be 1 exception", 1, result.exceptions.size());
+        assertEquals("There should be 2 sub tables", 2, subTables(result.symbolTable));
+        assertTrue("There should be an exception at line 5", lines.contains(5));
     }
 
     @Test
     public void testRedeclaration() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
-        c.line("  integer a, b;");
+        c.line("  a:;");
+        c.line("  a:;");
         c.line("  begin");
-        c.line("    integer a;");
-        c.line("    integer a");
+        c.line("    a:;");
+        c.line("    a:");
         c.line("  end;");
-        c.line("  integer b");
+        c.line("  b:");
         c.line("end");
 
         Result result = checkSemantics(c);
         Set<Integer> lines = getLines(result.exceptions);
         assertEquals("There should be 2 exceptions", 2, result.exceptions.size());
-        assertTrue("There should be an exception at line 5", lines.contains(5));
-        assertTrue("There should be an exception at line 7", lines.contains(7));
+        assertTrue("There should be an exception at line 3", lines.contains(3));
+        assertTrue("There should be an exception at line 6", lines.contains(6));
     }
 }

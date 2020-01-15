@@ -46,7 +46,7 @@ public class Helper {
         return res;
     }
 
-    public static Set<Integer> exceptionLines(Collection<SemanticException> exceptions) {
+    public static Set<Integer> getLines(Collection<SemanticException> exceptions) {
         return exceptions.stream().map(SemanticException::getLine).collect(Collectors.toSet());
     }
 
