@@ -156,7 +156,7 @@ procedure_declaration_no_type
 
 procedure_heading
     :   identifier formal_parameter_part ';' value_part specification_part
-        -> ^(PROC_HEADING formal_parameter_part? value_part? specification_part?)
+        -> ^(PROC_HEADING identifier formal_parameter_part? value_part? specification_part?)
     ;
 
 formal_parameter_part
