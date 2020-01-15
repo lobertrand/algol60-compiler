@@ -114,23 +114,23 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             dst = ast.getChildAST(1);
             type = Type.fromString(ast.getChild(0).getText());
         }
-        int nbre = dst.getChild(2).getChildCount();
+        int nbre = dst.getChild(3).getChildCount();
         List<Symbol> variables = new ArrayList<>();
         for (int i = 0; i < nbre; i++) {
-            for (int j = 0; j < dst.getChild(2).getChild(i).getChild(1).getChildCount(); j++) {
-                args.add(Type.fromString(dst.getChild(2).getChild(i).getChild(0).getText()));
+            for (int j = 0; j < dst.getChild(3).getChild(i).getChild(1).getChildCount(); j++) {
+                args.add(Type.fromString(dst.getChild(3).getChild(i).getChild(0).getText()));
                 variables.add(
                         new Variable(
-                                dst.getChild(2).getChild(i).getChild(1).getChild(j).toString(),
+                                dst.getChild(3).getChild(i).getChild(1).getChild(j).toString(),
                                 Type.fromString(
-                                        dst.getChild(2).getChild(i).getChild(0).getText())));
+                                        dst.getChild(3).getChild(i).getChild(0).getText())));
             }
         }
 
         currentSymbolTable = currentSymbolTable.createChild();
-        for (int u = 0; u < dst.getChild(0).getChild(0).getChildCount(); u++) {
+        for (int u = 0; u < dst.getChild(1).getChild(0).getChildCount(); u++) {
             for (int i = 0; i < variables.size(); i++) {
-                if (dst.getChild(0)
+                if (dst.getChild(1)
                         .getChild(0)
                         .getChild(u)
                         .getText()
@@ -142,6 +142,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
 
         currentSymbolTable = currentSymbolTable.getParent();
+        procname = dst.getChild(0).getText();
         proc = new Procedure(procname, type, arg);
         currentSymbolTable.define(proc);
 
