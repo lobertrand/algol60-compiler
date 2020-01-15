@@ -178,6 +178,22 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(AssignmentAST ast) {
+        String name = ast.getChild(0).getText();
+        Symbol leftSymbol = currentSymbolTable.resolve(name);
+        if (leftSymbol == null) {
+            throw new SymbolNotDeclaredException(
+                    String.format("Assignment %s not declared.", name), ast);
+        }
+        // parcourir ast
+        // accept
+        Type rightType = ast.getChildAST(1).accept(this);
+        if (leftSymbol.getType() != rightType) {
+            throw new TypeMismatchException(
+                    String.format(
+                            "Type mismatch: %s and %s in assignment",
+                            name, ast.getChildAST(1).getText()),
+                    ast);
+        }
         return Type.VOID;
     }
 
