@@ -114,38 +114,43 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             dst = ast.getChildAST(1);
             type = Type.fromString(ast.getChild(0).getText());
         }
-        int nbre = dst.getChild(3).getChildCount();
-        List<Symbol> variables = new ArrayList<>();
-        for (int i = 0; i < nbre; i++) {
-            for (int j = 0; j < dst.getChild(3).getChild(i).getChild(1).getChildCount(); j++) {
-                args.add(Type.fromString(dst.getChild(3).getChild(i).getChild(0).getText()));
-                variables.add(
-                        new Variable(
-                                dst.getChild(3).getChild(i).getChild(1).getChild(j).toString(),
-                                Type.fromString(
-                                        dst.getChild(3).getChild(i).getChild(0).getText())));
-            }
-        }
+        procname = dst.getChild(0).getText();
+        if (currentSymbolTable.isDeclaredInScope(procname)) {
+            throw new SymbolRedeclarationException(
+                    String.format("Procedure '%s' is already declared in scope", procname), dst);
+        } else {
 
-        currentSymbolTable = currentSymbolTable.createChild();
-        for (int u = 0; u < dst.getChild(1).getChild(0).getChildCount(); u++) {
-            for (int i = 0; i < variables.size(); i++) {
-                if (dst.getChild(1)
-                        .getChild(0)
-                        .getChild(u)
-                        .getText()
-                        .equals(variables.get(i).getIdentifier())) {
-                    currentSymbolTable.define(variables.get(i));
-                    arg.add(args.get(i));
+            int nbre = dst.getChild(3).getChildCount();
+            List<Symbol> variables = new ArrayList<>();
+            for (int i = 0; i < nbre; i++) {
+                for (int j = 0; j < dst.getChild(3).getChild(i).getChild(1).getChildCount(); j++) {
+                    args.add(Type.fromString(dst.getChild(3).getChild(i).getChild(0).getText()));
+                    variables.add(
+                            new Variable(
+                                    dst.getChild(3).getChild(i).getChild(1).getChild(j).toString(),
+                                    Type.fromString(
+                                            dst.getChild(3).getChild(i).getChild(0).getText())));
                 }
             }
+
+            currentSymbolTable = currentSymbolTable.createChild();
+            for (int u = 0; u < dst.getChild(1).getChild(0).getChildCount(); u++) {
+                for (int i = 0; i < variables.size(); i++) {
+                    if (dst.getChild(1)
+                            .getChild(0)
+                            .getChild(u)
+                            .getText()
+                            .equals(variables.get(i).getIdentifier())) {
+                        currentSymbolTable.define(variables.get(i));
+                        arg.add(args.get(i));
+                    }
+                }
+            }
+
+            currentSymbolTable = currentSymbolTable.getParent();
+            proc = new Procedure(procname, type, arg);
+            currentSymbolTable.define(proc);
         }
-
-        currentSymbolTable = currentSymbolTable.getParent();
-        procname = dst.getChild(0).getText();
-        proc = new Procedure(procname, type, arg);
-        currentSymbolTable.define(proc);
-
         ASTTools.depthFirstSearch(ast);
 
         return Type.VOID;
