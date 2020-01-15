@@ -184,8 +184,6 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             throw new SymbolNotDeclaredException(
                     String.format("Assignment %s not declared.", name), ast);
         }
-        // parcourir ast
-        // accept
         Type rightType = ast.getChildAST(1).accept(this);
         if (leftSymbol.getType() != rightType) {
             throw new TypeMismatchException(
@@ -293,5 +291,4 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
         return Type.VOID;
     }
-
 }
