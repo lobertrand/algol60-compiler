@@ -208,7 +208,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(IntAST ast) {
-        return Type.VOID;
+        return Type.INTEGER;
     }
 
     @Override
@@ -223,12 +223,12 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(RealAST ast) {
-        return Type.VOID;
+        return Type.REAL;
     }
 
     @Override
     public Type visit(StrAST ast) {
-        return Type.VOID;
+        return Type.STRING;
     }
 
     @Override
@@ -277,4 +277,5 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
         return Type.VOID;
     }
+
 }
