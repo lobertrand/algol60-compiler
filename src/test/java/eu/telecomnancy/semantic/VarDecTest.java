@@ -1,55 +1,20 @@
 package eu.telecomnancy.semantic;
 
-import static org.junit.Assert.*;
+import static eu.telecomnancy.semantic.Helper.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import eu.telecomnancy.Algol60Lexer;
-import eu.telecomnancy.Algol60Parser;
-import eu.telecomnancy.ast.ASTAdaptor;
-import eu.telecomnancy.ast.DefaultAST;
 import eu.telecomnancy.symbols.Symbol;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.symbols.Type;
-import java.util.List;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
+import java.util.Set;
 import org.antlr.runtime.RecognitionException;
 import org.junit.Test;
 
-public class SemanticAnalysisVisitorTest {
-
-    private static class Result {
-        public SymbolTable symbolTable;
-        public List<SemanticException> exceptions;
-
-        public Result(SymbolTable symbolTable, List<SemanticException> exceptions) {
-            this.symbolTable = symbolTable;
-            this.exceptions = exceptions;
-        }
-    }
-
-    private Result checkSemantics(String content) throws RecognitionException {
-        ANTLRStringStream stream = new ANTLRStringStream(content);
-        Algol60Lexer lexer = new Algol60Lexer(stream);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        Algol60Parser parser = new Algol60Parser(tokens);
-        parser.setTreeAdaptor(new ASTAdaptor());
-        DefaultAST ast = (DefaultAST) parser.prog().getTree();
-        SymbolTable symbolTable = new SymbolTable();
-        SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor(symbolTable);
-        ast.accept(visitor);
-        return new Result(symbolTable, visitor.getExceptions());
-    }
-
-    private int subTables(SymbolTable symbolTable) {
-        int res = 0;
-        for (SymbolTable child : symbolTable.getChildren()) {
-            res += (1 + subTables(child));
-        }
-        return res;
-    }
+public class VarDecTest {
 
     @Test
-    public void testVarDec_simple() throws RecognitionException {
+    public void testSimple() throws RecognitionException {
         String content = "begin integer a end";
 
         Result result = checkSemantics(content);
@@ -61,14 +26,14 @@ public class SemanticAnalysisVisitorTest {
     }
 
     @Test
-    public void testVarDec_innerBlock() throws RecognitionException {
-        String content = "";
-        content += "begin\n";
-        content += "  integer a;\n";
-        content += "  begin real a, b end\n";
-        content += "end\n";
+    public void testInnerBlock() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer a;");
+        c.line("  begin real a, b end");
+        c.line("end");
 
-        Result result = checkSemantics(content);
+        Result result = checkSemantics(c);
         assertTrue("There should be no exception", result.exceptions.isEmpty());
         assertEquals("There should be 2 sub tables", 2, subTables(result.symbolTable));
 
@@ -80,14 +45,14 @@ public class SemanticAnalysisVisitorTest {
     }
 
     @Test
-    public void testVarDec_types() throws RecognitionException {
-        String content = "";
-        content += "begin\n";
-        content += "  integer a;\n";
-        content += "  begin real a; string b end\n";
-        content += "end\n";
+    public void testTypes() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer a;");
+        c.line("  begin real a; string b end");
+        c.line("end");
 
-        Result result = checkSemantics(content);
+        Result result = checkSemantics(c);
         assertTrue("There should be no exception", result.exceptions.isEmpty());
         assertEquals("There should be 2 sub tables", 2, subTables(result.symbolTable));
 
@@ -103,5 +68,24 @@ public class SemanticAnalysisVisitorTest {
         assertEquals("a in first scope should be an integer", a1.getType(), Type.INTEGER);
         assertEquals("a in second scope should be a real", a2.getType(), Type.REAL);
         assertEquals("b should be a string", b.getType(), Type.STRING);
+    }
+
+    @Test
+    public void testRedeclaration() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer a, b;");
+        c.line("  begin");
+        c.line("    integer a;");
+        c.line("    integer a");
+        c.line("  end;");
+        c.line("  integer b");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        Set<Integer> lines = exceptionLines(result.exceptions);
+        assertEquals("There should be 2 exceptions", 2, result.exceptions.size());
+        assertTrue("There should be an exception at line 5", lines.contains(5));
+        assertTrue("There should be an exception at line 7", lines.contains(7));
     }
 }
