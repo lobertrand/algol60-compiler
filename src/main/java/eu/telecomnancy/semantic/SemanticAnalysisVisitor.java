@@ -2,12 +2,12 @@ package eu.telecomnancy.semantic;
 
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.*;
-import eu.telecomnancy.tools.ASTTools;
 import eu.telecomnancy.symbols.Label;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.symbols.Type;
 import eu.telecomnancy.symbols.UndeclaredLabel;
 import eu.telecomnancy.symbols.Variable;
+import eu.telecomnancy.tools.ASTTools;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,7 +103,9 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         int n = ast.getChildCount();
         String procname = null;
         Procedure proc;
-        List<Type> args = new ArrayList<Type>();
+        List<Type> args = new ArrayList<Type>(); // liste de parametres
+        List<Type> arg = new ArrayList<Type>(); // liste de paramentres dans l'ordre
+
         DefaultAST dst = null;
         Type type = Type.VOID;
         if (n == 2) {
@@ -124,15 +126,25 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                                         dst.getChild(2).getChild(i).getChild(0).getText())));
             }
         }
-        proc = new Procedure(procname, type, args);
-        currentSymbolTable.define(proc);
 
         currentSymbolTable = currentSymbolTable.createChild();
-        for (int u = 0; u < variables.size(); u++) {
-            currentSymbolTable.define(variables.get(u));
+        for (int u = 0; u < dst.getChild(0).getChild(0).getChildCount(); u++) {
+            for (int i = 0; i < variables.size(); i++) {
+                if (dst.getChild(0)
+                        .getChild(0)
+                        .getChild(u)
+                        .getText()
+                        .equals(variables.get(i).getIdentifier())) {
+                    currentSymbolTable.define(variables.get(i));
+                    arg.add(args.get(i));
+                }
+            }
         }
 
-        // currentSymbolTable = currentSymbolTable.getParent();
+        currentSymbolTable = currentSymbolTable.getParent();
+        proc = new Procedure(procname, type, arg);
+        currentSymbolTable.define(proc);
+
         ASTTools.depthFirstSearch(ast);
 
         return Type.VOID;

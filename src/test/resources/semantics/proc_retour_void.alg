@@ -1,7 +1,7 @@
 begin
 
-	 procedure pi(a,b,c);
-	value a; integer a,c;real b;
+	 procedure pi(d,a,b,c);
+	value a; integer a,c;real b,d;
 
 			begin
 				
