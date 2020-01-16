@@ -18,11 +18,7 @@ public class Helper {
     public static class Result {
         public SymbolTable symbolTable;
         public List<SemanticException> exceptions;
-
-        public Result(SymbolTable symbolTable, List<SemanticException> exceptions) {
-            this.symbolTable = symbolTable;
-            this.exceptions = exceptions;
-        }
+        public DefaultAST ast;
     }
 
     public static Result checkSemantics(Object content) throws RecognitionException {
@@ -35,7 +31,11 @@ public class Helper {
         SymbolTable symbolTable = new SymbolTable();
         SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor(symbolTable);
         ast.accept(visitor);
-        return new Result(symbolTable, visitor.getExceptions());
+        Result result = new Result();
+        result.symbolTable = symbolTable;
+        result.exceptions = visitor.getExceptions();
+        result.ast = ast;
+        return result;
     }
 
     public static int subTables(SymbolTable symbolTable) {
