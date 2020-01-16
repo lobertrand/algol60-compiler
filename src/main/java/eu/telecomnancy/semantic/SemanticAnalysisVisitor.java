@@ -105,38 +105,56 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         Procedure proc;
         List<Type> args = new ArrayList<Type>(); // liste de parametres
         List<Type> arg = new ArrayList<Type>(); // liste de paramentres dans l'ordre
+        List<Symbol> variables = new ArrayList<>();
 
-        DefaultAST dst = null;
+        DefaultAST procHeading = null;
+        DefaultAST block = null;
         Type type = Type.VOID;
         if (n == 2) {
-            dst = ast.getChildAST(0);
+            procHeading = ast.getChildAST(0);
+            block = ast.getChildAST(1);
         } else if (n == 3) {
-            dst = ast.getChildAST(1);
+            procHeading = ast.getChildAST(1);
             type = Type.fromString(ast.getChild(0).getText());
+            block = ast.getChildAST(2);
         }
-        procname = dst.getChild(0).getText();
+        procname = procHeading.getChild(0).getText();
         if (currentSymbolTable.isDeclaredInScope(procname)) {
             throw new SymbolRedeclarationException(
-                    String.format("Procedure '%s' is already declared in scope", procname), dst);
-        } else {
-
-            int nbre = dst.getChild(3).getChildCount();
-            List<Symbol> variables = new ArrayList<>();
+                    String.format("Procedure '%s' is already declared in scope", procname),
+                    procHeading);
+        }
+        currentSymbolTable = currentSymbolTable.createChild();
+        if (procHeading.getChildCount() > 2) {
+            int nbre = procHeading.getChild(3).getChildCount();
             for (int i = 0; i < nbre; i++) {
-                for (int j = 0; j < dst.getChild(3).getChild(i).getChild(1).getChildCount(); j++) {
-                    args.add(Type.fromString(dst.getChild(3).getChild(i).getChild(0).getText()));
+                for (int j = 0;
+                        j < procHeading.getChild(3).getChild(i).getChild(1).getChildCount();
+                        j++) {
+                    args.add(
+                            Type.fromString(
+                                    procHeading.getChild(3).getChild(i).getChild(0).getText()));
                     variables.add(
                             new Variable(
-                                    dst.getChild(3).getChild(i).getChild(1).getChild(j).toString(),
+                                    procHeading
+                                            .getChild(3)
+                                            .getChild(i)
+                                            .getChild(1)
+                                            .getChild(j)
+                                            .toString(),
                                     Type.fromString(
-                                            dst.getChild(3).getChild(i).getChild(0).getText())));
+                                            procHeading
+                                                    .getChild(3)
+                                                    .getChild(i)
+                                                    .getChild(0)
+                                                    .getText())));
                 }
             }
 
-            currentSymbolTable = currentSymbolTable.createChild();
-            for (int u = 0; u < dst.getChild(1).getChild(0).getChildCount(); u++) {
+            for (int u = 0; u < procHeading.getChild(1).getChild(0).getChildCount(); u++) {
                 for (int i = 0; i < variables.size(); i++) {
-                    if (dst.getChild(1)
+                    if (procHeading
+                            .getChild(1)
                             .getChild(0)
                             .getChild(u)
                             .getText()
@@ -146,11 +164,19 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                     }
                 }
             }
-
-            currentSymbolTable = currentSymbolTable.getParent();
-            proc = new Procedure(procname, type, arg);
-            currentSymbolTable.define(proc);
         }
+        assert block != null;
+        for (DefaultAST t : block) {
+            try {
+                t.accept(this);
+            } catch (SemanticException e) {
+                exceptions.add(e);
+            }
+        }
+        currentSymbolTable = currentSymbolTable.getParent();
+        proc = new Procedure(procname, type, arg);
+        currentSymbolTable.define(proc);
+
         ASTTools.depthFirstSearch(ast);
 
         return Type.VOID;
