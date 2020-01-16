@@ -4,5 +4,6 @@ public enum Kind {
     PROCEDURE,
     VARIABLE,
     LABEL,
-    UNDECLARED_LABEL
+    UNDECLARED_LABEL,
+    PARAMETER
 }

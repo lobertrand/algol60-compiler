@@ -125,7 +125,10 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                     String.format("Procedure '%s' is already declared in scope", procname),
                     procHeading);
         }
+
         currentSymbolTable = currentSymbolTable.createChild();
+        Symbol returnValue = new Variable(procname, type);
+        currentSymbolTable.define(returnValue);
         if (procHeading.getChildCount() > 2) {
             int nbre = procHeading.getChild(3).getChildCount();
             for (int i = 0; i < nbre; i++) {
@@ -136,7 +139,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                             Type.fromString(
                                     procHeading.getChild(3).getChild(i).getChild(0).getText()));
                     variables.add(
-                            new Variable(
+                            new Parameter(
                                     procHeading
                                             .getChild(3)
                                             .getChild(i)
