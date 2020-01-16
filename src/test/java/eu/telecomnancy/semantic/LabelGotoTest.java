@@ -74,10 +74,8 @@ public class LabelGotoTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        Set<Integer> lines = getLines(result.exceptions);
-        assertEquals("There should be 1 exception", 1, result.exceptions.size());
+        assertTrue("There should be no exception", result.exceptions.isEmpty());
         assertEquals("There should be 2 sub tables", 2, subTables(result.symbolTable));
-        assertTrue("There should be an exception at line 2", lines.contains(2));
     }
 
     @Test
@@ -91,10 +89,8 @@ public class LabelGotoTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        Set<Integer> lines = getLines(result.exceptions);
-        assertEquals("There should be 1 exception", 1, result.exceptions.size());
+        assertTrue("There should be no exception", result.exceptions.isEmpty());
         assertEquals("There should be 2 sub tables", 2, subTables(result.symbolTable));
-        assertTrue("There should be an exception at line 5", lines.contains(5));
     }
 
     @Test
