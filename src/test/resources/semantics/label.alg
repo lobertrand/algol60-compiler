@@ -1,7 +1,9 @@
 begin
-  comment label visibility in blocks;
 	begin
 		lbl:
 	end;
-	goto lbl
+	goto lbl;
+	a:;
+	goto u;
+	x := 3
 end

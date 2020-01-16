@@ -9,14 +9,15 @@ import eu.telecomnancy.symbols.Type;
 import eu.telecomnancy.symbols.UndeclaredLabel;
 import eu.telecomnancy.symbols.Variable;
 import eu.telecomnancy.tools.ASTTools;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     private List<SemanticException> exceptions;
     private SymbolTable currentSymbolTable;
-    private List<UndeclaredLabel> undeclaredLabels;
+    private Set<UndeclaredLabel> undeclaredLabels;
+    private Set<Label> declaredLabels;
 
     public SemanticAnalysisVisitor(SymbolTable symbolTable) {
         if (symbolTable == null) {
@@ -24,21 +25,26 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
         this.currentSymbolTable = symbolTable;
         this.exceptions = new ArrayList<>();
-        this.undeclaredLabels = new ArrayList<>();
+        this.undeclaredLabels = new LinkedHashSet<>();
+        this.declaredLabels = new LinkedHashSet<>();
     }
 
     public List<SemanticException> getExceptions() {
         return exceptions;
     }
 
-    public List<UndeclaredLabel> getUndeclaredLabels() {
-        return undeclaredLabels;
-    }
+    private void checkLabelDeclarations() {
+        Set<String> declaredLabelIdentifiers =
+                declaredLabels.stream().map(Symbol::getIdentifier).collect(Collectors.toSet());
 
-    private void removeUndeclaredLabelsWithName(String name) {
-        for (int i = undeclaredLabels.size() - 1; i >= 0; i--) {
-            if (undeclaredLabels.get(i).getIdentifier().equals(name)) {
-                undeclaredLabels.remove(i);
+        // Checking that all the undeclaredLabels have been declared later
+        for (UndeclaredLabel undeclaredLabel : undeclaredLabels) {
+            String identifier = undeclaredLabel.getIdentifier();
+            if (!declaredLabelIdentifiers.contains(identifier)) {
+                exceptions.add(
+                        new SymbolNotDeclaredException(
+                                String.format("Label '%s' is used but not declared.", identifier),
+                                undeclaredLabel.getTree()));
             }
         }
     }
@@ -54,16 +60,9 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     @Override
     public Type visit(RootAST ast) {
         ast.getChildAST(0).accept(this);
-        // Ending operations
-        for (UndeclaredLabel l : undeclaredLabels) {
-            SymbolNotDeclaredException e =
-                    new SymbolNotDeclaredException(
-                            String.format(
-                                    "Label '%s' is used but never declared in scope",
-                                    l.getIdentifier()),
-                            l.getTree());
-            exceptions.add(e);
-        }
+        // Final operations
+        checkLabelDeclarations();
+        exceptions.sort(Comparator.comparingInt(SemanticException::getLine));
         return Type.VOID;
     }
 
@@ -322,7 +321,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
         Label label = new Label(name);
         currentSymbolTable.define(label);
-        removeUndeclaredLabelsWithName(name);
+        declaredLabels.add(label);
 
         return Type.VOID;
     }
@@ -330,11 +329,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     @Override
     public Type visit(GoToAST ast) {
         String name = ast.getChild(0).getText();
-        if (currentSymbolTable.resolve(name) == null) {
-            UndeclaredLabel uLabel = new UndeclaredLabel(name, ast);
-            // We don't know yet the scope of this label
-            undeclaredLabels.add(uLabel);
-        }
+        // We don't know yet the scope of this label
+        undeclaredLabels.add(new UndeclaredLabel(name, ast));
         return Type.VOID;
     }
 }

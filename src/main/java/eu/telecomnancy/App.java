@@ -68,8 +68,7 @@ public class App {
         ast.accept(semanticAnalysisVisitor);
         IOUtils.print(symbolTable);
 
-        if (semanticAnalysisVisitor.getExceptions().isEmpty()
-                && semanticAnalysisVisitor.getUndeclaredLabels().isEmpty()) {
+        if (semanticAnalysisVisitor.getExceptions().isEmpty()) {
             IOUtils.log("Semantic analysis successful");
         } else {
             for (SemanticException e : semanticAnalysisVisitor.getExceptions()) {
