@@ -127,8 +127,11 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
 
         currentSymbolTable = currentSymbolTable.createChild();
+        if(type == Type.VOID){
         Symbol returnValue = new Variable(procname, type);
         currentSymbolTable.define(returnValue);
+        }
+
         if (procHeading.getChildCount() > 2) {
             int nbre = procHeading.getChild(3).getChildCount();
             for (int i = 0; i < nbre; i++) {
