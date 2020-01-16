@@ -8,9 +8,9 @@ import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.symbols.Type;
 import eu.telecomnancy.symbols.UndeclaredLabel;
 import eu.telecomnancy.symbols.Variable;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.*;
 import java.util.stream.Collectors;
 
 public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
@@ -300,6 +300,20 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(AddAST ast) {
+        String leftPart = ast.getChildAST(0).getText();
+        String rightPart = ast.getChildAST(1).getText();
+        Symbol leftSymbol = currentSymbolTable.resolve(leftPart);
+        Symbol rightSymbol = currentSymbolTable.resolve(rightPart);
+        if (leftSymbol == null) {
+            if (ast.getChildAST(0).getType() != Algol60Parser.STR) {
+                if (rightSymbol == null) {
+                    if (ast.getChildAST(1).getType() != Algol60Parser.STR) {
+                        //
+                    }
+                }
+            }
+        }
+
         return Type.VOID;
     }
 
