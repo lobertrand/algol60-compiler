@@ -1,5 +1,6 @@
 package eu.telecomnancy.semantic;
 
+import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.*;
 import eu.telecomnancy.symbols.Label;
@@ -178,18 +179,31 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(AssignmentAST ast) {
-        String name = ast.getChild(0).getText();
-        Symbol leftSymbol = currentSymbolTable.resolve(name);
+        String leftName = ast.getChild(0).getText();
+        Symbol leftSymbol = currentSymbolTable.resolve(leftName);
         if (leftSymbol == null) {
             throw new SymbolNotDeclaredException(
-                    String.format("Assignment %s not declared.", name), ast);
+                    String.format("Assignment %s not declared.", leftName), ast);
         }
-        Type rightType = ast.getChildAST(1).accept(this);
+
+        Type rightType = null;
+        if (ast.getChildAST(1).getType() == Algol60Parser.IDENTIFIER) {
+            String rightName = ast.getChild(1).getText();
+            Symbol rightSymbol = currentSymbolTable.resolve(rightName);
+            if (rightSymbol == null) {
+                throw new SymbolNotDeclaredException(
+                        String.format("Assignment %s not declared.", rightName), ast);
+            }
+            rightType = rightSymbol.getType();
+
+        } else {
+            rightType = ast.getChildAST(1).accept(this);
+        }
         if (leftSymbol.getType() != rightType) {
             throw new TypeMismatchException(
                     String.format(
                             "Type mismatch: %s and %s in assignment",
-                            name, ast.getChildAST(1).getText()),
+                            leftName, ast.getChildAST(1).getText()),
                     ast);
         }
         return Type.VOID;
