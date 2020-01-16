@@ -6,6 +6,7 @@ begin
 			begin
 				integer c ;
 				real w ;
+				real pi ;
 				pi := 3.141592654
 			end
 

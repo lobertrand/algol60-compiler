@@ -8,7 +8,6 @@ import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.symbols.Type;
 import eu.telecomnancy.symbols.UndeclaredLabel;
 import eu.telecomnancy.symbols.Variable;
-import eu.telecomnancy.tools.ASTTools;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,6 +100,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ProcDecAST ast) {
+        SymbolTable procSymbolTable = currentSymbolTable;
+
         int n = ast.getChildCount();
         String procname = null;
         Procedure proc;
@@ -120,13 +121,9 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             block = ast.getChildAST(2);
         }
         procname = procHeading.getChild(0).getText();
-        if (currentSymbolTable.isDeclaredInScope(procname)) {
-            throw new SymbolRedeclarationException(
-                    String.format("Procedure '%s' is already declared in scope", procname),
-                    procHeading);
-        }
 
         currentSymbolTable = currentSymbolTable.createChild();
+
         if (type != Type.VOID) {
             Symbol returnValue = new Variable(procname, type);
             currentSymbolTable.define(returnValue);
@@ -172,7 +169,10 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                 }
             }
         }
-        assert block != null;
+
+        proc = new Procedure(procname, type, arg);
+        procSymbolTable.define(proc);
+
         for (DefaultAST t : block) {
             try {
                 t.accept(this);
@@ -180,11 +180,12 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                 exceptions.add(e);
             }
         }
+        if (currentSymbolTable.isDeclaredInScope(procname)) {
+            throw new SymbolRedeclarationException(
+                    String.format("Procedure '%s' is already declared in scope", procname),
+                    procHeading);
+        }
         currentSymbolTable = currentSymbolTable.getParent();
-        proc = new Procedure(procname, type, arg);
-        currentSymbolTable.define(proc);
-
-        ASTTools.depthFirstSearch(ast);
 
         return Type.VOID;
     }
