@@ -1,5 +1,6 @@
 package eu.telecomnancy;
 
+import eu.telecomnancy.ast.ASTAdaptor;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -12,6 +13,7 @@ public class Algol60ParserTest {
         Algol60Lexer lexer = new Algol60Lexer(stream);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         Algol60Parser parser = new Algol60Parser(tokens);
+        parser.setTreeAdaptor(new ASTAdaptor());
         parser.prog();
     }
 

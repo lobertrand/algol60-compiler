@@ -19,6 +19,11 @@ public class Helper {
         public SymbolTable symbolTable;
         public List<SemanticException> exceptions;
         public DefaultAST ast;
+
+        public boolean exceptionAt(int line) {
+            for (SemanticException e : exceptions) if (e.getLine() == line) return true;
+            return false;
+        }
     }
 
     public static Result checkSemantics(Object content) throws RecognitionException {
