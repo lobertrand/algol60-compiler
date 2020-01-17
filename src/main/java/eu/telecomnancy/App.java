@@ -52,7 +52,7 @@ public class App {
         }
 
         // AST generation
-        DefaultAST ast = (DefaultAST) pr.getTree();
+        DefaultAST ast = pr.getTree();
         try {
             IOUtils.generateDotTree(ast, "AST");
             IOUtils.log("AST.dot and AST.pdf generated");

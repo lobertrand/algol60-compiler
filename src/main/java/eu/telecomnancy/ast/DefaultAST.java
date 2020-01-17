@@ -3,7 +3,6 @@ package eu.telecomnancy.ast;
 import java.util.Iterator;
 import org.antlr.runtime.Token;
 import org.antlr.runtime.tree.CommonTree;
-import org.antlr.runtime.tree.Tree;
 
 public class DefaultAST extends CommonTree implements Iterable<DefaultAST> {
 
@@ -32,9 +31,19 @@ public class DefaultAST extends CommonTree implements Iterable<DefaultAST> {
         };
     }
 
+    @Override
+    public DefaultAST getChild(int i) {
+        return (DefaultAST) super.getChild(i);
+    }
+
     public DefaultAST getChildAST(int i) {
-        Tree tree = getChild(i);
-        if (tree == null) return null;
-        return (DefaultAST) tree;
+        return (DefaultAST) super.getChild(i);
+    }
+
+    public DefaultAST findFirst(int type) {
+        for (DefaultAST child : this) {
+            if (child.getType() == type) return child;
+        }
+        return null;
     }
 }

@@ -2,6 +2,7 @@ package eu.telecomnancy.symbols;
 
 import eu.telecomnancy.tools.StringTools;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SymbolTable {
 
@@ -10,16 +11,31 @@ public class SymbolTable {
     private List<SymbolTable> children;
     private int tableNumber;
     private int level;
+    private AtomicInteger numberOfTables;
 
-    private static int nextTableNumber = 0;
-
+    /** This constructor is used to create the root of a SymbolTable tree */
     public SymbolTable() {
         // LinkedHashMap keeps the keys in the order they are stored
         symbols = new LinkedHashMap<>();
-        parent = null;
         children = new ArrayList<>();
-        tableNumber = nextTableNumber++;
+        numberOfTables = new AtomicInteger(0);
+        tableNumber = numberOfTables.getAndIncrement();
+        parent = null;
         level = 0;
+    }
+
+    private SymbolTable(SymbolTable parent) {
+        this.parent = parent;
+        parent.children.add(this);
+        symbols = new LinkedHashMap<>();
+        children = new ArrayList<>();
+        numberOfTables = parent.numberOfTables;
+        level = parent.level + 1;
+        tableNumber = numberOfTables.getAndIncrement();
+    }
+
+    public SymbolTable createChild() {
+        return new SymbolTable(this);
     }
 
     public void define(Symbol symbol) {
@@ -46,6 +62,10 @@ public class SymbolTable {
         }
     }
 
+    public Symbol resolveInScope(String identifier) {
+        return symbols.get(identifier);
+    }
+
     public SymbolTable getParent() {
         return parent;
     }
@@ -62,12 +82,8 @@ public class SymbolTable {
         return children;
     }
 
-    public SymbolTable createChild() {
-        SymbolTable child = new SymbolTable();
-        child.level = this.level + 1;
-        child.setParent(this);
-        children.add(child);
-        return child;
+    public SymbolTable getChild(int i) {
+        return i < children.size() ? children.get(i) : null;
     }
 
     public int getLevel() {

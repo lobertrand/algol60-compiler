@@ -18,4 +18,13 @@ public enum Type {
                 return null;
         }
     }
+
+    public String withPronoun() {
+        return (this == INTEGER ? "an " : "a ") + name().toLowerCase();
+    }
+
+    @Override
+    public String toString() {
+        return name().toLowerCase();
+    }
 }

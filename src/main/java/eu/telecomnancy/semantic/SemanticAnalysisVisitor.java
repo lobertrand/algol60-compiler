@@ -50,6 +50,14 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
     }
 
+    private void pushTable() {
+        currentSymbolTable = currentSymbolTable.createChild();
+    }
+
+    private void popTable() {
+        currentSymbolTable = currentSymbolTable.getParent();
+    }
+
     @Override
     public Type visit(DefaultAST ast) {
         for (DefaultAST t : ast) {
@@ -69,7 +77,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(BlockAST ast) {
-        currentSymbolTable = currentSymbolTable.createChild();
+        pushTable();
         for (DefaultAST t : ast) {
             try {
                 t.accept(this);
@@ -77,7 +85,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                 exceptions.add(e);
             }
         }
-        currentSymbolTable = currentSymbolTable.getParent();
+        popTable();
         return Type.VOID;
     }
 
@@ -101,79 +109,118 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ProcDecAST ast) {
-        SymbolTable procSymbolTable = currentSymbolTable;
+        SymbolTable baseSymbolTable = currentSymbolTable;
 
-        int n = ast.getChildCount();
-        String procname = null;
-        Procedure proc;
-        List<Type> args = new ArrayList<Type>(); // liste de parametres
-        List<Type> arg = new ArrayList<Type>(); // liste de paramentres dans l'ordre
-        List<Symbol> variables = new ArrayList<>();
+        DefaultAST procHeading = ast.findFirst(Algol60Parser.PROC_HEADING);
+        DefaultAST block = ast.findFirst(Algol60Parser.BLOCK);
+        DefaultAST typeAST = ast.findFirst(Algol60Parser.TYPE);
 
-        DefaultAST procHeading = null;
-        DefaultAST block = null;
-        Type type = Type.VOID;
-        if (n == 2) {
-            procHeading = ast.getChildAST(0);
-            block = ast.getChildAST(1);
-        } else if (n == 3) {
-            procHeading = ast.getChildAST(1);
-            type = Type.fromString(ast.getChild(0).getText());
-            block = ast.getChildAST(2);
+        Type procType = typeAST != null ? Type.fromString(typeAST.getText()) : Type.VOID;
+        String procName = procHeading.getChild(0).getText();
+
+        Symbol conflicting = currentSymbolTable.resolveInScope(procName);
+        if (conflicting != null) {
+            String msg =
+                    String.format(
+                            "Identifier '%s' is already used by %s in this scope",
+                            procName, conflicting.getKind().withPronoun());
+            exceptions.add(new SymbolRedeclarationException(msg, procHeading));
         }
-        procname = procHeading.getChild(0).getText();
 
-        currentSymbolTable = currentSymbolTable.createChild();
+        pushTable(); // Enter symbol table of procedure
 
-        if (type != Type.VOID) {
-            Symbol returnValue = new Variable(procname, type);
+        DefaultAST paramPart = procHeading.findFirst(Algol60Parser.PARAM_PART);
+        DefaultAST valuePart = procHeading.findFirst(Algol60Parser.VALUE_PART);
+        DefaultAST specPart = procHeading.findFirst(Algol60Parser.SPEC_PART);
+
+        // Collect procedure parameters in order
+        List<String> paramNames = new ArrayList<>();
+        List<DefaultAST> paramTrees = new ArrayList<>();
+        if (paramPart != null) {
+            for (DefaultAST idf : paramPart.getChild(0)) {
+                paramNames.add(idf.getText());
+                paramTrees.add(idf);
+            }
+        }
+
+        // Collect types and corresponding names and trees
+        List<Type> specTypes = new ArrayList<>();
+        List<String> specNames = new ArrayList<>();
+        List<DefaultAST> specTrees = new ArrayList<>();
+        if (specPart != null) {
+            for (DefaultAST argType : specPart) {
+                Type parameterType = Type.fromString(argType.getChild(0).getText());
+                for (DefaultAST idf : argType.getChild(1)) {
+                    String parameterName = idf.getText();
+                    specNames.add(parameterName);
+                    specTypes.add(parameterType);
+                    specTrees.add(idf);
+                }
+            }
+        }
+
+        // Check value part
+        List<String> valueNames = new ArrayList<>();
+        if (valuePart != null) {
+            for (DefaultAST idf : valuePart.getChild(0)) {
+                String name = idf.getText();
+                if (!paramNames.contains(name)) {
+                    String msg =
+                            String.format(
+                                    "Value '%s' is not a parameter of procedure '%s'",
+                                    name, procName);
+                    exceptions.add(new ParameterMismatchException(msg, idf));
+                }
+                valueNames.add(idf.getText());
+            }
+        }
+
+        // Check specification part and define parameters
+        List<Type> orderedTypes = new ArrayList<>();
+        for (String name : paramNames) {
+            int index = specNames.indexOf(name);
+            if (index == -1) {
+                String msg =
+                        String.format(
+                                "Parameter '%s' has no type specified in "
+                                        + "specification part of procedure '%s'",
+                                name, procName);
+                exceptions.add(
+                        new ParameterMismatchException(
+                                msg, paramTrees.get(paramNames.indexOf(name))));
+            }
+            Type type = specTypes.get(index);
+            Parameter parameter = new Parameter(name, type);
+            if (!valueNames.contains(name)) parameter.setByValue(false);
+            orderedTypes.add(type);
+            currentSymbolTable.define(parameter);
+
+            // Clear parameter from spec lists
+            specNames.remove(index);
+            specTypes.remove(index);
+            specTrees.remove(index);
+        }
+
+        // Check for orphan declarations in specification part
+        for (String name : specNames) {
+            String msg = String.format("'%s' is not a parameter of procedure '%s'", name, procName);
+            DefaultAST tree = specTrees.get(specNames.indexOf(name));
+            exceptions.add(new ParameterMismatchException(msg, tree));
+        }
+
+        // Define procedure
+        Procedure procedure = new Procedure(procName, procType, orderedTypes);
+        procedure.setSymbolTable(currentSymbolTable);
+        baseSymbolTable.define(procedure);
+
+        // Define fictive result variable
+        if (procType != Type.VOID) {
+            Variable returnValue = new Variable(procName, procType);
+            returnValue.setResultValue(true);
             currentSymbolTable.define(returnValue);
         }
 
-        if (procHeading.getChildCount() > 2) {
-            int nbre = procHeading.getChild(3).getChildCount();
-            for (int i = 0; i < nbre; i++) {
-                for (int j = 0;
-                        j < procHeading.getChild(3).getChild(i).getChild(1).getChildCount();
-                        j++) {
-                    args.add(
-                            Type.fromString(
-                                    procHeading.getChild(3).getChild(i).getChild(0).getText()));
-                    variables.add(
-                            new Parameter(
-                                    procHeading
-                                            .getChild(3)
-                                            .getChild(i)
-                                            .getChild(1)
-                                            .getChild(j)
-                                            .toString(),
-                                    Type.fromString(
-                                            procHeading
-                                                    .getChild(3)
-                                                    .getChild(i)
-                                                    .getChild(0)
-                                                    .getText())));
-                }
-            }
-
-            for (int u = 0; u < procHeading.getChild(1).getChild(0).getChildCount(); u++) {
-                for (int i = 0; i < variables.size(); i++) {
-                    if (procHeading
-                            .getChild(1)
-                            .getChild(0)
-                            .getChild(u)
-                            .getText()
-                            .equals(variables.get(i).getIdentifier())) {
-                        currentSymbolTable.define(variables.get(i));
-                        arg.add(args.get(i));
-                    }
-                }
-            }
-        }
-
-        proc = new Procedure(procname, type, arg);
-        procSymbolTable.define(proc);
-
+        // Semantic controls on the procedure's block statements
         for (DefaultAST t : block) {
             try {
                 t.accept(this);
@@ -181,12 +228,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                 exceptions.add(e);
             }
         }
-        if (currentSymbolTable.isDeclaredInScope(procname)) {
-            throw new SymbolRedeclarationException(
-                    String.format("Procedure '%s' is already declared in scope", procname),
-                    procHeading);
-        }
-        currentSymbolTable = currentSymbolTable.getParent();
+
+        popTable(); // Quit symbol table of procedure
 
         return Type.VOID;
     }
@@ -217,7 +260,14 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         Symbol leftSymbol = currentSymbolTable.resolve(leftName);
         if (leftSymbol == null) {
             throw new SymbolNotDeclaredException(
-                    String.format("Assignment %s not declared.", leftName), ast);
+                    String.format("'%s' is not declared", leftName), ast);
+        }
+        if (!leftSymbol.getKind().isAssignable()) {
+            throw new TypeMismatchException(
+                    String.format(
+                            "Cannot assign to '%s' which is %s",
+                            leftName, leftSymbol.getKind().withPronoun()),
+                    ast);
         }
 
         Type rightType = null;
@@ -226,7 +276,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             Symbol rightSymbol = currentSymbolTable.resolve(rightName);
             if (rightSymbol == null) {
                 throw new SymbolNotDeclaredException(
-                        String.format("Assignment %s not declared.", rightName), ast);
+                        String.format("Variable '%s' is not declared.", rightName), ast);
             }
             rightType = rightSymbol.getType();
 
@@ -236,8 +286,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (leftSymbol.getType() != rightType) {
             throw new TypeMismatchException(
                     String.format(
-                            "Type mismatch: %s and %s in assignment",
-                            leftName, ast.getChildAST(1).getText()),
+                            "Cannot assign %s to '%s' of type %s",
+                            rightType.withPronoun(), leftName, leftSymbol.getType()),
                     ast);
         }
         return Type.VOID;

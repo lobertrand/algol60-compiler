@@ -10,7 +10,7 @@ options {
     output = AST;
     backtrack=false;
     k=1;
-    ASTLabelType=CommonTree;
+    ASTLabelType=DefaultAST;
 }
 
 tokens {
@@ -63,10 +63,12 @@ tokens {
 
 @parser::header {
 package eu.telecomnancy;
+import eu.telecomnancy.ast.DefaultAST;
 }
 
 @lexer::header {
 package eu.telecomnancy;
+import eu.telecomnancy.ast.DefaultAST;
 }
 
 @rulecatch {
@@ -96,7 +98,7 @@ statement
     |   identifier! id_statement_end[$identifier.tree]
     ;
     
-id_statement_end[CommonTree id]
+id_statement_end[DefaultAST id]
     :   procedure_call_end[$id]
     |   assignment_end[$id]
     |   label_dec_end[$id]
@@ -108,7 +110,7 @@ goto_statement
     :   'goto' identifier -> ^(GOTO identifier)
     ;
 
-label_dec_end[CommonTree id]
+label_dec_end[DefaultAST id]
     :   ':' -> ^(LABEL_DEC {$id})
     ;
 
@@ -133,9 +135,9 @@ variable_declaration_end[Token type]
     ;
 
 identifier_list_head[Token type]
-    :   identifier_list -> ^(VAR_DEC {new CommonTree($type)} identifier_list)
+    :   identifier_list -> ^(VAR_DEC {new DefaultAST($type)} identifier_list)
     |   'array' identifier '[' boundaries(',' boundaries)* ']' 
-        -> ^(ARRAY_DEC {new CommonTree($type)} identifier ^(BOUND_LIST boundaries+))
+        -> ^(ARRAY_DEC {new DefaultAST($type)} identifier ^(BOUND_LIST boundaries+))
     ;
 
 // Procedure declaration
@@ -146,7 +148,7 @@ procedure_declaration
 
 procedure_declaration_end[Token type]
     :   'procedure' procedure_heading procedure_body
-        -> ^(PROC_DEC {new CommonTree($type)} procedure_heading procedure_body)
+        -> ^(PROC_DEC {new DefaultAST($type)} procedure_heading procedure_body)
     ;
 
 procedure_declaration_no_type
@@ -188,7 +190,7 @@ procedure_call
     :   identifier! procedure_call_end[$identifier.tree]
     ;
 
-procedure_call_end[CommonTree id]
+procedure_call_end[DefaultAST id]
     :   '(' actual_parameter_list ')'
         -> ^(PROC_CALL {$id} actual_parameter_list)
     ;
@@ -205,7 +207,7 @@ assignment
     :   identifier! assignment_end[$identifier.tree]
     ;
 
-assignment_end[CommonTree id]
+assignment_end[DefaultAST id]
     :   ':=' arithmetic_expression -> ^(ASSIGNMENT {$id} arithmetic_expression)
     |   '[' bound (',' bound)* ']' ':=' arithmetic_expression
         -> ^(ARRAY_ASSIGNMENT {$id} ^(INDICES bound+) arithmetic_expression)
@@ -220,7 +222,7 @@ bound
     :   arithmetic_expression
     ;
 
-array_call_end[CommonTree id]
+array_call_end[DefaultAST id]
     :   '[' actual_parameter_list ']'
         -> ^(ARRAY_CALL {$id} actual_parameter_list)
     ;
@@ -234,7 +236,7 @@ expression
     |   scientific_expression
     ;
 
-id_expression_end[CommonTree id]
+id_expression_end[DefaultAST id]
     :   array_call_end[$id]
     |   procedure_call_end[$id]
     |   -> {$id}
@@ -246,7 +248,7 @@ arithmetic_expression
     :   term! arithmetic_expression_end[$term.tree]
     ;
 
-arithmetic_expression_end[CommonTree t2]
+arithmetic_expression_end[DefaultAST t2]
     :   '+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
     |   '-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
     |   -> {$t2}
@@ -256,7 +258,7 @@ term
     :   expression! term1[$expression.tree]
     ;
 
-term1[CommonTree t2]
+term1[DefaultAST t2]
     :   '*' term -> ^(MULT {$t2} term?)
     |   '/' term -> ^(DIV {$t2} term?)
     |   '//' term -> ^(INT_DIV {$t2} term?)
@@ -290,7 +292,7 @@ logical_statement
     |   LOGICAL_VALUE
     ;
 
-logical_statement_end[CommonTree t2]
+logical_statement_end[DefaultAST t2]
     :   boolean_operator arithmetic_expression-> ^(boolean_operator {$t2} arithmetic_expression)
     ;
 
@@ -310,8 +312,8 @@ scientific_expression
     ;
 
 scientific_expression_end[Token real]
-    :   '#' INTEGER -> ^(POW_10 {new CommonTree($real)} INTEGER)
-    |   -> ^(REAL {new CommonTree($real)})
+    :   '#' INTEGER -> ^(POW_10 {new DefaultAST($real)} INTEGER)
+    |   -> ^(REAL {new DefaultAST($real)})
     ;
 
 string

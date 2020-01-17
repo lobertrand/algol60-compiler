@@ -7,7 +7,7 @@ public class UndeclaredLabel extends Symbol {
     private Tree tree;
 
     public UndeclaredLabel(String idf, Tree tree) {
-        super(idf, Type.VOID, Kind.LABEL);
+        super(idf, Type.VOID, Kind.UNDECLARED_LABEL);
         this.tree = tree;
     }
 
