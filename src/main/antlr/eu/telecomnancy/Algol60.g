@@ -68,13 +68,14 @@ import eu.telecomnancy.ast.DefaultAST;
 
 @lexer::header {
 package eu.telecomnancy;
-import eu.telecomnancy.ast.DefaultAST;
 }
 
-@rulecatch {
-    catch (RecognitionException e) {
-        throw e;
-    }
+@parser::members {
+private List<RecognitionException> exceptions = new ArrayList<>();
+public List<RecognitionException> getExceptions() { return exceptions; }
+public boolean hasExceptions() { return !exceptions.isEmpty(); }
+@Override
+public void reportError(RecognitionException e) { exceptions.add(e); }
 }
 
 // PARSER RULES

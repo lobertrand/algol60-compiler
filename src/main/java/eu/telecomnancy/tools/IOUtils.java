@@ -1,5 +1,6 @@
 package eu.telecomnancy.tools;
 
+import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.semantic.SemanticException;
 import java.io.File;
 import java.io.FileWriter;
@@ -35,6 +36,12 @@ public class IOUtils {
             msg = "Unexpected token '" + ex.token.getText() + "'";
         } catch (FailedPredicateException ex) {
             msg = "Failed predicate at token '" + ex.token.getText() + "'";
+        } catch (MissingTokenException ex) {
+            if (ex.expecting >= 0) {
+                msg = "Missing token " + Algol60Parser.tokenNames[ex.expecting];
+            } else {
+                msg = "Missing token";
+            }
         } catch (MismatchedTokenException ex) {
             msg = "Mismatched token '" + ex.token.getText() + "'";
         } catch (RecognitionException ex) {
@@ -59,7 +66,7 @@ public class IOUtils {
                             + StringTools.YELLOW
                             + "^"
                             + StringTools.RESET;
-            System.out.println(String.format(" %5s | ", ""));
+            // System.out.println(String.format(" %5s | ", ""));
             System.out.println(String.format(" %5d | %s", lineNumber, line));
             System.out.println(String.format(" %5s | %s", "", pointer));
         }

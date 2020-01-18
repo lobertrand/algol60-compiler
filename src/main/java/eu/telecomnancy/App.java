@@ -43,12 +43,21 @@ public class App {
         Algol60Parser parser = new Algol60Parser(tokens);
         parser.setTreeAdaptor(new ASTAdaptor());
         Algol60Parser.prog_return pr = null;
+
         try {
             pr = parser.prog();
-            IOUtils.log("Syntactic analysis successful");
-        } catch (RecognitionException e) {
-            IOUtils.printRecognitionException(e, input);
+        } catch (Exception e) {
+            e.printStackTrace();
             IOUtils.exit();
+        }
+
+        if (parser.hasExceptions()) {
+            for (RecognitionException e : parser.getExceptions()) {
+                IOUtils.printRecognitionException(e, input);
+            }
+            IOUtils.exit();
+        } else {
+            IOUtils.log("Syntactic analysis successful");
         }
 
         // AST generation

@@ -288,7 +288,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                     String.format(
                             "Cannot assign %s to '%s' of type %s",
                             rightType.withPronoun(), leftName, leftSymbol.getType()),
-                    ast);
+                    ast.getChild(1));
         }
         return Type.VOID;
     }

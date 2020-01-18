@@ -15,6 +15,7 @@ public class Algol60ParserTest {
         Algol60Parser parser = new Algol60Parser(tokens);
         parser.setTreeAdaptor(new ASTAdaptor());
         parser.prog();
+        if (parser.hasExceptions()) throw parser.getExceptions().get(0);
     }
 
     @Test
