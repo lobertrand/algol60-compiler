@@ -170,8 +170,9 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                                     "Value '%s' is not a parameter of procedure '%s'",
                                     name, procName);
                     exceptions.add(new ParameterMismatchException(msg, idf));
+                } else {
+                    valueNames.add(idf.getText());
                 }
-                valueNames.add(idf.getText());
             }
         }
 
@@ -188,17 +189,18 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                 exceptions.add(
                         new ParameterMismatchException(
                                 msg, paramTrees.get(paramNames.indexOf(name))));
-            }
-            Type type = specTypes.get(index);
-            Parameter parameter = new Parameter(name, type);
-            if (!valueNames.contains(name)) parameter.setByValue(false);
-            orderedTypes.add(type);
-            currentSymbolTable.define(parameter);
+            } else {
+                Type type = specTypes.get(index);
+                Parameter parameter = new Parameter(name, type);
+                if (!valueNames.contains(name)) parameter.setByValue(false);
+                orderedTypes.add(type);
+                currentSymbolTable.define(parameter);
 
-            // Clear parameter from spec lists
-            specNames.remove(index);
-            specTypes.remove(index);
-            specTrees.remove(index);
+                // Clear parameter from spec lists
+                specNames.remove(index);
+                specTypes.remove(index);
+                specTrees.remove(index);
+            }
         }
 
         // Check for orphan declarations in specification part
