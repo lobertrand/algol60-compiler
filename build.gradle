@@ -31,8 +31,9 @@ dependencies {
 
 application {
     // Define the main class for the application
-    mainClassName = 'eu.telecomnancy.App'
-    sourceCompatibility = 1.8
+    mainClassName = 'eu.telecomnancy.Main'
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 spotless {
@@ -53,4 +54,13 @@ run {
 generateGrammarSource {
     maxHeapSize = "64m"
     arguments += ["-visitor", "-long-messages"]
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'eu.telecomnancy.Main'
+    }
+    from {
+        configurations.runtime.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }

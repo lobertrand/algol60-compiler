@@ -78,6 +78,14 @@ public boolean hasExceptions() { return !exceptions.isEmpty(); }
 public void reportError(RecognitionException e) { exceptions.add(e); }
 }
 
+@lexer::members {
+private List<RecognitionException> exceptions = new ArrayList<>();
+public List<RecognitionException> getExceptions() { return exceptions; }
+public boolean hasExceptions() { return !exceptions.isEmpty(); }
+@Override
+public void reportError(RecognitionException e) { exceptions.add(e); }
+}
+
 // PARSER RULES
 
 prog:   block EOF -> ^(ROOT block)

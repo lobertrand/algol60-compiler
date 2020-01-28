@@ -1,5 +1,7 @@
 package eu.telecomnancy.tools;
 
+import static eu.telecomnancy.tools.StringTools.*;
+
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.semantic.SemanticException;
 import java.io.File;
@@ -13,11 +15,11 @@ import org.antlr.stringtemplate.StringTemplate;
 public class IOUtils {
 
     public static void log(Object o) {
-        System.out.println(StringTools.CYAN + "Algol60> " + StringTools.RESET + o);
+        System.out.println(CYAN + "Algol60> " + RESET + o);
     }
 
     public static void logError(Object o) {
-        System.out.println(StringTools.YELLOW + "Algol60> " + StringTools.RESET + o);
+        System.out.println(YELLOW + "Algol60> " + RESET + o);
     }
 
     public static void print(Object o) {
@@ -33,7 +35,11 @@ public class IOUtils {
         try {
             throw e;
         } catch (NoViableAltException ex) {
-            msg = "Unexpected token '" + ex.token.getText() + "'";
+            if (ex.token != null) {
+                msg = "Unexpected token '" + ex.token.getText() + "'";
+            } else {
+                msg = "Unexpected token";
+            }
         } catch (FailedPredicateException ex) {
             msg = "Failed predicate at token '" + ex.token.getText() + "'";
         } catch (MissingTokenException ex) {
@@ -61,12 +67,7 @@ public class IOUtils {
         String[] inputLines = text.split("\n");
         if (lineNumber - 1 >= 0 && lineNumber - 1 < inputLines.length) {
             String line = inputLines[lineNumber - 1].replace('\t', ' ');
-            String pointer =
-                    StringTools.repeat(" ", colNumber)
-                            + StringTools.YELLOW
-                            + "^"
-                            + StringTools.RESET;
-            // System.out.println(String.format(" %5s | ", ""));
+            String pointer = repeat(" ", colNumber) + YELLOW + "^" + RESET;
             System.out.println(String.format(" %5d | %s", lineNumber, line));
             System.out.println(String.format(" %5s | %s", "", pointer));
         }

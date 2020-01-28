@@ -34,6 +34,10 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         return exceptions;
     }
 
+    public boolean hasExceptions() {
+        return !exceptions.isEmpty();
+    }
+
     private void checkLabelDeclarations() {
         Set<String> declaredLabelIdentifiers =
                 declaredLabels.stream().map(Symbol::getIdentifier).collect(Collectors.toSet());
