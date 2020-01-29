@@ -72,7 +72,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(RootAST ast) {
-        ast.getChildAST(0).accept(this);
+        ast.getChild(0).accept(this);
         // Final operations
         checkLabelDeclarations();
         exceptions.sort(Comparator.comparingInt(SemanticException::getLine));
@@ -96,7 +96,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     @Override
     public Type visit(VarDecAST ast) {
         Type type = Type.fromString(ast.getChild(0).getText());
-        DefaultAST idList = ast.getChildAST(1);
+        DefaultAST idList = ast.getChild(1);
 
         for (DefaultAST t : idList) {
             String name = t.getText();
@@ -277,7 +277,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
 
         Type rightType = null;
-        if (ast.getChildAST(1).getType() == Algol60Parser.IDENTIFIER) {
+        if (ast.getChild(1).getType() == Algol60Parser.IDENTIFIER) {
             String rightName = ast.getChild(1).getText();
             Symbol rightSymbol = currentSymbolTable.resolve(rightName);
             if (rightSymbol == null) {
@@ -287,7 +287,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             rightType = rightSymbol.getType();
 
         } else {
-            rightType = ast.getChildAST(1).accept(this);
+            rightType = ast.getChild(1).accept(this);
         }
         if (leftSymbol.getType() != rightType) {
             throw new TypeMismatchException(
@@ -356,14 +356,14 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(AddAST ast) {
-        String leftPart = ast.getChildAST(0).getText();
-        String rightPart = ast.getChildAST(1).getText();
+        String leftPart = ast.getChild(0).getText();
+        String rightPart = ast.getChild(1).getText();
         Symbol leftSymbol = currentSymbolTable.resolve(leftPart);
         Symbol rightSymbol = currentSymbolTable.resolve(rightPart);
         if (leftSymbol == null) {
-            if (ast.getChildAST(0).getType() != Algol60Parser.STR) {
+            if (ast.getChild(0).getType() != Algol60Parser.STR) {
                 if (rightSymbol == null) {
-                    if (ast.getChildAST(1).getType() != Algol60Parser.STR) {
+                    if (ast.getChild(1).getType() != Algol60Parser.STR) {
                         //
                     }
                 }
@@ -385,7 +385,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(LabelDecAST ast) {
-        String name = ast.getChildAST(0).getText();
+        String name = ast.getChild(0).getText();
 
         if (currentSymbolTable.isDeclaredInScope(name)) {
             throw new SymbolRedeclarationException(
