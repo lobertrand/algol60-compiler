@@ -157,7 +157,7 @@ public class ProcDecTest {
         content.line("end");
 
         Result result = checkSemantics(content);
-         assertTrue("There should be no exception", result.exceptions.isEmpty());
+        assertTrue("There should be no exception", result.exceptions.isEmpty());
     }
 
     @Test

@@ -3,9 +3,11 @@ package eu.telecomnancy;
 import eu.telecomnancy.ast.ASTAdaptor;
 import eu.telecomnancy.semantic.SemanticAnalysisVisitor;
 import eu.telecomnancy.semantic.SemanticException;
+import eu.telecomnancy.symbols.PredifinedSymbols;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.tools.IOUtils;
 import java.io.FileInputStream;
+import java.io.IOException;
 import org.antlr.runtime.ANTLRInputStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -32,8 +34,15 @@ public class Main {
         reportSyntacticExceptions(parser, input);
         if (lexer.hasExceptions() || parser.hasExceptions()) IOUtils.exit();
 
+        try {
+            IOUtils.generateDotTree(pr.getTree(), "AST");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         // Semantic analysis
         SymbolTable symbolTable = new SymbolTable();
+        PredifinedSymbols.get().forEach(symbolTable::define);
         SemanticAnalysisVisitor semanticAnalysisVisitor = new SemanticAnalysisVisitor(symbolTable);
         pr.getTree().accept(semanticAnalysisVisitor);
         IOUtils.print(symbolTable);

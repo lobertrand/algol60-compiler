@@ -261,7 +261,15 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ProcCallAST ast) {
-        return Type.VOID;
+        String procCallName = ast.getChild(0).getText();
+        Symbol s = currentSymbolTable.resolve(procCallName);
+        if (currentSymbolTable.resolve(procCallName) == null) {
+            throw new SymbolNotDeclaredException("Procedure not declared", ast);
+        }
+
+        Type type = s.getType();
+
+        return type;
     }
 
     @Override
