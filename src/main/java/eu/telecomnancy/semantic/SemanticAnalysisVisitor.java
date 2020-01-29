@@ -377,12 +377,40 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(Pow10AST ast) {
-        return Type.VOID;
+        return Type.REAL;
     }
 
     @Override
     public Type visit(PowAST ast) {
-        return Type.VOID;
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        Type leftType = getType(leftPart);
+        Type rightType = getType(rightPart);
+        //        if (leftType != null && rightType != null) {
+        if (!typeCompat.get(leftType).contains(rightType)) {
+            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
+        }
+        switch (leftType) {
+            case REAL:
+                switch (rightType) {
+                    case REAL:
+                    case INTEGER:
+                        return Type.REAL;
+                    default:
+                        return Type.VOID;
+                }
+            case INTEGER:
+                switch (rightType) {
+                    case REAL:
+                        return Type.REAL;
+                    case INTEGER:
+                        return Type.INTEGER;
+                    default:
+                        return Type.VOID;
+                }
+            default:
+                return Type.VOID;
+        }
     }
 
     @Override
@@ -406,7 +434,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
         }
 
-        return Type.REAL;
+        return Type.INTEGER;
     }
 
     @Override
@@ -445,6 +473,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             case Algol60Parser.MULT:
             case Algol60Parser.DIV:
             case Algol60Parser.INT_DIV:
+            case Algol60Parser.POW:
+            case Algol60Parser.POW_10:
                 type = part.accept(this);
                 break;
             case Algol60Parser.INT:
