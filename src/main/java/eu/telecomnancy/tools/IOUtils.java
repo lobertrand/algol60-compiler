@@ -30,7 +30,7 @@ public class IOUtils {
         System.exit(0);
     }
 
-    public static void printRecognitionException(RecognitionException e, ANTLRInputStream input) {
+    public static void printRecognitionException(RecognitionException e, String input) {
         String msg = "";
         try {
             throw e;
@@ -55,12 +55,12 @@ public class IOUtils {
         }
         msg += " at line " + e.line;
         logError(msg);
-        printInputLine(e.line, e.charPositionInLine, input.toString());
+        printInputLine(e.line, e.charPositionInLine, input);
     }
 
-    public static void printSemanticException(SemanticException e, ANTLRInputStream input) {
+    public static void printSemanticException(SemanticException e, String input) {
         logError(e);
-        printInputLine(e.getLine(), e.getColumn(), input.toString());
+        printInputLine(e.getLine(), e.getColumn(), input);
     }
 
     private static void printInputLine(int lineNumber, int colNumber, String text) {

@@ -47,13 +47,15 @@ public class Main {
         pr.getTree().accept(semanticAnalysisVisitor);
         IOUtils.print(symbolTable);
         reportSemanticExceptions(semanticAnalysisVisitor, input);
+
+        // ASTTools.depthFirstSearch(pr.getTree());
     }
 
     private static void reportSemanticExceptions(
             SemanticAnalysisVisitor semanticAnalysisVisitor, ANTLRInputStream input) {
         if (semanticAnalysisVisitor.hasExceptions()) {
             for (SemanticException e : semanticAnalysisVisitor.getExceptions()) {
-                IOUtils.printSemanticException(e, input);
+                IOUtils.printSemanticException(e, input.toString());
             }
         } else {
             IOUtils.log("Semantic analysis successful");
@@ -63,7 +65,7 @@ public class Main {
     private static void reportSyntacticExceptions(Algol60Parser parser, ANTLRInputStream input) {
         if (parser.hasExceptions()) {
             for (RecognitionException e : parser.getExceptions()) {
-                IOUtils.printRecognitionException(e, input);
+                IOUtils.printRecognitionException(e, input.toString());
             }
         } else {
             IOUtils.log("Syntactic analysis successful");
@@ -73,7 +75,7 @@ public class Main {
     private static void reportLexicalExceptions(Algol60Lexer lexer, ANTLRInputStream input) {
         if (lexer.hasExceptions()) {
             for (RecognitionException e : lexer.getExceptions()) {
-                IOUtils.printRecognitionException(e, input);
+                IOUtils.printRecognitionException(e, input.toString());
             }
         } else {
             IOUtils.log("Lexical analysis successful");

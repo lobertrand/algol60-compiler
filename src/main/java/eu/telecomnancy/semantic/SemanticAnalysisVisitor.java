@@ -267,6 +267,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ProcCallAST ast) {
+        System.out.println("proc call sdfgdyhdfhyrfhy");
+
         String procCallName = ast.getChild(0).getText();
         Symbol s = currentSymbolTable.resolve(procCallName);
         if (s == null) {
@@ -300,6 +302,62 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(IfStatementAST ast) {
+        DefaultAST ifDef = ast.findFirst(Algol60Parser.IF_DEF);
+        DefaultAST operator = ifDef.getChild(0);
+        DefaultAST firstOperand = operator.getChild(0);
+        DefaultAST secondOperand = operator.getChild(1);
+        Type leftType, rightType;
+        String leftName, rightName;
+        if (firstOperand.getType() == Algol60Parser.IDENTIFIER) {
+            Symbol s = currentSymbolTable.resolve(firstOperand.getText());
+            if (s == null) {
+                throw new SymbolNotDeclaredException(
+                        String.format("'%s' is not declared", firstOperand.getText()),
+                        firstOperand);
+            }
+            leftType = s.getType();
+            leftName = s.getIdentifier();
+        } else {
+            leftType = firstOperand.accept(this);
+            leftName = firstOperand.getChild(0).getText();
+        }
+        if (secondOperand.getType() == Algol60Parser.IDENTIFIER) {
+            Symbol s = currentSymbolTable.resolve(secondOperand.getText());
+            if (s == null) {
+                throw new SymbolNotDeclaredException(
+                        String.format("'%s' is not declared", secondOperand.getText()),
+                        secondOperand);
+            }
+            rightType = s.getType();
+            rightName = s.getIdentifier();
+        } else {
+            rightType = secondOperand.accept(this);
+            rightName = secondOperand.getChild(0).getText();
+        }
+        if (operator.getType() == Algol60Parser.RELATIONAL_OPERATOR) {
+            if (rightType == leftType) {
+                if (rightType == Type.STRING) {
+                    throw new TypeMismatchException(
+                            String.format(
+                                    "cannot compare strings '%s' and '%s'", leftName, rightName),
+                            firstOperand);
+                }
+            } else {
+                throw new TypeMismatchException(
+                        String.format(
+                                "'%s' and '%s' have different types ('%s' and '%s')",
+                                leftName, rightName, leftType, rightType),
+                        firstOperand);
+            }
+        }
+        DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
+        thenDef.accept(this);
+        DefaultAST elseDef = ast.findFirst(Algol60Parser.ELSE_DEF);
+
+        if (elseDef != null) {
+            elseDef.accept(this);
+        }
+
         return Type.VOID;
     }
 

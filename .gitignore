@@ -31,3 +31,5 @@ output/
 doc/report_trees/*.pdf
 out/
 
+/test.alg
+

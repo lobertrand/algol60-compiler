@@ -5,6 +5,7 @@ import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.ASTAdaptor;
 import eu.telecomnancy.ast.DefaultAST;
 import eu.telecomnancy.symbols.SymbolTable;
+import eu.telecomnancy.tools.IOUtils;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -34,9 +35,16 @@ public class Helper {
         parser.setTreeAdaptor(new ASTAdaptor());
         DefaultAST ast = parser.prog().getTree();
 
-        List<RecognitionException> exceptions = lexer.getExceptions();
-        exceptions.addAll(parser.getExceptions());
-        for (RecognitionException e : exceptions) throw e;
+        if (lexer.hasExceptions()) {
+            RecognitionException e = lexer.getExceptions().get(0);
+            IOUtils.printRecognitionException(e, stream.toString());
+            throw e;
+        }
+        if (parser.hasExceptions()) {
+            RecognitionException e = parser.getExceptions().get(0);
+            IOUtils.printRecognitionException(e, stream.toString());
+            throw e;
+        }
 
         SymbolTable symbolTable = new SymbolTable();
         SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor(symbolTable);

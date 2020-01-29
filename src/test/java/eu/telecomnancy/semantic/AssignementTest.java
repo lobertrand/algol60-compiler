@@ -4,6 +4,7 @@ import static eu.telecomnancy.semantic.Helper.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import eu.telecomnancy.tools.IOUtils;
 import java.util.Set;
 import org.antlr.runtime.RecognitionException;
 import org.junit.Test;
@@ -44,15 +45,14 @@ public class AssignementTest {
         Content c = new Content();
         c.line("begin");
         c.line("  boolean b;");
-        c.line("  real r;");
-        c.line("  string s;");
-        c.line("  integer i;");
-        c.line("  b := true;");
-        c.line("  b := false;");
-        c.line("  b := b;");
+        //        c.line("  b := true;");
+        //        c.line("  b := false;");
+        c.line("  b := b");
+        c.line("end");
 
         Result result = checkSemantics(c);
-        assertTrue("There should be no exceptions", result.exceptions.isEmpty());
+        result.exceptions.forEach(e -> IOUtils.printSemanticException(e, c.toString()));
+        assertEquals("There should be no exceptions", 0, result.exceptions.size());
     }
 
     @Test
