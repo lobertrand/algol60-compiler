@@ -11,11 +11,11 @@ import org.junit.Test;
 public class AssignementTest {
 
     @Test
-    public void testSimple() throws RecognitionException {
+    public void testIntegerConstant() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
-        c.line("  integer a ;");
-        c.line("a := 3");
+        c.line("  integer a;");
+        c.line("  a := 3");
         c.line("end");
 
         Result result = checkSemantics(c);
@@ -24,19 +24,58 @@ public class AssignementTest {
     }
 
     @Test
-    public void testTypes() throws RecognitionException {
+    public void testIntegerConstantNested() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
-        c.line("  integer a  ;");
-        c.line("  a := 3 ;");
-        c.line("  begin integer b;");
-        c.line("    b := a ");
+        c.line("  integer a;");
+        c.line("  a := 3;");
+        c.line("  begin");
+        c.line("    integer b;");
+        c.line("    b := a");
         c.line("  end");
         c.line("end");
         Result result = checkSemantics(c);
         assertTrue("There should be no exception", result.exceptions.isEmpty());
-
         assertEquals("There should be 2 sub tables", 2, subTables(result.symbolTable));
+    }
+
+    @Test
+    public void testSimpleBooleans() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  boolean b;");
+        c.line("  real r;");
+        c.line("  string s;");
+        c.line("  integer i;");
+        c.line("  b := true;");
+        c.line("  b := false;");
+        c.line("  b := b;");
+
+        Result result = checkSemantics(c);
+        assertTrue("There should be no exceptions", result.exceptions.isEmpty());
+    }
+
+    @Test
+    public void testBooleansFail() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  boolean b;");
+        c.line("  b := 12;");
+        c.line("  b := 12.5;");
+        c.line("  b := \"str\";");
+        c.line("  b := r;");
+        c.line("  b := s;");
+        c.line("  b := i");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        assertEquals("There should be 6 exceptions", 6, result.exceptions.size());
+        assertTrue("There should and exception at line 3", result.exceptionAt(3));
+        assertTrue("There should and exception at line 4", result.exceptionAt(4));
+        assertTrue("There should and exception at line 5", result.exceptionAt(5));
+        assertTrue("There should and exception at line 6", result.exceptionAt(6));
+        assertTrue("There should and exception at line 7", result.exceptionAt(7));
+        assertTrue("There should and exception at line 8", result.exceptionAt(8));
     }
 
     @Test
@@ -57,7 +96,7 @@ public class AssignementTest {
     }
 
     @Test
-    public void test() throws RecognitionException {
+    public void testWrongType2() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  integer a, b;");
@@ -71,9 +110,8 @@ public class AssignementTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        Set<Integer> lines = getLines(result.exceptions);
         assertEquals("There should be 2 exceptions", 2, result.exceptions.size());
-        assertTrue("There should be an exception at line 5", lines.contains(5));
-        assertTrue("There should be an exception at line 8", lines.contains(8));
+        assertTrue("There should be an exception at line 5", result.exceptionAt(5));
+        assertTrue("There should be an exception at line 8", result.exceptionAt(8));
     }
 }

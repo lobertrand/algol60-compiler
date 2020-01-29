@@ -19,6 +19,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     private SymbolTable currentSymbolTable;
     private Set<UndeclaredLabel> undeclaredLabels;
     private Set<Label> declaredLabels;
+    private Map<Type, Set<Type>> typeCompat;
 
     public SemanticAnalysisVisitor(SymbolTable symbolTable) {
         if (symbolTable == null) {
@@ -28,6 +29,9 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         this.exceptions = new ArrayList<>();
         this.undeclaredLabels = new LinkedHashSet<>();
         this.declaredLabels = new LinkedHashSet<>();
+        this.typeCompat = new HashMap<>();
+        typeCompat.put(Type.REAL, new HashSet<>(Arrays.asList(Type.INTEGER, Type.REAL)));
+        typeCompat.put(Type.INTEGER, new HashSet<>(Arrays.asList(Type.INTEGER, Type.REAL)));
     }
 
     public List<SemanticException> getExceptions() {
@@ -256,7 +260,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
         popTable(); // Quit symbol table of procedure
 
-        return Type.VOID;
+        return procType;
     }
 
     @Override
@@ -338,12 +342,35 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(MultAST ast) {
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        Type leftType = getType(leftPart);
+        Type rightType = getType(rightPart);
+        //        if (leftType != null && rightType != null) {
+        if (!typeCompat.get(leftType).contains(rightType)) {
+            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
+        }
+        if (leftType == Type.REAL || rightType == Type.REAL) {
+            return Type.REAL;
+        } else if (leftType == Type.INTEGER && rightType == Type.INTEGER) {
+            return Type.INTEGER;
+        }
+        //        }
         return Type.VOID;
     }
 
     @Override
     public Type visit(DivAST ast) {
-        return Type.VOID;
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        Type leftType = getType(leftPart);
+        Type rightType = getType(rightPart);
+        //        if (leftType != null && rightType != null) {
+        if (!typeCompat.get(leftType).contains(rightType)) {
+            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
+        }
+
+        return Type.REAL;
     }
 
     @Override
@@ -358,12 +385,40 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(Pow10AST ast) {
-        return Type.VOID;
+        return Type.REAL;
     }
 
     @Override
     public Type visit(PowAST ast) {
-        return Type.VOID;
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        Type leftType = getType(leftPart);
+        Type rightType = getType(rightPart);
+        //        if (leftType != null && rightType != null) {
+        if (!typeCompat.get(leftType).contains(rightType)) {
+            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
+        }
+        switch (leftType) {
+            case REAL:
+                switch (rightType) {
+                    case REAL:
+                    case INTEGER:
+                        return Type.REAL;
+                    default:
+                        return Type.VOID;
+                }
+            case INTEGER:
+                switch (rightType) {
+                    case REAL:
+                        return Type.REAL;
+                    case INTEGER:
+                        return Type.INTEGER;
+                    default:
+                        return Type.VOID;
+                }
+            default:
+                return Type.VOID;
+        }
     }
 
     @Override
@@ -378,30 +433,87 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(IntDivAST ast) {
-        return Type.VOID;
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        Type leftType = getType(leftPart);
+        Type rightType = getType(rightPart);
+        //        if (leftType != null && rightType != null) {
+        if (!typeCompat.get(leftType).contains(rightType)) {
+            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
+        }
+
+        return Type.INTEGER;
     }
 
     @Override
     public Type visit(AddAST ast) {
-        String leftPart = ast.getChild(0).getText();
-        String rightPart = ast.getChild(1).getText();
-        Symbol leftSymbol = currentSymbolTable.resolve(leftPart);
-        Symbol rightSymbol = currentSymbolTable.resolve(rightPart);
-        if (leftSymbol == null) {
-            if (ast.getChild(0).getType() != Algol60Parser.STR) {
-                if (rightSymbol == null) {
-                    if (ast.getChild(1).getType() != Algol60Parser.STR) {
-                        //
-                    }
-                }
-            }
-        }
 
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        Type leftType = getType(leftPart);
+        Type rightType = getType(rightPart);
+        //        if (leftType != null && rightType != null) {
+        if (!typeCompat.get(leftType).contains(rightType)) {
+            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
+        }
+        if (leftType == Type.REAL || rightType == Type.REAL) {
+            return Type.REAL;
+        } else if (leftType == Type.INTEGER && rightType == Type.INTEGER) {
+            return Type.INTEGER;
+        }
+        //        }
         return Type.VOID;
+    }
+
+    private Type getType(DefaultAST part) throws SemanticException {
+        Type type;
+        switch (part.getType()) {
+            case Algol60Parser.IDENTIFIER:
+                Symbol symbol = currentSymbolTable.resolve(part.getText());
+                if (symbol == null) {
+                    throw new SymbolNotDeclaredException(
+                            String.format("Variable %s not declared.", part.getText()), part);
+                }
+                type = symbol.getType();
+                break;
+            case Algol60Parser.ADD:
+            case Algol60Parser.MINUS:
+            case Algol60Parser.MULT:
+            case Algol60Parser.DIV:
+            case Algol60Parser.INT_DIV:
+            case Algol60Parser.POW:
+            case Algol60Parser.POW_10:
+                type = part.accept(this);
+                break;
+            case Algol60Parser.INT:
+                type = Type.INTEGER;
+                break;
+            case Algol60Parser.REAL:
+                type = Type.REAL;
+                break;
+            default:
+                type = Type.VOID;
+        }
+        // System.out.println("TYPE:" + type);
+        return type;
     }
 
     @Override
     public Type visit(MinusAST ast) {
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        Type leftType = getType(leftPart);
+        Type rightType = getType(rightPart);
+        //        if (leftType != null && rightType != null) {
+        if (!typeCompat.get(leftType).contains(rightType)) {
+            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
+        }
+        if (leftType == Type.REAL || rightType == Type.REAL) {
+            return Type.REAL;
+        } else if (leftType == Type.INTEGER && rightType == Type.INTEGER) {
+            return Type.INTEGER;
+        }
+        //        }
         return Type.VOID;
     }
 
