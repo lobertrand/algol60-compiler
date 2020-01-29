@@ -353,7 +353,16 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(DivAST ast) {
-        return Type.VOID;
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        Type leftType = getType(leftPart);
+        Type rightType = getType(rightPart);
+        //        if (leftType != null && rightType != null) {
+        if (!typeCompat.get(leftType).contains(rightType)) {
+            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
+        }
+
+        return Type.REAL;
     }
 
     @Override
@@ -388,7 +397,16 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(IntDivAST ast) {
-        return Type.VOID;
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        Type leftType = getType(leftPart);
+        Type rightType = getType(rightPart);
+        //        if (leftType != null && rightType != null) {
+        if (!typeCompat.get(leftType).contains(rightType)) {
+            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
+        }
+
+        return Type.REAL;
     }
 
     @Override
@@ -425,6 +443,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             case Algol60Parser.ADD:
             case Algol60Parser.MINUS:
             case Algol60Parser.MULT:
+            case Algol60Parser.DIV:
+            case Algol60Parser.INT_DIV:
                 type = part.accept(this);
                 break;
             case Algol60Parser.INT:
