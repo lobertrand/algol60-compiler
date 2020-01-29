@@ -32,6 +32,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         this.typeCompat = new HashMap<>();
         typeCompat.put(Type.REAL, new HashSet<>(Arrays.asList(Type.INTEGER, Type.REAL)));
         typeCompat.put(Type.INTEGER, new HashSet<>(Arrays.asList(Type.INTEGER, Type.REAL)));
+        typeCompat.put(Type.VOID, new HashSet<>(Collections.emptyList()));
+        typeCompat.put(Type.STRING, new HashSet<>(Collections.singletonList(Type.STRING)));
     }
 
     public List<SemanticException> getExceptions() {
@@ -448,6 +450,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
         }
+
         if (leftType == Type.REAL || rightType == Type.REAL) {
             return Type.REAL;
         } else if (leftType == Type.INTEGER && rightType == Type.INTEGER) {
