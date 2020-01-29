@@ -269,8 +269,28 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     public Type visit(ProcCallAST ast) {
         String procCallName = ast.getChild(0).getText();
         Symbol s = currentSymbolTable.resolve(procCallName);
-        if (currentSymbolTable.resolve(procCallName) == null) {
+        if (s == null) {
             throw new SymbolNotDeclaredException("Procedure not declared", ast);
+        }
+        ArrayList<Type> types = new ArrayList<>();
+        for (DefaultAST param : ast.getChild(1)) {
+            if (param.getType() == Algol60Parser.IDENTIFIER) {
+                Symbol parameter = currentSymbolTable.resolve(param.getText());
+                types.add(parameter.getType());
+            } else {
+                types.add(param.accept(this));
+            }
+        }
+
+        Procedure p = (Procedure) s;
+        if (p.getParameterTypes().size() != types.size()) {
+            throw new ParameterMismatchException("Mismatch Parameters", ast);
+        }
+
+        for (int i = 0; i < p.getParameterTypes().size(); i++) {
+            if (!typeCompat.get(p.getParameterTypes().get(i)).contains(types.get(i))) {
+                throw new TypeMismatchException("Wrong parameter type", ast);
+            }
         }
 
         Type type = s.getType();
