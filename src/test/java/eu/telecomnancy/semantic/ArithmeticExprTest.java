@@ -120,7 +120,7 @@ public class ArithmeticExprTest {
         c.line("  a := \"str\" + 5;");
         c.line("  a := \"str\" - 5;");
         c.line("  a := \"str\" * 5;");
-        c.line("  a := \"str\" / 5");
+        c.line("  a := \"str\" / 5;");
         c.line("  a := \"str\" // 5;");
         c.line("  a := \"str\" ** 5");
         c.line("end");

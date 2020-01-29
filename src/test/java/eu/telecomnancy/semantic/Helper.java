@@ -32,7 +32,12 @@ public class Helper {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         Algol60Parser parser = new Algol60Parser(tokens);
         parser.setTreeAdaptor(new ASTAdaptor());
-        DefaultAST ast = (DefaultAST) parser.prog().getTree();
+        DefaultAST ast = parser.prog().getTree();
+
+        List<RecognitionException> exceptions = lexer.getExceptions();
+        exceptions.addAll(parser.getExceptions());
+        for (RecognitionException e : exceptions) throw e;
+
         SymbolTable symbolTable = new SymbolTable();
         SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor(symbolTable);
         ast.accept(visitor);
