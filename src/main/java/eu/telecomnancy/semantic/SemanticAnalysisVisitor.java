@@ -487,7 +487,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                 type = Type.REAL;
                 break;
             default:
-                type = Type.VOID;
+                throw new TypeMismatchException("Type mismatch", part);
         }
         // System.out.println("TYPE:" + type);
         return type;

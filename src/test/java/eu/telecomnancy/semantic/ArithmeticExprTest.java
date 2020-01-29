@@ -50,7 +50,6 @@ public class ArithmeticExprTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertEquals("There should be 9 exceptions", 9, result.exceptions.size());
         assertTrue("There should and exception at line 3", result.exceptionAt(3));
         assertTrue("There should and exception at line 4", result.exceptionAt(4));
         assertTrue("There should and exception at line 5", result.exceptionAt(5));
@@ -60,6 +59,7 @@ public class ArithmeticExprTest {
         assertTrue("There should and exception at line 9", result.exceptionAt(9));
         assertTrue("There should and exception at line 10", result.exceptionAt(10));
         assertTrue("There should and exception at line 11", result.exceptionAt(11));
+        assertEquals("There should be 9 exceptions", 9, result.exceptions.size());
     }
 
     @Test
@@ -79,7 +79,6 @@ public class ArithmeticExprTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertEquals("There should be 8 exceptions", 8, result.exceptions.size());
         assertTrue("There should and exception at line 4", result.exceptionAt(4));
         assertTrue("There should and exception at line 5", result.exceptionAt(5));
         assertTrue("There should and exception at line 6", result.exceptionAt(6));
@@ -88,6 +87,7 @@ public class ArithmeticExprTest {
         assertTrue("There should and exception at line 9", result.exceptionAt(9));
         assertTrue("There should and exception at line 10", result.exceptionAt(10));
         assertTrue("There should and exception at line 11", result.exceptionAt(11));
+        assertEquals("There should be 8 exceptions", 8, result.exceptions.size());
     }
 
     @Test
@@ -120,13 +120,12 @@ public class ArithmeticExprTest {
         c.line("  a := \"str\" + 5;");
         c.line("  a := \"str\" - 5;");
         c.line("  a := \"str\" * 5;");
-        c.line("  a := \"str\" / 5;");
+        c.line("  a := \"str\" / 5");
         c.line("  a := \"str\" // 5;");
         c.line("  a := \"str\" ** 5");
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertEquals("There should be 12 exceptions", 12, result.exceptions.size());
         assertTrue("There should and exception at line 3", result.exceptionAt(3));
         assertTrue("There should and exception at line 4", result.exceptionAt(4));
         assertTrue("There should and exception at line 5", result.exceptionAt(5));
@@ -139,5 +138,6 @@ public class ArithmeticExprTest {
         assertTrue("There should and exception at line 12", result.exceptionAt(12));
         assertTrue("There should and exception at line 13", result.exceptionAt(13));
         assertTrue("There should and exception at line 14", result.exceptionAt(14));
+        assertEquals("There should be 12 exceptions", 12, result.exceptions.size());
     }
 }
