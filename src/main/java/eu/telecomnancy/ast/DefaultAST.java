@@ -36,10 +36,6 @@ public class DefaultAST extends CommonTree implements Iterable<DefaultAST> {
         return (DefaultAST) super.getChild(i);
     }
 
-    public DefaultAST getChildAST(int i) {
-        return (DefaultAST) super.getChild(i);
-    }
-
     public DefaultAST findFirst(int type) {
         for (DefaultAST child : this) {
             if (child.getType() == type) return child;
