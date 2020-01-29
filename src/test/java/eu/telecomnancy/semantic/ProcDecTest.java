@@ -82,7 +82,8 @@ public class ProcDecTest {
         content.line("  real procedure p(a,b);");
         content.line("  value a; integer a; real b;");
         content.line("  begin");
-        content.line("    integer p");
+        content.line("    integer p ; ");
+        content.line("    p := 3.3");
         content.line("  end");
         content.line("end");
 
@@ -143,5 +144,51 @@ public class ProcDecTest {
         SymbolTable second = first.getChild(0);
         assertTrue("x should be declared in second scope", second.isDeclaredInScope("x"));
         assertSame("x should be a Variable", second.resolve("x").getKind(), Kind.VARIABLE);
+    }
+
+    @Test
+    public void testReturn() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line(" integer procedure p ;");
+        content.line("  begin");
+        content.line("    p := 2 ");
+        content.line("  end");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+         assertTrue("There should be no exception", result.exceptions.isEmpty());
+    }
+
+    @Test
+    public void testMissingReturn() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line(" integer procedure p ;");
+        content.line("  begin");
+        content.line("    real x   ");
+        content.line("  end");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+
+        assertEquals("There should be an exception", 1, result.exceptions.size());
+        assertTrue("There should be an exception at line 4", result.exceptionAt(4));
+    }
+
+    @Test
+    public void testVoidReturn() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line("  procedure p ;");
+        content.line("  begin");
+        content.line("    p := 1  ");
+        content.line("  end");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+
+        assertEquals("There should be an exception", 1, result.exceptions.size());
+        assertTrue("There should be an exception at line 4", result.exceptionAt(4));
     }
 }

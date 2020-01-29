@@ -235,6 +235,25 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             }
         }
 
+        //
+        if (procType != Type.VOID) {
+
+            if (block.getChild(block.getChildCount() - 1).getType() == Algol60Parser.ASSIGNMENT) {
+                if (block.getChild(block.getChildCount() - 1)
+                        .getChild(0)
+                        .getText()
+                        .equals(procName)) {
+                } else {
+                    exceptions.add(
+                            new MissingReturnException(
+                                    "Procedure has no return statement ", block));
+                }
+            } else {
+                exceptions.add(
+                        new MissingReturnException("Procedure has no return statement", block));
+            }
+        }
+
         popTable(); // Quit symbol table of procedure
 
         return Type.VOID;
