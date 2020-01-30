@@ -58,13 +58,13 @@ tokens {
     AND;                // Logical and
     OR;                 // Logical or
     IMPLY;              // Logical implication
-    EQUIV;              // Logical equivalence
-    GT;                 // Greater than
-    LT;                 // Less than
-    GTE;                // Great than or equal
-    LTE;                // Less than or equal
-    EQ;                 // Equal
-    NEQ;                // Not equal
+    EQUIVALENT;         // Logical equivalence
+    GREATER_THAN;       // Greater than
+    LESS_THAN;          // Less than
+    GREATER_EQUAL;      // Great than or equal
+    LESS_EQUAL;      // Less than or equal
+    EQUAL;              // Equal
+    NOT_EQUAL;          // Not equal
 }
 
 @parser::header {
@@ -267,13 +267,13 @@ arithmetic_expression
 arithmetic_expression_end[DefaultAST t2]
     :   '+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
     |   '-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
-    |   '<' arithmetic_expression -> ^(LT {$t2} arithmetic_expression?)
-    |   '<=' arithmetic_expression -> ^(LTE {$t2} arithmetic_expression?)
-    |   '>' arithmetic_expression -> ^(GT {$t2} arithmetic_expression?)
-    |   '>=' arithmetic_expression -> ^(GTE {$t2} arithmetic_expression?)
-    |   '<>' arithmetic_expression -> ^(NEQ {$t2} arithmetic_expression?)
-    |   '=' arithmetic_expression -> ^(EQ {$t2} arithmetic_expression?)
-    |   '<=>' arithmetic_expression -> ^(EQUIV {$t2} arithmetic_expression?)
+    |   '<' arithmetic_expression -> ^(LESS_THAN {$t2} arithmetic_expression?)
+    |   '<=' arithmetic_expression -> ^(LESS_EQUAL {$t2} arithmetic_expression?)
+    |   '>' arithmetic_expression -> ^(GREATER_THAN {$t2} arithmetic_expression?)
+    |   '>=' arithmetic_expression -> ^(GREATER_EQUAL {$t2} arithmetic_expression?)
+    |   '<>' arithmetic_expression -> ^(NOT_EQUAL {$t2} arithmetic_expression?)
+    |   '=' arithmetic_expression -> ^(EQUAL {$t2} arithmetic_expression?)
+    |   '<=>' arithmetic_expression -> ^(EQUIVALENT {$t2} arithmetic_expression?)
     |   '=>' arithmetic_expression -> ^(IMPLY {$t2} arithmetic_expression?)
     |   '\\/' arithmetic_expression -> ^(OR {$t2} arithmetic_expression?)
     |   '/\\' arithmetic_expression -> ^(AND {$t2} arithmetic_expression?)
