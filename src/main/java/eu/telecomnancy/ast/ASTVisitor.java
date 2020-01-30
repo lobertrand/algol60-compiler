@@ -48,8 +48,6 @@ public interface ASTVisitor<R> {
 
     R visit(MinusAST ast);
 
-    R visit(TermAST ast);
-
     R visit(LabelDecAST ast);
 
     R visit(GoToAST ast);

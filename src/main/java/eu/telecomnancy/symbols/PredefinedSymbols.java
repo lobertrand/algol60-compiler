@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class PredifinedSymbols {
+public class PredefinedSymbols {
 
     public static Set<Symbol> get() {
         HashSet<Symbol> result = new HashSet<>();

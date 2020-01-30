@@ -4,7 +4,8 @@ public enum Type {
     VOID,
     INTEGER,
     REAL,
-    STRING;
+    STRING,
+    BOOLEAN;
 
     public static Type fromString(String typeToken) {
         switch (typeToken) {
@@ -14,6 +15,8 @@ public enum Type {
                 return REAL;
             case "string":
                 return STRING;
+            case "boolean":
+                return BOOLEAN;
             default:
                 return null;
         }

@@ -56,8 +56,6 @@ public class ASTAdaptor extends CommonTreeAdaptor {
                     return new AddAST(t);
                 case Algol60Parser.MINUS:
                     return new MinusAST(t);
-                case Algol60Parser.TERM:
-                    return new TermAST(t);
                 case Algol60Parser.LABEL_DEC:
                     return new LabelDecAST(t);
                 case Algol60Parser.GOTO:

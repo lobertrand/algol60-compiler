@@ -19,7 +19,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     private SymbolTable currentSymbolTable;
     private Set<UndeclaredLabel> undeclaredLabels;
     private Set<Label> declaredLabels;
-    private Map<Type, Set<Type>> typeCompat;
+    @Deprecated private Map<Type, Set<Type>> typeCompat;
 
     public SemanticAnalysisVisitor(SymbolTable symbolTable) {
         if (symbolTable == null) {
@@ -241,15 +241,13 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             }
         }
 
-        //
         if (procType != Type.VOID) {
-
+            // Last statement of the block should be an assignment to the name of the procedure
             if (block.getChild(block.getChildCount() - 1).getType() == Algol60Parser.ASSIGNMENT) {
-                if (block.getChild(block.getChildCount() - 1)
+                if (!block.getChild(block.getChildCount() - 1)
                         .getChild(0)
                         .getText()
                         .equals(procName)) {
-                } else {
                     exceptions.add(
                             new MissingReturnException(
                                     "Procedure has no return statement ", block));
@@ -267,17 +265,21 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ProcCallAST ast) {
-        System.out.println("proc call sdfgdyhdfhyrfhy");
-
         String procCallName = ast.getChild(0).getText();
         Symbol s = currentSymbolTable.resolve(procCallName);
         if (s == null) {
-            throw new SymbolNotDeclaredException("Procedure not declared", ast);
+            throw new SymbolNotDeclaredException(
+                    String.format("Procedure '%s' is not declared", procCallName), ast);
         }
         ArrayList<Type> types = new ArrayList<>();
         for (DefaultAST param : ast.getChild(1)) {
             if (param.getType() == Algol60Parser.IDENTIFIER) {
                 Symbol parameter = currentSymbolTable.resolve(param.getText());
+                if (parameter == null) {
+                    throw new SymbolNotDeclaredException(
+                            String.format("Parameter '%s' is not declared", param.getText()),
+                            param);
+                }
                 types.add(parameter.getType());
             } else {
                 types.add(param.accept(this));
@@ -286,18 +288,30 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
         Procedure p = (Procedure) s;
         if (p.getParameterTypes().size() != types.size()) {
-            throw new ParameterMismatchException("Mismatch Parameters", ast);
+            throw new ParameterMismatchException(
+                    String.format(
+                            "Procedure '%s' expects %d parameters but received %d",
+                            procCallName, p.getParameterTypes().size(), types.size()),
+                    ast);
         }
 
         for (int i = 0; i < p.getParameterTypes().size(); i++) {
-            if (!typeCompat.get(p.getParameterTypes().get(i)).contains(types.get(i))) {
-                throw new TypeMismatchException("Wrong parameter type", ast);
+            Type paramType = p.getParameterTypes().get(i);
+            Type actualType = types.get(i);
+            if (Types.cannotAssign(paramType, actualType)) {
+                DefaultAST paramAST = ast.getChild(1).getChild(i);
+                throw new TypeMismatchException(
+                        String.format(
+                                "Parameter #%d of procedure '%s' expects %s but it received %s",
+                                i + 1,
+                                procCallName,
+                                paramType.withPronoun(),
+                                actualType.withPronoun()),
+                        paramAST);
             }
         }
 
-        Type type = s.getType();
-
-        return type;
+        return s.getType();
     }
 
     @Override
@@ -334,7 +348,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             rightType = secondOperand.accept(this);
             rightName = secondOperand.getChild(0).getText();
         }
-        if (operator.getType() == Algol60Parser.RELATIONAL_OPERATOR) {
+        if (operator.getChildCount() == 2) {
             if (rightType == leftType) {
                 if (rightType == Type.STRING) {
                     throw new TypeMismatchException(
@@ -400,7 +414,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         } else {
             rightType = ast.getChild(1).accept(this);
         }
-        if (leftSymbol.getType() != rightType) {
+        if (Types.cannotAssign(leftSymbol.getType(), rightType)) {
             throw new TypeMismatchException(
                     String.format(
                             "Cannot assign %s to '%s' of type %s",
@@ -426,7 +440,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         DefaultAST rightPart = ast.getChild(1);
         Type leftType = getType(leftPart);
         Type rightType = getType(rightPart);
-        //        if (leftType != null && rightType != null) {
+
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
         }
@@ -435,7 +449,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         } else if (leftType == Type.INTEGER && rightType == Type.INTEGER) {
             return Type.INTEGER;
         }
-        //        }
+
         return Type.VOID;
     }
 
@@ -445,7 +459,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         DefaultAST rightPart = ast.getChild(1);
         Type leftType = getType(leftPart);
         Type rightType = getType(rightPart);
-        //        if (leftType != null && rightType != null) {
+
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
         }
@@ -474,7 +488,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         DefaultAST rightPart = ast.getChild(1);
         Type leftType = getType(leftPart);
         Type rightType = getType(rightPart);
-        //        if (leftType != null && rightType != null) {
+
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
         }
@@ -517,7 +531,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         DefaultAST rightPart = ast.getChild(1);
         Type leftType = getType(leftPart);
         Type rightType = getType(rightPart);
-        //        if (leftType != null && rightType != null) {
+
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
         }
@@ -532,7 +546,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         DefaultAST rightPart = ast.getChild(1);
         Type leftType = getType(leftPart);
         Type rightType = getType(rightPart);
-        //        if (leftType != null && rightType != null) {
+
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
         }
@@ -542,41 +556,19 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         } else if (leftType == Type.INTEGER && rightType == Type.INTEGER) {
             return Type.INTEGER;
         }
-        //        }
         return Type.VOID;
     }
 
     private Type getType(DefaultAST part) throws SemanticException {
-        Type type;
-        switch (part.getType()) {
-            case Algol60Parser.IDENTIFIER:
-                Symbol symbol = currentSymbolTable.resolve(part.getText());
-                if (symbol == null) {
-                    throw new SymbolNotDeclaredException(
-                            String.format("Variable %s not declared.", part.getText()), part);
-                }
-                type = symbol.getType();
-                break;
-            case Algol60Parser.ADD:
-            case Algol60Parser.MINUS:
-            case Algol60Parser.MULT:
-            case Algol60Parser.DIV:
-            case Algol60Parser.INT_DIV:
-            case Algol60Parser.POW:
-            case Algol60Parser.POW_10:
-                type = part.accept(this);
-                break;
-            case Algol60Parser.INT:
-                type = Type.INTEGER;
-                break;
-            case Algol60Parser.REAL:
-                type = Type.REAL;
-                break;
-            default:
-                throw new TypeMismatchException("Type mismatch", part);
+        if (part.getType() == Algol60Parser.IDENTIFIER) {
+            Symbol symbol = currentSymbolTable.resolve(part.getText());
+            if (symbol == null) {
+                throw new SymbolNotDeclaredException(
+                        String.format("Variable %s not declared.", part.getText()), part);
+            }
+            return symbol.getType();
         }
-        // System.out.println("TYPE:" + type);
-        return type;
+        return part.accept(this);
     }
 
     @Override
@@ -585,7 +577,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         DefaultAST rightPart = ast.getChild(1);
         Type leftType = getType(leftPart);
         Type rightType = getType(rightPart);
-        //        if (leftType != null && rightType != null) {
+
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
         }
@@ -594,12 +586,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         } else if (leftType == Type.INTEGER && rightType == Type.INTEGER) {
             return Type.INTEGER;
         }
-        //        }
-        return Type.VOID;
-    }
 
-    @Override
-    public Type visit(TermAST ast) {
         return Type.VOID;
     }
 

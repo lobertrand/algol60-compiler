@@ -79,20 +79,21 @@ public class AssignementTest {
     }
 
     @Test
-    public void testWrongType() throws RecognitionException {
+    public void testRealIntegerType() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  integer a, b;");
         c.line("  begin");
         c.line("    real c;");
-        c.line("    c := a");
+        c.line("    c := a;");
+        c.line("    a := c");
         c.line("  end");
         c.line("end");
 
         Result result = checkSemantics(c);
         Set<Integer> lines = getLines(result.exceptions);
+        assertTrue("There should be an exception at line 6", lines.contains(6));
         assertEquals("There should be 1 exception", 1, result.exceptions.size());
-        assertTrue("There should be an exception at line 5", lines.contains(5));
     }
 
     @Test
@@ -105,13 +106,14 @@ public class AssignementTest {
         c.line("  b := s ;");
         c.line("  begin");
         c.line("    real c;");
-        c.line("    c := a");
+        c.line("    c := a;");
+        c.line("    a := c");
         c.line("  end");
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertEquals("There should be 2 exceptions", 2, result.exceptions.size());
         assertTrue("There should be an exception at line 5", result.exceptionAt(5));
-        assertTrue("There should be an exception at line 8", result.exceptionAt(8));
+        assertTrue("There should be an exception at line 9", result.exceptionAt(9));
+        assertEquals("There should be 2 exceptions", 2, result.exceptions.size());
     }
 }

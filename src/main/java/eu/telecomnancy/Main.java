@@ -3,7 +3,7 @@ package eu.telecomnancy;
 import eu.telecomnancy.ast.ASTAdaptor;
 import eu.telecomnancy.semantic.SemanticAnalysisVisitor;
 import eu.telecomnancy.semantic.SemanticException;
-import eu.telecomnancy.symbols.PredifinedSymbols;
+import eu.telecomnancy.symbols.PredefinedSymbols;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.tools.IOUtils;
 import java.io.FileInputStream;
@@ -42,7 +42,7 @@ public class Main {
 
         // Semantic analysis
         SymbolTable symbolTable = new SymbolTable();
-        PredifinedSymbols.get().forEach(symbolTable::define);
+        PredefinedSymbols.get().forEach(symbolTable::define);
         SemanticAnalysisVisitor semanticAnalysisVisitor = new SemanticAnalysisVisitor(symbolTable);
         pr.getTree().accept(semanticAnalysisVisitor);
         IOUtils.print(symbolTable);

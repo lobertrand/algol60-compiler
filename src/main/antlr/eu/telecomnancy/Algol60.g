@@ -49,16 +49,22 @@ tokens {
     INT_DIV;            // Integer division
     ADD;                // Addition
     MINUS;              // Substraction
-    TERM;               // Term in expression
-    FACTOR;             // Factor in expression
     LABEL_DEC;          // Label declaration
     GOTO;               // Goto statement
     POW;                // Power
-    INT;                // Integer
     POW_10;             // Scientific notation
     ARRAY_CALL;         // Access to a value of an array
     STR;                // String
-    REAL;               // Real number
+    AND;                // Logical and
+    OR;                 // Logical or
+    IMPLY;              // Logical implication
+    EQUIV;              // Logical equivalence
+    GT;                 // Greater than
+    LT;                 // Less than
+    GTE;                // Great than or equal
+    LTE;                // Less than or equal
+    EQ;                 // Equal
+    NEQ;                // Not equal
 }
 
 @parser::header {
@@ -243,6 +249,7 @@ expression
     |   integer 
     |   identifier! id_expression_end[$identifier.tree]
     |   scientific_expression
+    |   LOGICAL_VALUE
     ;
 
 id_expression_end[DefaultAST id]
@@ -260,6 +267,17 @@ arithmetic_expression
 arithmetic_expression_end[DefaultAST t2]
     :   '+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
     |   '-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
+    |   '<' arithmetic_expression -> ^(LT {$t2} arithmetic_expression?)
+    |   '<=' arithmetic_expression -> ^(LTE {$t2} arithmetic_expression?)
+    |   '>' arithmetic_expression -> ^(GT {$t2} arithmetic_expression?)
+    |   '>=' arithmetic_expression -> ^(GTE {$t2} arithmetic_expression?)
+    |   '<>' arithmetic_expression -> ^(NEQ {$t2} arithmetic_expression?)
+    |   '=' arithmetic_expression -> ^(EQ {$t2} arithmetic_expression?)
+    |   '<=>' arithmetic_expression -> ^(EQUIV {$t2} arithmetic_expression?)
+    |   '=>' arithmetic_expression -> ^(IMPLY {$t2} arithmetic_expression?)
+    |   '\\/' arithmetic_expression -> ^(OR {$t2} arithmetic_expression?)
+    |   '/\\' arithmetic_expression -> ^(AND {$t2} arithmetic_expression?)
+    // |   '~' arithmetic_expression -> ^(NOT {$t2} arithmetic_expression?)
     |   -> {$t2}
     ;    
     
@@ -278,8 +296,8 @@ term1[DefaultAST t2]
 // If clause
 
 if_clause
-    :   'if' logical_statement 'then' statement (options{greedy=true;}:'else' statement)? 
-        -> ^(IF_STATEMENT ^(IF_DEF logical_statement) ^(THEN_DEF statement) ^(ELSE_DEF statement)*)
+    :   'if' arithmetic_expression 'then' statement (options{greedy=true;}:'else' statement)? 
+        -> ^(IF_STATEMENT ^(IF_DEF arithmetic_expression) ^(THEN_DEF statement) ^(ELSE_DEF statement)*)
     ;
 
 // For clause
@@ -292,41 +310,27 @@ for_clause
 // While clause
 
 while_clause 
-    :   'while'  logical_statement 'do' statement 
-        -> ^(WHILE_CLAUSE ^(CONDITION logical_statement) ^(DO statement))
-    ;
-
-logical_statement
-    :   arithmetic_expression! logical_statement_end[$arithmetic_expression.tree]
-    |   LOGICAL_VALUE
-    ;
-
-logical_statement_end[DefaultAST t2]
-    :   boolean_operator arithmetic_expression-> ^(boolean_operator {$t2} arithmetic_expression)
-    ;
-
-boolean_operator
-    :   RELATIONAL_OPERATOR
-    |   LOGICAL_OPERATOR
+    :   'while'  arithmetic_expression 'do' statement 
+        -> ^(WHILE_CLAUSE ^(CONDITION arithmetic_expression) ^(DO statement))
     ;
 
 // Intermediate parser rules	
 
 integer
-    :   '-'? INTEGER -> ^(INT '-'? INTEGER)
+    :   DASH? INT
+        // Prepends integer node with '-' if DASH is present
+        { if ($DASH != null) input.LT(-1).setText("-" + $INT.text); }
+        -> INT
     ;
 
 scientific_expression
-    :   REAL! scientific_expression_end[$REAL]
-    ;
-
-scientific_expression_end[Token real]
-    :   '#' INTEGER -> ^(POW_10 {new DefaultAST($real)} INTEGER)
-    |   -> ^(REAL {new DefaultAST($real)})
+    :   REAL ( '#' INT -> ^(POW_10 REAL INT)
+             |         -> REAL
+             )
     ;
 
 string
-    :   STRING -> ^(STR STRING)
+    :   STR
     ;
 
 identifier
@@ -347,7 +351,7 @@ COMMENT
         { $channel=HIDDEN; }
     ;
 
-STRING
+STR
     :   '"' ~( '"' | '\r' | '\n' )* '"'
         // Strips the string from its quotes in the lexer
         // https://theantlrguy.atlassian.net/wiki/spaces/ANTLR3/pages/2687006/How+do+I+strip+quotes
@@ -359,9 +363,12 @@ LOGICAL_VALUE
     |   'false'
     ;
 
-INTEGER
+INT
     :   ('1'..'9')('0'..'9')*
     |   '0'
+    ;
+
+DASH:   '-'
     ;
 
 REAL 
@@ -370,23 +377,6 @@ REAL
 
 IDENTIFIER
     :   ('a'..'z'|'A'..'Z'|'_')('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
-    ;
-    
-RELATIONAL_OPERATOR
-    :   '<'
-    |   '<='
-    |   '='
-    |   '<>'
-    |   '>'
-    |   '>='
-    ;
-
-LOGICAL_OPERATOR
-    :   '<=>'
-    |   '=>'
-    |   '\\/'
-    |   '/\\'
-    |   '~'
     ;
 
 WS  :   (' '|'\t'|'\r'|'\n')+
