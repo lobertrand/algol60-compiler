@@ -319,7 +319,7 @@ while_clause
 integer
     :   DASH? INT
         // Prepends integer node with '-' if DASH is present
-        { if ($DASH != null) input.LT(-1).setText("-" + $INT.text); }
+        { if ($DASH != null) $INT.setText("-" + $INT.text); }
         -> INT
     ;
 

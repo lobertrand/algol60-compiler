@@ -190,6 +190,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         List<Type> orderedTypes = new ArrayList<>();
         for (String name : paramNames) {
             int index = specNames.indexOf(name);
+            Type type;
             if (index == -1) {
                 String msg =
                         String.format(
@@ -199,18 +200,18 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                 exceptions.add(
                         new ParameterMismatchException(
                                 msg, paramTrees.get(paramNames.indexOf(name))));
+                type = Type.UNDEFINED;
             } else {
-                Type type = specTypes.get(index);
-                Parameter parameter = new Parameter(name, type);
-                if (!valueNames.contains(name)) parameter.setByValue(false);
-                orderedTypes.add(type);
-                currentSymbolTable.define(parameter);
-
+                type = specTypes.get(index);
                 // Clear parameter from spec lists
                 specNames.remove(index);
                 specTypes.remove(index);
                 specTrees.remove(index);
             }
+            Parameter parameter = new Parameter(name, type);
+            if (!valueNames.contains(name)) parameter.setByValue(false);
+            orderedTypes.add(type);
+            currentSymbolTable.define(parameter);
         }
 
         // Check for orphan declarations in specification part
@@ -242,25 +243,24 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
 
         if (procType != Type.VOID) {
-            // Last statement of the block should be an assignment to the name of the procedure
-            if (block.getChild(block.getChildCount() - 1).getType() == Algol60Parser.ASSIGNMENT) {
-                if (!block.getChild(block.getChildCount() - 1)
-                        .getChild(0)
-                        .getText()
-                        .equals(procName)) {
-                    exceptions.add(
-                            new MissingReturnException(
-                                    "Procedure has no return statement ", block));
-                }
-            } else {
+            DefaultAST lastStatement = block.getChild(block.getChildCount() - 1);
+            if (isReturnStatement(procName, lastStatement)) {
                 exceptions.add(
-                        new MissingReturnException("Procedure has no return statement", block));
+                        new MissingReturnException(
+                                String.format("Procedure '%s' has no return statement", procName),
+                                block));
             }
         }
 
         popTable(); // Quit symbol table of procedure
 
         return procType;
+    }
+
+    private boolean isReturnStatement(String procName, DefaultAST ast) {
+        return !(ast.getType() == Algol60Parser.ASSIGNMENT
+                && ast.getChild(0).getType() == Algol60Parser.IDENTIFIER
+                && ast.getChild(0).getText().equals(procName));
     }
 
     @Override
@@ -271,19 +271,18 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             throw new SymbolNotDeclaredException(
                     String.format("Procedure '%s' is not declared", procCallName), ast);
         }
-        ArrayList<Type> types = new ArrayList<>();
-        for (DefaultAST param : ast.getChild(1)) {
-            if (param.getType() == Algol60Parser.IDENTIFIER) {
-                Symbol parameter = currentSymbolTable.resolve(param.getText());
-                if (parameter == null) {
-                    throw new SymbolNotDeclaredException(
-                            String.format("Parameter '%s' is not declared", param.getText()),
-                            param);
-                }
-                types.add(parameter.getType());
-            } else {
-                types.add(param.accept(this));
-            }
+
+        if (s.getKind() != Kind.PROCEDURE) {
+            throw new SymbolNotDeclaredException(
+                    String.format(
+                            "'%s' is %s, not a procedure", procCallName, s.getKind().withPronoun()),
+                    ast);
+        }
+
+        List<Type> types = new ArrayList<>();
+        for (DefaultAST defaultAST : ast.getChild(1)) {
+            Type type = getType(defaultAST);
+            types.add(type);
         }
 
         Procedure p = (Procedure) s;
@@ -320,34 +319,11 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         DefaultAST operator = ifDef.getChild(0);
         DefaultAST firstOperand = operator.getChild(0);
         DefaultAST secondOperand = operator.getChild(1);
-        Type leftType, rightType;
-        String leftName, rightName;
-        if (firstOperand.getType() == Algol60Parser.IDENTIFIER) {
-            Symbol s = currentSymbolTable.resolve(firstOperand.getText());
-            if (s == null) {
-                throw new SymbolNotDeclaredException(
-                        String.format("'%s' is not declared", firstOperand.getText()),
-                        firstOperand);
-            }
-            leftType = s.getType();
-            leftName = s.getIdentifier();
-        } else {
-            leftType = firstOperand.accept(this);
-            leftName = firstOperand.getChild(0).getText();
-        }
-        if (secondOperand.getType() == Algol60Parser.IDENTIFIER) {
-            Symbol s = currentSymbolTable.resolve(secondOperand.getText());
-            if (s == null) {
-                throw new SymbolNotDeclaredException(
-                        String.format("'%s' is not declared", secondOperand.getText()),
-                        secondOperand);
-            }
-            rightType = s.getType();
-            rightName = s.getIdentifier();
-        } else {
-            rightType = secondOperand.accept(this);
-            rightName = secondOperand.getChild(0).getText();
-        }
+        Type leftType = getType(firstOperand);
+        Type rightType = getType(secondOperand);
+        String leftName = getStringRepresentation(firstOperand);
+        String rightName = getStringRepresentation(secondOperand);
+
         if (operator.getChildCount() == 2) {
             if (rightType == leftType) {
                 if (rightType == Type.STRING) {
@@ -373,6 +349,15 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
 
         return Type.VOID;
+    }
+
+    private String getStringRepresentation(DefaultAST ast) {
+        switch (ast.getType()) {
+            case Algol60Parser.PROC_CALL:
+                return ast.getChild(0).getText();
+            default:
+                return ast.getText();
+        }
     }
 
     @Override
@@ -401,25 +386,14 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                     ast);
         }
 
-        Type rightType = null;
-        if (ast.getChild(1).getType() == Algol60Parser.IDENTIFIER) {
-            String rightName = ast.getChild(1).getText();
-            Symbol rightSymbol = currentSymbolTable.resolve(rightName);
-            if (rightSymbol == null) {
-                throw new SymbolNotDeclaredException(
-                        String.format("Variable '%s' is not declared.", rightName), ast);
-            }
-            rightType = rightSymbol.getType();
-
-        } else {
-            rightType = ast.getChild(1).accept(this);
-        }
+        DefaultAST rightPart = ast.getChild(1);
+        Type rightType = getType(rightPart);
         if (Types.cannotAssign(leftSymbol.getType(), rightType)) {
             throw new TypeMismatchException(
                     String.format(
                             "Cannot assign %s to '%s' of type %s",
                             rightType.withPronoun(), leftName, leftSymbol.getType()),
-                    ast.getChild(1));
+                    rightPart);
         }
         return Type.VOID;
     }
@@ -564,7 +538,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             Symbol symbol = currentSymbolTable.resolve(part.getText());
             if (symbol == null) {
                 throw new SymbolNotDeclaredException(
-                        String.format("Variable %s not declared.", part.getText()), part);
+                        String.format("Variable '%s' not declared.", part.getText()), part);
             }
             return symbol.getType();
         }

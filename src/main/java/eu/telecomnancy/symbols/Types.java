@@ -22,10 +22,12 @@ public final class Types {
     private Types() {}
 
     public static boolean cannotAssign(Type dest, Type src) {
+        if (dest == UNDEFINED || src == UNDEFINED) return false;
         return !(assignableTypes.containsKey(dest) && assignableTypes.get(dest).contains(src));
     }
 
     public static boolean cannotDoOperation(Type left, Type right) {
+        if (left == UNDEFINED || right == UNDEFINED) return false;
         return !(operationTypes.containsKey(left) && operationTypes.get(left).contains(right));
     }
 

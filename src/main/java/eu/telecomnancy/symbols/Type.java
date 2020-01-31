@@ -5,7 +5,15 @@ public enum Type {
     INTEGER,
     REAL,
     STRING,
-    BOOLEAN;
+    BOOLEAN,
+    /**
+     * Use during semantic analysis, along with and exception, when a type is not specified. It
+     * avoids redundant exceptions in other statements. Every type is considered compatible with
+     * UNDEFINED. Symbol tables shouldn't contain UNDEFINED variables if the code compiled
+     * successfully.
+     */
+    UNDEFINED,
+    ;
 
     public static Type fromString(String typeToken) {
         switch (typeToken) {
