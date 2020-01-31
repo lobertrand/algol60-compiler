@@ -273,10 +273,16 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
 
         if (s.getKind() != Kind.PROCEDURE) {
-            throw new SymbolNotDeclaredException(
-                    String.format(
-                            "'%s' is %s, not a procedure", procCallName, s.getKind().withPronoun()),
-                    ast);
+            if (s.getKind() == Kind.VARIABLE && ((Variable) s).isResultValue()) {
+                // Allows recursive calls of procedure
+                s = currentSymbolTable.getParent().resolve(procCallName);
+            } else {
+                throw new SymbolNotDeclaredException(
+                        String.format(
+                                "'%s' is %s, not a procedure",
+                                procCallName, s.getKind().withPronoun()),
+                        ast);
+            }
         }
 
         List<Type> types = new ArrayList<>();
