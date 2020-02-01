@@ -243,24 +243,18 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
 
         if (procType != Type.VOID) {
-            DefaultAST lastStatement = block.getChild(block.getChildCount() - 1);
-            if (isReturnStatement(procName, lastStatement)) {
-                exceptions.add(
-                        new MissingReturnException(
-                                String.format("Procedure '%s' has no return statement", procName),
-                                block));
+            if (!block.containsReturnStatement(procName)) {
+                String msg =
+                        String.format(
+                                "Procedure '%s' may never return %s",
+                                procName, procType.withPronoun());
+                exceptions.add(new MissingReturnException(msg, procHeading));
             }
         }
 
         popTable(); // Quit symbol table of procedure
 
         return procType;
-    }
-
-    private boolean isReturnStatement(String procName, DefaultAST ast) {
-        return !(ast.getType() == Algol60Parser.ASSIGNMENT
-                && ast.getChild(0).getType() == Algol60Parser.IDENTIFIER
-                && ast.getChild(0).getText().equals(procName));
     }
 
     @Override

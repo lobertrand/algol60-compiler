@@ -26,12 +26,12 @@ public enum Type {
             case "boolean":
                 return BOOLEAN;
             default:
-                return null;
+                return UNDEFINED;
         }
     }
 
     public String withPronoun() {
-        return (this == INTEGER ? "an " : "a ") + name().toLowerCase();
+        return (this == INTEGER || this == UNDEFINED ? "an " : "a ") + name().toLowerCase();
     }
 
     @Override

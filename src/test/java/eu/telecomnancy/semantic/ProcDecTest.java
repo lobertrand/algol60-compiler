@@ -173,7 +173,6 @@ public class ProcDecTest {
         Result result = checkSemantics(content);
 
         assertEquals("There should be an exception", 1, result.exceptions.size());
-        assertTrue("There should be an exception at line 4", result.exceptionAt(4));
     }
 
     @Test
@@ -190,5 +189,125 @@ public class ProcDecTest {
 
         assertEquals("There should be an exception", 1, result.exceptions.size());
         assertTrue("There should be an exception at line 4", result.exceptionAt(4));
+        assertTrue("Type mismatch", result.exceptions.get(0) instanceof TypeMismatchException);
+    }
+
+    @Test
+    public void testNestedReturnsValid() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line("  integer procedure f(n);");
+        content.line("  value n; integer n;");
+        content.line("  begin");
+        content.line("    if n <= 1 then");
+        content.line("      if n = 1 then");
+        content.line("        f := 1");
+        content.line("      else");
+        content.line("        f := 1");
+        content.line("    else");
+        content.line("      f := n * f(n-1)");
+        content.line("  end");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+
+        assertEquals("There should be no exception", 0, result.exceptions.size());
+    }
+
+    @Test
+    public void testNestedReturnsMissingElse() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line("  integer procedure f(n);");
+        content.line("  value n; integer n;");
+        content.line("  begin");
+        content.line("    if n <= 1 then");
+        content.line("      if n = 1 then");
+        content.line("        f := 1");
+        content.line("    else");
+        content.line("      f := n * f(n-1)");
+        content.line("  end");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+
+        assertEquals("There should be 1 exception", 1, result.exceptions.size());
+        assertTrue("Missing return", result.exceptions.get(0) instanceof MissingReturnException);
+    }
+
+    @Test
+    public void testReturnMissingInThen() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line("  integer procedure f;");
+        content.line("  begin");
+        content.line("    if 5 > 3 then");
+        content.line("      integer a");
+        content.line("    else");
+        content.line("      f := 2");
+        content.line("  end");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+
+        assertEquals("There should be 1 exception", 1, result.exceptions.size());
+        assertTrue("Missing return", result.exceptions.get(0) instanceof MissingReturnException);
+    }
+
+    @Test
+    public void testReturnMissingInElse() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line("  integer procedure f;");
+        content.line("  begin");
+        content.line("    if 5 > 3 then");
+        content.line("      f := 5");
+        content.line("    else");
+        content.line("      integer a");
+        content.line("  end");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+
+        assertEquals("There should be 1 exception", 1, result.exceptions.size());
+        assertTrue("Missing return", result.exceptions.get(0) instanceof MissingReturnException);
+    }
+
+    @Test
+    public void testReturnMissingAutoAssignment() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line("  integer procedure f;");
+        content.line("  begin");
+        content.line("    if 5 > 3 then");
+        content.line("      f := f");
+        content.line("    else");
+        content.line("      f := 2");
+        content.line("  end");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+
+        assertEquals("There should be 1 exception", 1, result.exceptions.size());
+        assertTrue("Missing return", result.exceptions.get(0) instanceof MissingReturnException);
+    }
+
+    @Test
+    public void testReturnRecursiveAssignment() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line("  integer procedure f;");
+        content.line("  begin");
+        content.line("    if 5 > 3 then");
+        content.line("      f := f()");
+        content.line("    else");
+        content.line("      f := 2");
+        content.line("  end");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+
+        assertEquals("There should be 1 exception", 1, result.exceptions.size());
+        assertTrue("Missing return", result.exceptions.get(0) instanceof MissingReturnException);
     }
 }
