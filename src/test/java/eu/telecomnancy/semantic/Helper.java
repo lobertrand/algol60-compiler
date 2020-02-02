@@ -20,15 +20,21 @@ public class Helper {
         public SymbolTable symbolTable;
         public List<SemanticException> exceptions;
         public DefaultAST ast;
+        public String text;
 
         public boolean exceptionAt(int line) {
             for (SemanticException e : exceptions) if (e.getLine() == line) return true;
             return false;
         }
+
+        public void printExceptions() {
+            exceptions.forEach(e -> IOUtils.printSemanticException(e, String.valueOf(text)));
+        }
     }
 
     public static Result checkSemantics(Object content) throws RecognitionException {
-        ANTLRStringStream stream = new ANTLRStringStream(String.valueOf(content));
+        String text = String.valueOf(content);
+        ANTLRStringStream stream = new ANTLRStringStream(text);
         Algol60Lexer lexer = new Algol60Lexer(stream);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         Algol60Parser parser = new Algol60Parser(tokens);
@@ -53,6 +59,7 @@ public class Helper {
         result.symbolTable = symbolTable;
         result.exceptions = visitor.getExceptions();
         result.ast = ast;
+        result.text = text;
         return result;
     }
 

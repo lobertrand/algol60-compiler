@@ -267,12 +267,6 @@ arithmetic_expression
 arithmetic_expression_end[DefaultAST t2]
     :   '+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
     |   '-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
-    |   '<' arithmetic_expression -> ^(LESS_THAN {$t2} arithmetic_expression?)
-    |   '<=' arithmetic_expression -> ^(LESS_EQUAL {$t2} arithmetic_expression?)
-    |   '>' arithmetic_expression -> ^(GREATER_THAN {$t2} arithmetic_expression?)
-    |   '>=' arithmetic_expression -> ^(GREATER_EQUAL {$t2} arithmetic_expression?)
-    |   '<>' arithmetic_expression -> ^(NOT_EQUAL {$t2} arithmetic_expression?)
-    |   '=' arithmetic_expression -> ^(EQUAL {$t2} arithmetic_expression?)
     |   '<=>' arithmetic_expression -> ^(EQUIVALENT {$t2} arithmetic_expression?)
     |   '=>' arithmetic_expression -> ^(IMPLY {$t2} arithmetic_expression?)
     |   '\\/' arithmetic_expression -> ^(OR {$t2} arithmetic_expression?)
@@ -290,6 +284,12 @@ term1[DefaultAST t2]
     |   '/' term -> ^(DIV {$t2} term?)
     |   '//' term -> ^(INT_DIV {$t2} term?)
     |   '**' term -> ^(POW {$t2} term?)
+    |   '<' term -> ^(LESS_THAN {$t2} term?)
+    |   '<=' term -> ^(LESS_EQUAL {$t2} term?)
+    |   '>' term -> ^(GREATER_THAN {$t2} term?)
+    |   '>=' term -> ^(GREATER_EQUAL {$t2} term?)
+    |   '<>' term -> ^(NOT_EQUAL {$t2} term?)
+    |   '=' term -> ^(EQUAL {$t2} term?)
     |   -> {$t2}
     ;
 

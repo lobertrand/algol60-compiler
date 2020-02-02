@@ -4,7 +4,6 @@ import org.antlr.runtime.Token;
 
 public class LogicalValueAST extends DefaultAST {
 
-
     public LogicalValueAST(Token t) {
         super(t);
     }

@@ -588,49 +588,79 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         return Type.VOID;
     }
 
-    public Type visit(LogicalValueAST ast){
-        return Type.VOID;
+    public Type visit(LogicalValueAST ast) {
+        return Type.BOOLEAN;
     }
 
-    public Type visit(AndAST ast){
-        return Type.VOID;
+    public Type visit(AndAST ast) {
+        return checkBooleanTest(ast);
     }
 
-    public Type visit(OrAST ast){
-        return Type.VOID;
+    public Type visit(OrAST ast) {
+        return checkBooleanTest(ast);
     }
 
-    public Type visit(ImplyAST ast){
-        return Type.VOID;
+    public Type visit(ImplyAST ast) {
+        return checkBooleanTest(ast);
     }
 
-    public Type visit(EquivalentAST ast){
-        return Type.VOID;
+    public Type visit(EquivalentAST ast) {
+        return checkBooleanTest(ast);
     }
 
-    public Type visit(GreaterThanAST ast){
-        return Type.VOID;
+    public Type visit(GreaterThanAST ast) {
+        return checkArithmeticTest(ast);
     }
 
-    public Type visit(LessThanAST ast){
-        return Type.VOID;
+    public Type visit(LessThanAST ast) {
+        return checkArithmeticTest(ast);
     }
 
-    public Type visit(GreaterEqualAST ast){
-        return Type.VOID;
+    public Type visit(GreaterEqualAST ast) {
+        return checkArithmeticTest(ast);
     }
 
-    public Type visit(LessEqualAST ast){
-        return Type.VOID;
+    public Type visit(LessEqualAST ast) {
+        return checkBooleanTest(ast);
     }
 
-    public Type visit(EqualAST ast){
-        return Type.VOID;
+    public Type visit(EqualAST ast) {
+        return checkArithmeticTest(ast);
     }
 
-    public Type visit(NotEqualAST ast){
-        return Type.VOID;
+    public Type visit(NotEqualAST ast) {
+        return checkArithmeticTest(ast);
     }
 
+    private Type checkBooleanTest(DefaultAST ast) {
+        String leftName = getStringRepresentation(ast.getChild(0));
+        String rightName = getStringRepresentation(ast.getChild(1));
+        Type leftType = getType(ast.getChild(0));
+        Type rightType = getType(ast.getChild(1));
+        if (Types.cannotDoBooleanTest(leftType, rightType)) {
+            throw new TypeMismatchException(
+                    String.format(
+                            "Cannot perform boolean operation on "
+                                    + "operands '%s' and '%s' of types %s and %s",
+                            leftName, rightName, leftType, rightType),
+                    ast);
+        }
+        return Type.BOOLEAN;
+    }
 
+    private Type checkArithmeticTest(DefaultAST ast) {
+        String leftName = getStringRepresentation(ast.getChild(0));
+        String rightName = getStringRepresentation(ast.getChild(1));
+        Type leftType = getType(ast.getChild(0));
+        Type rightType = getType(ast.getChild(1));
+        if (Types.cannotDoArithmeticTest(leftType, rightType)) {
+            throw new TypeMismatchException(
+                    String.format(
+                            "Cannot perform arithmetic operation on "
+                                    + "operands '%s' and '%s' of types %s and %s",
+                            leftName, rightName, leftType, rightType),
+                    ast);
+        }
+        return Type.BOOLEAN;
+    }
 }
