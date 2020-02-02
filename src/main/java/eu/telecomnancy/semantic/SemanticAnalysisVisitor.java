@@ -281,7 +281,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
         List<Type> types = new ArrayList<>();
         for (DefaultAST defaultAST : ast.getChild(1)) {
-            Type type = getType(defaultAST);
+            Type type = defaultAST.accept(this);
             types.add(type);
         }
 
@@ -319,8 +319,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         DefaultAST operator = ifDef.getChild(0);
         DefaultAST firstOperand = operator.getChild(0);
         DefaultAST secondOperand = operator.getChild(1);
-        Type leftType = getType(firstOperand);
-        Type rightType = getType(secondOperand);
+        Type leftType = firstOperand.accept(this);
+        Type rightType = secondOperand.accept(this);
         String leftName = getStringRepresentation(firstOperand);
         String rightName = getStringRepresentation(secondOperand);
 
@@ -372,27 +372,18 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(AssignmentAST ast) {
-        String leftName = ast.getChild(0).getText();
-        Symbol leftSymbol = currentSymbolTable.resolve(leftName);
-        if (leftSymbol == null) {
-            throw new SymbolNotDeclaredException(
-                    String.format("'%s' is not declared", leftName), ast);
-        }
-        if (!leftSymbol.getKind().isAssignable()) {
-            throw new TypeMismatchException(
-                    String.format(
-                            "Cannot assign to '%s' which is %s",
-                            leftName, leftSymbol.getKind().withPronoun()),
-                    ast);
-        }
+        DefaultAST leftPart = ast.getChild(0);
+        String leftName = leftPart.getText();
+        Type leftType = leftPart.accept(this);
 
         DefaultAST rightPart = ast.getChild(1);
-        Type rightType = getType(rightPart);
-        if (Types.cannotAssign(leftSymbol.getType(), rightType)) {
+        Type rightType = rightPart.accept(this);
+
+        if (Types.cannotAssign(leftType, rightType)) {
             throw new TypeMismatchException(
                     String.format(
                             "Cannot assign %s to '%s' of type %s",
-                            rightType.withPronoun(), leftName, leftSymbol.getType()),
+                            rightType.withPronoun(), leftName, leftType),
                     rightPart);
         }
         return Type.VOID;
@@ -412,8 +403,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     public Type visit(MultAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        Type leftType = getType(leftPart);
-        Type rightType = getType(rightPart);
+        Type leftType = leftPart.accept(this);
+        Type rightType = rightPart.accept(this);
 
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
@@ -431,8 +422,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     public Type visit(DivAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        Type leftType = getType(leftPart);
-        Type rightType = getType(rightPart);
+        Type leftType = leftPart.accept(this);
+        Type rightType = rightPart.accept(this);
 
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
@@ -460,8 +451,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     public Type visit(PowAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        Type leftType = getType(leftPart);
-        Type rightType = getType(rightPart);
+        Type leftType = leftPart.accept(this);
+        Type rightType = rightPart.accept(this);
 
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
@@ -503,8 +494,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     public Type visit(IntDivAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        Type leftType = getType(leftPart);
-        Type rightType = getType(rightPart);
+        Type leftType = leftPart.accept(this);
+        Type rightType = rightPart.accept(this);
 
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
@@ -518,8 +509,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        Type leftType = getType(leftPart);
-        Type rightType = getType(rightPart);
+        Type leftType = leftPart.accept(this);
+        Type rightType = rightPart.accept(this);
 
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
@@ -533,24 +524,12 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         return Type.VOID;
     }
 
-    private Type getType(DefaultAST part) throws SemanticException {
-        if (part.getType() == Algol60Parser.IDENTIFIER) {
-            Symbol symbol = currentSymbolTable.resolve(part.getText());
-            if (symbol == null) {
-                throw new SymbolNotDeclaredException(
-                        String.format("Variable '%s' not declared.", part.getText()), part);
-            }
-            return symbol.getType();
-        }
-        return part.accept(this);
-    }
-
     @Override
     public Type visit(MinusAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        Type leftType = getType(leftPart);
-        Type rightType = getType(rightPart);
+        Type leftType = leftPart.accept(this);
+        Type rightType = rightPart.accept(this);
 
         if (!typeCompat.get(leftType).contains(rightType)) {
             throw new TypeMismatchException(String.format("Operands types don't match."), ast);
@@ -586,6 +565,17 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         // We don't know yet the scope of this label
         undeclaredLabels.add(new UndeclaredLabel(name, ast));
         return Type.VOID;
+    }
+
+    @Override
+    public Type visit(IdentifierAST ast) {
+        String identifier = ast.getText();
+        Symbol symbol = currentSymbolTable.resolve(identifier);
+        if (symbol == null) {
+            throw new SymbolNotDeclaredException(
+                    String.format("Variable '%s' is not declared", identifier), ast);
+        }
+        return symbol.getType();
     }
 
     public Type visit(LogicalValueAST ast) {
@@ -633,10 +623,12 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     }
 
     private Type checkBooleanTest(DefaultAST ast) {
-        String leftName = getStringRepresentation(ast.getChild(0));
-        String rightName = getStringRepresentation(ast.getChild(1));
-        Type leftType = getType(ast.getChild(0));
-        Type rightType = getType(ast.getChild(1));
+        DefaultAST leftPart = ast.getChild(0);
+        String leftName = getStringRepresentation(leftPart);
+        DefaultAST rightPart = ast.getChild(1);
+        String rightName = getStringRepresentation(rightPart);
+        Type leftType = leftPart.accept(this);
+        Type rightType = rightPart.accept(this);
         if (Types.cannotDoBooleanTest(leftType, rightType)) {
             throw new TypeMismatchException(
                     String.format(
@@ -649,10 +641,12 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     }
 
     private Type checkArithmeticTest(DefaultAST ast) {
-        String leftName = getStringRepresentation(ast.getChild(0));
-        String rightName = getStringRepresentation(ast.getChild(1));
-        Type leftType = getType(ast.getChild(0));
-        Type rightType = getType(ast.getChild(1));
+        DefaultAST leftPart = ast.getChild(0);
+        String leftName = getStringRepresentation(leftPart);
+        DefaultAST rightPart = ast.getChild(1);
+        String rightName = getStringRepresentation(rightPart);
+        Type leftType = leftPart.accept(this);
+        Type rightType = rightPart.accept(this);
         if (Types.cannotDoArithmeticTest(leftType, rightType)) {
             throw new TypeMismatchException(
                     String.format(

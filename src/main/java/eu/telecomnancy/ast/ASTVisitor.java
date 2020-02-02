@@ -73,4 +73,6 @@ public interface ASTVisitor<R> {
     R visit(EqualAST ast);
 
     R visit(NotEqualAST ast);
+
+    R visit(IdentifierAST ast);
 }
