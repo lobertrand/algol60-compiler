@@ -352,12 +352,10 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     }
 
     private String getStringRepresentation(DefaultAST ast) {
-        switch (ast.getType()) {
-            case Algol60Parser.PROC_CALL:
-                return ast.getChild(0).getText();
-            default:
-                return ast.getText();
+        if (ast.getType() == Algol60Parser.PROC_CALL) {
+            return ast.getChild(0).getText();
         }
+        return ast.getText();
     }
 
     @Override
@@ -434,34 +432,17 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(MultAST ast) {
-        DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        Type leftType = leftPart.accept(this);
-        Type rightType = rightPart.accept(this);
-
-        if (!typeCompat.get(leftType).contains(rightType)) {
-            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
-        }
-        if (leftType == Type.REAL || rightType == Type.REAL) {
+        PairOfTypes types = checkArithmeticOperation(ast);
+        if (types.left == Type.REAL || types.right == Type.REAL) {
             return Type.REAL;
-        } else if (leftType == Type.INTEGER && rightType == Type.INTEGER) {
+        } else {
             return Type.INTEGER;
         }
-
-        return Type.VOID;
     }
 
     @Override
     public Type visit(DivAST ast) {
-        DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        Type leftType = leftPart.accept(this);
-        Type rightType = rightPart.accept(this);
-
-        if (!typeCompat.get(leftType).contains(rightType)) {
-            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
-        }
-
+        checkArithmeticOperation(ast);
         return Type.REAL;
     }
 
@@ -482,34 +463,40 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(PowAST ast) {
+        PairOfTypes types = checkArithmeticOperation(ast);
+        if (types.left == Type.REAL || types.right == Type.REAL) {
+            return Type.REAL;
+        } else {
+            return Type.INTEGER;
+        }
+    }
+
+    private PairOfTypes checkArithmeticOperation(DefaultAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
+        String leftName = getStringRepresentation(leftPart);
+        String rightName = getStringRepresentation(rightPart);
         Type leftType = leftPart.accept(this);
         Type rightType = rightPart.accept(this);
 
-        if (!typeCompat.get(leftType).contains(rightType)) {
-            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
+        if (Types.cannotDoArithmeticOperation(leftType, rightType)) {
+            throw new TypeMismatchException(
+                    String.format(
+                            "Cannot perform arithmetic operation on "
+                                    + "operands '%s' and '%s' of types %s and %s",
+                            leftName, rightName, leftType, rightType),
+                    ast);
         }
-        switch (leftType) {
-            case REAL:
-                switch (rightType) {
-                    case REAL:
-                    case INTEGER:
-                        return Type.REAL;
-                    default:
-                        return Type.VOID;
-                }
-            case INTEGER:
-                switch (rightType) {
-                    case REAL:
-                        return Type.REAL;
-                    case INTEGER:
-                        return Type.INTEGER;
-                    default:
-                        return Type.VOID;
-                }
-            default:
-                return Type.VOID;
+        return new PairOfTypes(leftType, rightType);
+    }
+
+    private static class PairOfTypes {
+        private final Type left;
+        private final Type right;
+
+        private PairOfTypes(Type left, Type right) {
+            this.left = left;
+            this.right = right;
         }
     }
 
@@ -525,55 +512,28 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(IntDivAST ast) {
-        DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        Type leftType = leftPart.accept(this);
-        Type rightType = rightPart.accept(this);
-
-        if (!typeCompat.get(leftType).contains(rightType)) {
-            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
-        }
-
+        checkArithmeticOperation(ast);
         return Type.INTEGER;
     }
 
     @Override
     public Type visit(AddAST ast) {
-
-        DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        Type leftType = leftPart.accept(this);
-        Type rightType = rightPart.accept(this);
-
-        if (!typeCompat.get(leftType).contains(rightType)) {
-            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
-        }
-
-        if (leftType == Type.REAL || rightType == Type.REAL) {
+        PairOfTypes types = checkArithmeticOperation(ast);
+        if (types.left == Type.REAL || types.right == Type.REAL) {
             return Type.REAL;
-        } else if (leftType == Type.INTEGER && rightType == Type.INTEGER) {
+        } else {
             return Type.INTEGER;
         }
-        return Type.VOID;
     }
 
     @Override
     public Type visit(MinusAST ast) {
-        DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        Type leftType = leftPart.accept(this);
-        Type rightType = rightPart.accept(this);
-
-        if (!typeCompat.get(leftType).contains(rightType)) {
-            throw new TypeMismatchException(String.format("Operands types don't match."), ast);
-        }
-        if (leftType == Type.REAL || rightType == Type.REAL) {
+        PairOfTypes types = checkArithmeticOperation(ast);
+        if (types.left == Type.REAL || types.right == Type.REAL) {
             return Type.REAL;
-        } else if (leftType == Type.INTEGER && rightType == Type.INTEGER) {
+        } else {
             return Type.INTEGER;
         }
-
-        return Type.VOID;
     }
 
     @Override
@@ -644,7 +604,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     }
 
     public Type visit(LessEqualAST ast) {
-        return checkBooleanTest(ast);
+        return checkArithmeticTest(ast);
     }
 
     public Type visit(EqualAST ast) {
@@ -657,8 +617,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     private Type checkBooleanTest(DefaultAST ast) {
         DefaultAST leftPart = ast.getChild(0);
-        String leftName = getStringRepresentation(leftPart);
         DefaultAST rightPart = ast.getChild(1);
+        String leftName = getStringRepresentation(leftPart);
         String rightName = getStringRepresentation(rightPart);
         Type leftType = leftPart.accept(this);
         Type rightType = rightPart.accept(this);
@@ -675,8 +635,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     private Type checkArithmeticTest(DefaultAST ast) {
         DefaultAST leftPart = ast.getChild(0);
-        String leftName = getStringRepresentation(leftPart);
         DefaultAST rightPart = ast.getChild(1);
+        String leftName = getStringRepresentation(leftPart);
         String rightName = getStringRepresentation(rightPart);
         Type leftType = leftPart.accept(this);
         Type rightType = rightPart.accept(this);

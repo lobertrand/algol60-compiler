@@ -7,6 +7,12 @@ import eu.telecomnancy.semantic.SemanticException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.antlr.runtime.*;
 import org.antlr.runtime.tree.DOTTreeGenerator;
 import org.antlr.runtime.tree.Tree;
@@ -90,5 +96,12 @@ public class IOUtils {
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command("dot", "-Tpdf", name + ".dot", "-o", name + ".pdf");
         processBuilder.start();
+    }
+
+    public static String loadString(String resourcePath) throws IOException, URISyntaxException {
+        URL url = IOUtils.class.getResource(resourcePath);
+        URI uri = url.toURI();
+        Path path = Paths.get(uri);
+        return new String(Files.readAllBytes(path));
     }
 }

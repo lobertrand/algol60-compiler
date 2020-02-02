@@ -2,7 +2,6 @@ package eu.telecomnancy.semantic;
 
 import static eu.telecomnancy.semantic.Helper.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.antlr.runtime.RecognitionException;
 import org.junit.Test;
@@ -50,15 +49,9 @@ public class ArithmeticExprTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertTrue("There should and exception at line 3", result.exceptionAt(3));
-        assertTrue("There should and exception at line 4", result.exceptionAt(4));
-        assertTrue("There should and exception at line 5", result.exceptionAt(5));
-        assertTrue("There should and exception at line 6", result.exceptionAt(6));
-        assertTrue("There should and exception at line 7", result.exceptionAt(7));
-        assertTrue("There should and exception at line 8", result.exceptionAt(8));
-        assertTrue("There should and exception at line 9", result.exceptionAt(9));
-        assertTrue("There should and exception at line 10", result.exceptionAt(10));
-        assertTrue("There should and exception at line 11", result.exceptionAt(11));
+        for (int i = 3; i <= 11; i++) {
+            assertExceptionAtLine(i, TypeMismatchException.class, result);
+        }
         assertEquals("There should be 9 exceptions", 9, result.exceptions.size());
     }
 
@@ -79,14 +72,9 @@ public class ArithmeticExprTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertTrue("There should and exception at line 4", result.exceptionAt(4));
-        assertTrue("There should and exception at line 5", result.exceptionAt(5));
-        assertTrue("There should and exception at line 6", result.exceptionAt(6));
-        assertTrue("There should and exception at line 7", result.exceptionAt(7));
-        assertTrue("There should and exception at line 8", result.exceptionAt(8));
-        assertTrue("There should and exception at line 9", result.exceptionAt(9));
-        assertTrue("There should and exception at line 10", result.exceptionAt(10));
-        assertTrue("There should and exception at line 11", result.exceptionAt(11));
+        for (int i = 4; i <= 11; i++) {
+            assertExceptionAtLine(i, TypeMismatchException.class, result);
+        }
         assertEquals("There should be 8 exceptions", 8, result.exceptions.size());
     }
 
@@ -126,18 +114,9 @@ public class ArithmeticExprTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertTrue("There should and exception at line 3", result.exceptionAt(3));
-        assertTrue("There should and exception at line 4", result.exceptionAt(4));
-        assertTrue("There should and exception at line 5", result.exceptionAt(5));
-        assertTrue("There should and exception at line 6", result.exceptionAt(6));
-        assertTrue("There should and exception at line 7", result.exceptionAt(7));
-        assertTrue("There should and exception at line 8", result.exceptionAt(8));
-        assertTrue("There should and exception at line 9", result.exceptionAt(9));
-        assertTrue("There should and exception at line 10", result.exceptionAt(10));
-        assertTrue("There should and exception at line 11", result.exceptionAt(11));
-        assertTrue("There should and exception at line 12", result.exceptionAt(12));
-        assertTrue("There should and exception at line 13", result.exceptionAt(13));
-        assertTrue("There should and exception at line 14", result.exceptionAt(14));
+        for (int i = 3; i <= 14; i++) {
+            assertExceptionAtLine(i, TypeMismatchException.class, result);
+        }
         assertEquals("There should be 12 exceptions", 12, result.exceptions.size());
     }
 }

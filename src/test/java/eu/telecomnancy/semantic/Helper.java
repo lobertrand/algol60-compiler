@@ -1,5 +1,7 @@
 package eu.telecomnancy.semantic;
 
+import static org.junit.Assert.assertEquals;
+
 import eu.telecomnancy.Algol60Lexer;
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.ASTAdaptor;
@@ -13,6 +15,7 @@ import java.util.stream.Collectors;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.junit.Assert;
 
 public class Helper {
 
@@ -92,5 +95,31 @@ public class Helper {
         public String toString() {
             return sb.toString();
         }
+    }
+
+    public static void assertExceptionQuantity(int n, Result result) {
+        if (n != result.exceptions.size()) result.printExceptions();
+        assertEquals("There should be " + n + " exceptions", n, result.exceptions.size());
+    }
+
+    public static void assertExceptionAtLine(int line, Class<?> expectedClass, Result result) {
+        String lineOfCode = result.text.split("\n")[line - 1].trim();
+        String msg = "There should be an exception at line " + line + ": '" + lineOfCode + "'";
+        Assert.assertTrue(msg, result.exceptionAt(line));
+        Exception exception =
+                result.exceptions.stream()
+                        .filter(e -> e.getLine() == line)
+                        .findFirst()
+                        .orElse(null);
+        assertInstanceOf(expectedClass, exception);
+    }
+
+    public static void assertInstanceOf(Class<?> expectedClass, Object o) {
+        String msg =
+                "Expected instance of "
+                        + expectedClass.getSimpleName()
+                        + " but was "
+                        + o.getClass().getSimpleName();
+        Assert.assertTrue(msg, expectedClass.isAssignableFrom(o.getClass()));
     }
 }
