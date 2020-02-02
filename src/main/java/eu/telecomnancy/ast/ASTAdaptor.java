@@ -60,6 +60,28 @@ public class ASTAdaptor extends CommonTreeAdaptor {
                     return new LabelDecAST(t);
                 case Algol60Parser.GOTO:
                     return new GoToAST(t);
+                case Algol60Parser.LOGICAL_VALUE:
+                    return new LogicalValueAST(t);
+                case Algol60Parser.AND:
+                    return new AndAST(t);
+                case Algol60Parser.OR:
+                    return new OrAST(t);
+                case Algol60Parser.IMPLY:
+                    return new ImplyAST(t);
+                case Algol60Parser.EQUIVALENT:
+                    return new EquivalentAST(t);
+                case Algol60Parser.GREATER_THAN:
+                    return new GreaterThanAST(t);
+                case Algol60Parser.LESS_THAN:
+                    return new LessThanAST(t);
+                case Algol60Parser.GREATER_EQUAL:
+                    return new GreaterEqualAST(t);
+                case Algol60Parser.LESS_EQUAL:
+                    return new LessEqualAST(t);
+                case Algol60Parser.EQUAL:
+                    return new EqualAST(t);
+                case Algol60Parser.NOT_EQUAL:
+                    return new NotEqualAST(t);
                 default:
                     break;
             }

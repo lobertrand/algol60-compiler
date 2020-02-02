@@ -51,4 +51,26 @@ public interface ASTVisitor<R> {
     R visit(LabelDecAST ast);
 
     R visit(GoToAST ast);
+
+    R visit(LogicalValueAST ast);
+
+    R visit(AndAST ast);
+
+    R visit(OrAST ast);
+
+    R visit(ImplyAST ast);
+
+    R visit(EquivalentAST ast);
+
+    R visit(GreaterThanAST ast);
+
+    R visit(LessThanAST ast);
+
+    R visit(GreaterEqualAST ast);
+
+    R visit(LessEqualAST ast);
+
+    R visit(EqualAST ast);
+
+    R visit(NotEqualAST ast);
 }

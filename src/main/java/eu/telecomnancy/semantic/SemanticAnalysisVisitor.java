@@ -587,4 +587,50 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         undeclaredLabels.add(new UndeclaredLabel(name, ast));
         return Type.VOID;
     }
+
+    public Type visit(LogicalValueAST ast){
+        return Type.VOID;
+    }
+
+    public Type visit(AndAST ast){
+        return Type.VOID;
+    }
+
+    public Type visit(OrAST ast){
+        return Type.VOID;
+    }
+
+    public Type visit(ImplyAST ast){
+        return Type.VOID;
+    }
+
+    public Type visit(EquivalentAST ast){
+        return Type.VOID;
+    }
+
+    public Type visit(GreaterThanAST ast){
+        return Type.VOID;
+    }
+
+    public Type visit(LessThanAST ast){
+        return Type.VOID;
+    }
+
+    public Type visit(GreaterEqualAST ast){
+        return Type.VOID;
+    }
+
+    public Type visit(LessEqualAST ast){
+        return Type.VOID;
+    }
+
+    public Type visit(EqualAST ast){
+        return Type.VOID;
+    }
+
+    public Type visit(NotEqualAST ast){
+        return Type.VOID;
+    }
+
+
 }
