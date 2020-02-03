@@ -258,38 +258,98 @@ id_expression_end[DefaultAST id]
     |   -> {$id}
     ;
 
-// Arithmetic
-    
+// Arithmetic expressions
+
 arithmetic_expression
-    :   term! arithmetic_expression_end[$term.tree]
+    :   equivalence
     ;
 
-arithmetic_expression_end[DefaultAST t2]
-    :   '+' arithmetic_expression -> ^(ADD {$t2} arithmetic_expression?)
-    |   '-' arithmetic_expression -> ^(MINUS {$t2} arithmetic_expression?)
-    |   '<=>' arithmetic_expression -> ^(EQUIVALENT {$t2} arithmetic_expression?)
-    |   '=>' arithmetic_expression -> ^(IMPLY {$t2} arithmetic_expression?)
-    |   '\\/' arithmetic_expression -> ^(OR {$t2} arithmetic_expression?)
-    |   '/\\' arithmetic_expression -> ^(AND {$t2} arithmetic_expression?)
-    // |   '~' arithmetic_expression -> ^(NOT {$t2} arithmetic_expression?)
+equivalence
+    :   implication! equivalence_end[$implication.tree]
+    ;
+
+equivalence_end[DefaultAST t2]
+    :   '<=>' equivalence -> ^(EQUIVALENT {$t2} equivalence?)
     |   -> {$t2}
-    ;    
-    
-term
-    :   expression! term1[$expression.tree]
     ;
 
-term1[DefaultAST t2]
-    :   '*' term -> ^(MULT {$t2} term?)
-    |   '/' term -> ^(DIV {$t2} term?)
-    |   '//' term -> ^(INT_DIV {$t2} term?)
-    |   '**' term -> ^(POW {$t2} term?)
-    |   '<' term -> ^(LESS_THAN {$t2} term?)
-    |   '<=' term -> ^(LESS_EQUAL {$t2} term?)
-    |   '>' term -> ^(GREATER_THAN {$t2} term?)
-    |   '>=' term -> ^(GREATER_EQUAL {$t2} term?)
-    |   '<>' term -> ^(NOT_EQUAL {$t2} term?)
-    |   '=' term -> ^(EQUAL {$t2} term?)
+implication
+    :   or_expr! implication_end[$or_expr.tree]
+    ;
+
+implication_end[DefaultAST t2]
+    :   '=>' implication -> ^(IMPLY {$t2} implication?)
+    |   -> {$t2}
+    ;
+
+or_expr
+    :   and_expr! or_expr_end[$and_expr.tree]
+    ;
+
+or_expr_end[DefaultAST t2]
+    :   '\\/' or_expr -> ^(OR {$t2} or_expr?)
+    |   -> {$t2}
+    ;
+
+and_expr
+    :   comparison! and_expr_end[$comparison.tree]
+    ;
+
+and_expr_end[DefaultAST t2]
+    :   '/\\' and_expr -> ^(AND {$t2} and_expr?)
+    |   -> {$t2}
+    ;
+
+// not_expr
+//     :   comparison! not_expr_end[$comparison.tree]
+//     ;
+
+// not_expr_end[DefaultAST t2]
+//     :   '~' not_expr -> ^(NOT {$t2} not_expr?)
+//     |   -> {$t2}
+//     ;
+
+comparison
+    :   add_expr! comparison_end[$add_expr.tree]
+    ;
+
+comparison_end[DefaultAST t2]
+    :   '<' comparison -> ^(LESS_THAN {$t2} comparison?)
+    |   '<=' comparison -> ^(LESS_EQUAL {$t2} comparison?)
+    |   '=' comparison -> ^(EQUAL {$t2} comparison?)
+    |   '>=' comparison -> ^(GREATER_EQUAL {$t2} comparison?)
+    |   '>' comparison -> ^(GREATER_THAN {$t2} comparison?)
+    |   '<>' comparison -> ^(NOT_EQUAL {$t2} comparison?)
+    |   -> {$t2}
+    ;
+
+add_expr
+    :   mult_expr! add_expr_end[$mult_expr.tree]
+    ;
+
+add_expr_end[DefaultAST t2]
+    :   '+' add_expr -> ^(ADD {$t2} add_expr?)
+    |   '-' add_expr -> ^(MINUS {$t2} add_expr?)
+    |   -> {$t2}
+    ;
+    
+mult_expr
+    :   pow_expr! mult_expr_end[$pow_expr.tree]
+    ;
+
+mult_expr_end[DefaultAST t2]
+    :   '*' mult_expr -> ^(MULT {$t2} mult_expr?)
+    |   '/' mult_expr -> ^(DIV {$t2} mult_expr?)
+    |   '//' mult_expr -> ^(INT_DIV {$t2} mult_expr?)
+    |   -> {$t2}
+    ;
+
+pow_expr
+    :   expression! pow_expr_end[$expression.tree]
+    ;
+
+pow_expr_end[DefaultAST t2]
+    :   '**' pow_expr -> ^(POW {$t2} pow_expr?)
     |   -> {$t2}
     ;
 

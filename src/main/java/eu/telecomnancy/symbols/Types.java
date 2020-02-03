@@ -47,27 +47,27 @@ public final class Types {
     }
 
     /**
-     * Tells if left and right types are incompatible for doing an arithmetic test (with operators
-     * such as '>', '<', '=', '<=', '>='...)
+     * Tells if left and right types are incompatible for doing a relational operation (with
+     * operators such as '>', '<', '=', '<=', '>='...)
      *
      * @param left Left operand's type
      * @param right Right operand's type
      * @return true is the operation invalid
      */
-    public static boolean cannotDoArithmeticTest(Type left, Type right) {
+    public static boolean cannotDoRelationalOperation(Type left, Type right) {
         if (left == UNDEFINED || right == UNDEFINED) return false;
         return !(arithmeticTypes.containsKey(left) && arithmeticTypes.get(left).contains(right));
     }
 
     /**
-     * Tells if left and right types are incompatible for doing a boolean test (with operators such
-     * as '/\', '\/', '=>'...)
+     * Tells if left and right types are incompatible for doing a boolean operation (with operators
+     * such as '/\', '\/', '=>'...)
      *
      * @param left Left operand's type
      * @param right Right operand's type
      * @return true is the operation invalid
      */
-    public static boolean cannotDoBooleanTest(Type left, Type right) {
+    public static boolean cannotDoLogicalOperation(Type left, Type right) {
         if (left == UNDEFINED || right == UNDEFINED) return false;
         return !(left == BOOLEAN && right == BOOLEAN);
     }

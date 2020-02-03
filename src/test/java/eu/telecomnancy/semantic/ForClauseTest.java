@@ -61,7 +61,7 @@ public class ForClauseTest {
         c.line("  begin");
         c.line("    startIndex := 3");
         c.line("  end;");
-        c.line("  string s;");
+        c.line("  integer s;");
         c.line("  for s := startIndex() step 1 until 20 do");
         c.line("  begin");
         c.line("    integer a");
