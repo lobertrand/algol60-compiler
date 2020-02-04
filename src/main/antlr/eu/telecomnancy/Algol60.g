@@ -55,6 +55,7 @@ tokens {
     POW_10;             // Scientific notation
     ARRAY_CALL;         // Access to a value of an array
     STR;                // String
+    NOT;                // Logical not
     AND;                // Logical and
     OR;                 // Logical or
     IMPLY;              // Logical implication
@@ -62,9 +63,10 @@ tokens {
     GREATER_THAN;       // Greater than
     LESS_THAN;          // Less than
     GREATER_EQUAL;      // Great than or equal
-    LESS_EQUAL;      // Less than or equal
+    LESS_EQUAL;         // Less than or equal
     EQUAL;              // Equal
     NOT_EQUAL;          // Not equal
+    GROUP;              // Grouped by parentheses
 }
 
 @parser::header {
@@ -292,7 +294,7 @@ or_expr_end[DefaultAST t2]
     ;
 
 and_expr
-    :   comparison! and_expr_end[$comparison.tree]
+    :   not_expr! and_expr_end[$not_expr.tree]
     ;
 
 and_expr_end[DefaultAST t2]
@@ -300,14 +302,10 @@ and_expr_end[DefaultAST t2]
     |   -> {$t2}
     ;
 
-// not_expr
-//     :   comparison! not_expr_end[$comparison.tree]
-//     ;
-
-// not_expr_end[DefaultAST t2]
-//     :   '~' not_expr -> ^(NOT {$t2} not_expr?)
-//     |   -> {$t2}
-//     ;
+not_expr
+    :   '~' not_expr -> ^(NOT not_expr?)
+    |   comparison
+    ;
 
 comparison
     :   add_expr! comparison_end[$add_expr.tree]
@@ -345,12 +343,17 @@ mult_expr_end[DefaultAST t2]
     ;
 
 pow_expr
-    :   expression! pow_expr_end[$expression.tree]
+    :   group_expr! pow_expr_end[$group_expr.tree]
     ;
 
 pow_expr_end[DefaultAST t2]
     :   '**' pow_expr -> ^(POW {$t2} pow_expr?)
     |   -> {$t2}
+    ;
+
+group_expr
+    :   expression
+    |   '(' arithmetic_expression ')' -> ^(GROUP arithmetic_expression)
     ;
 
 // If clause
