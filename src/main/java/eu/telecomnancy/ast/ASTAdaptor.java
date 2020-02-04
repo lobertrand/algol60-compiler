@@ -62,6 +62,8 @@ public class ASTAdaptor extends CommonTreeAdaptor {
                     return new GoToAST(t);
                 case Algol60Parser.LOGICAL_VALUE:
                     return new LogicalValueAST(t);
+                case Algol60Parser.NOT:
+                    return new NotAST(t);
                 case Algol60Parser.AND:
                     return new AndAST(t);
                 case Algol60Parser.OR:

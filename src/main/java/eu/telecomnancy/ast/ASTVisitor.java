@@ -54,6 +54,8 @@ public interface ASTVisitor<R> {
 
     R visit(LogicalValueAST ast);
 
+    R visit(NotAST ast);
+
     R visit(AndAST ast);
 
     R visit(OrAST ast);

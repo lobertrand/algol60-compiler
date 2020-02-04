@@ -66,7 +66,6 @@ tokens {
     LESS_EQUAL;         // Less than or equal
     EQUAL;              // Equal
     NOT_EQUAL;          // Not equal
-    GROUP;              // Grouped by parentheses
 }
 
 @parser::header {
@@ -353,7 +352,7 @@ pow_expr_end[DefaultAST t2]
 
 group_expr
     :   expression
-    |   '(' arithmetic_expression ')' -> ^(GROUP arithmetic_expression)
+    |   '('! arithmetic_expression ')'!
     ;
 
 // If clause

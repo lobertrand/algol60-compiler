@@ -352,10 +352,12 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     }
 
     private String getStringRepresentation(DefaultAST ast) {
-        if (ast.getType() == Algol60Parser.PROC_CALL) {
-            return ast.getChild(0).getText();
+        switch (ast.getType()) {
+            case Algol60Parser.PROC_CALL:
+                return ast.getChild(0).getText();
+            default:
+                return ast.getText();
         }
-        return ast.getText();
     }
 
     @Override
@@ -474,12 +476,12 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     private PairOfTypes checkArithmeticOperation(DefaultAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String leftName = getStringRepresentation(leftPart);
-        String rightName = getStringRepresentation(rightPart);
         Type leftType = leftPart.accept(this);
         Type rightType = rightPart.accept(this);
 
         if (Types.cannotDoArithmeticOperation(leftType, rightType)) {
+            String leftName = getStringRepresentation(leftPart);
+            String rightName = getStringRepresentation(rightPart);
             throw new TypeMismatchException(
                     String.format(
                             "Cannot perform arithmetic operation on "
@@ -575,6 +577,18 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         return Type.BOOLEAN;
     }
 
+    @Override
+    public Type visit(NotAST ast) {
+        DefaultAST child = ast.getChild(0);
+        Type type = child.accept(this);
+        if (Types.cannotNegate(type)) {
+            String name = getStringRepresentation(child);
+            throw new TypeMismatchException(
+                    String.format("Cannot perform negation on '%s' of type %s", name, type), ast);
+        }
+        return Type.BOOLEAN;
+    }
+
     public Type visit(AndAST ast) {
         return checkLogicalOperation(ast);
     }
@@ -618,11 +632,11 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     private Type checkLogicalOperation(DefaultAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String leftName = getStringRepresentation(leftPart);
-        String rightName = getStringRepresentation(rightPart);
         Type leftType = leftPart.accept(this);
         Type rightType = rightPart.accept(this);
         if (Types.cannotDoLogicalOperation(leftType, rightType)) {
+            String leftName = getStringRepresentation(leftPart);
+            String rightName = getStringRepresentation(rightPart);
             throw new TypeMismatchException(
                     String.format(
                             "Cannot perform boolean operation on "
@@ -636,11 +650,11 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     private Type checkRelationalOperation(DefaultAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String leftName = getStringRepresentation(leftPart);
-        String rightName = getStringRepresentation(rightPart);
         Type leftType = leftPart.accept(this);
         Type rightType = rightPart.accept(this);
         if (Types.cannotDoRelationalOperation(leftType, rightType)) {
+            String leftName = getStringRepresentation(leftPart);
+            String rightName = getStringRepresentation(rightPart);
             throw new TypeMismatchException(
                     String.format(
                             "Cannot perform arithmetic operation on "

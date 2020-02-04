@@ -39,7 +39,7 @@ public final class Types {
      *
      * @param left Left operand's type
      * @param right Right operand's type
-     * @return true is the operation is invalid
+     * @return true if the operation is invalid
      */
     public static boolean cannotDoArithmeticOperation(Type left, Type right) {
         if (left == UNDEFINED || right == UNDEFINED) return false;
@@ -52,7 +52,7 @@ public final class Types {
      *
      * @param left Left operand's type
      * @param right Right operand's type
-     * @return true is the operation invalid
+     * @return true if the operation is invalid
      */
     public static boolean cannotDoRelationalOperation(Type left, Type right) {
         if (left == UNDEFINED || right == UNDEFINED) return false;
@@ -65,11 +65,22 @@ public final class Types {
      *
      * @param left Left operand's type
      * @param right Right operand's type
-     * @return true is the operation invalid
+     * @return true if the operation is invalid
      */
     public static boolean cannotDoLogicalOperation(Type left, Type right) {
         if (left == UNDEFINED || right == UNDEFINED) return false;
         return !(left == BOOLEAN && right == BOOLEAN);
+    }
+
+    /**
+     * Tells if the type in parameter is compatible with the '~' (not) operator
+     *
+     * @param type Type of the expression
+     * @return true if the operation is invalid
+     */
+    public static boolean cannotNegate(Type type) {
+        if (type == UNDEFINED) return false;
+        return type != BOOLEAN;
     }
 
     @SafeVarargs
