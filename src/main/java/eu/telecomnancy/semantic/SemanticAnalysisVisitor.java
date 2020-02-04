@@ -316,30 +316,16 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     @Override
     public Type visit(IfStatementAST ast) {
         DefaultAST ifDef = ast.findFirst(Algol60Parser.IF_DEF);
-        DefaultAST operator = ifDef.getChild(0);
-        DefaultAST firstOperand = operator.getChild(0);
-        DefaultAST secondOperand = operator.getChild(1);
-        Type leftType = firstOperand.accept(this);
-        Type rightType = secondOperand.accept(this);
-        String leftName = getStringRepresentation(firstOperand);
-        String rightName = getStringRepresentation(secondOperand);
-
-        if (operator.getChildCount() == 2) {
-            if (rightType == leftType) {
-                if (rightType == Type.STRING) {
-                    throw new TypeMismatchException(
-                            String.format(
-                                    "cannot compare strings '%s' and '%s'", leftName, rightName),
-                            firstOperand);
-                }
-            } else {
-                throw new TypeMismatchException(
-                        String.format(
-                                "'%s' and '%s' have different types ('%s' and '%s')",
-                                leftName, rightName, leftType, rightType),
-                        firstOperand);
-            }
+        DefaultAST condition = ifDef.getChild(0);
+        Type conditionType = condition.accept(this);
+        if (conditionType != Type.BOOLEAN) {
+            exceptions.add(
+                    new TypeMismatchException(
+                            "If statement expects a boolean expression, not "
+                                    + conditionType.withPronoun(),
+                            ifDef));
         }
+
         DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
         thenDef.accept(this);
         DefaultAST elseDef = ast.findFirst(Algol60Parser.ELSE_DEF);
