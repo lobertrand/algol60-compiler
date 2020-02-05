@@ -348,39 +348,39 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ForClauseAST ast) {
-        DefaultAST assignment = ast.getChild(0).getChild(0);
-        DefaultAST init = assignment.getChild(0);
-        if (currentSymbolTable.resolve(init.getText()) == null) {
-            throw new SymbolNotDeclaredException(
-                    String.format("Variable %s not declared.", init.getText()), init);
-        } else {
-            Type assignmentValue = init.accept(this);
-            if (assignmentValue != Type.INTEGER) {
-                throw new TypeMismatchException(
-                        String.format("Cannot iterate on %s type.", assignmentValue), init);
-            }
-        }
+        /*DefaultAST assignment = ast.getChild(0).getChild(0);
+                DefaultAST init = assignment.getChild(0);
+                if (currentSymbolTable.resolve(init.getText()) == null) {
+                    throw new SymbolNotDeclaredException(
+                            String.format("Variable %s not declared.", init.getText()), init);
+                } else {
+                    Type assignmentValue = init.accept(this);
+                    if (assignmentValue != Type.INTEGER) {
+                        throw new TypeMismatchException(
+                                String.format("Cannot iterate on %s type.", assignmentValue), init);
+                    }
+                }
 
-        DefaultAST step = ast.getChild(1).getChild(0);
-        Type stepValue = step.accept(this);
-        if (stepValue != Type.INTEGER) {
-            throw new TypeMismatchException(
-                    String.format("Expected int but got %s instead.", stepValue), step);
-        }
-        DefaultAST until = ast.getChild(2).getChild(0);
-        Type untilValue = until.accept(this);
-        if (untilValue != Type.INTEGER) {
-            throw new TypeMismatchException(
-                    String.format("Expected int but got %s instead.", untilValue), until);
-        }
-        DefaultAST action = ast.getChild(3).getChild(0);
-        if (action.getType() != Algol60Parser.BLOCK) {
-            throw new TypeMismatchException(
-                    String.format("Expected BLOCK but got %s instead.", action.getText()), action);
-        } else {
-            action.accept(this);
-        }
-
+                DefaultAST step = ast.getChild(1).getChild(0);
+                Type stepValue = step.accept(this);
+                if (stepValue != Type.INTEGER) {
+                    throw new TypeMismatchException(
+                            String.format("Expected int but got %s instead.", stepValue), step);
+                }
+                DefaultAST until = ast.getChild(2).getChild(0);
+                Type untilValue = until.accept(this);
+                if (untilValue != Type.INTEGER) {
+                    throw new TypeMismatchException(
+                            String.format("Expected int but got %s instead.", untilValue), until);
+                }
+                DefaultAST action = ast.getChild(3).getChild(0);
+                if (action.getType() != Algol60Parser.BLOCK) {
+                    throw new TypeMismatchException(
+                            String.format("Expected BLOCK but got %s instead.", action.getText()), action);
+                } else {
+                    action.accept(this);
+                }
+        */
         return Type.VOID;
     }
 

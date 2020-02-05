@@ -66,6 +66,7 @@ tokens {
     LESS_EQUAL;         // Less than or equal
     EQUAL;              // Equal
     NOT_EQUAL;          // Not equal
+    WHILE;	// While
 }
 
 @parser::header {
@@ -124,7 +125,6 @@ statement
     :   goto_statement
     |   if_clause
     |   for_clause
-    |   while_clause
     |   block
     |   identifier! id_statement_end[$identifier.tree]
     ;
@@ -244,6 +244,10 @@ assignment_end[DefaultAST id]
         -> ^(ARRAY_ASSIGNMENT {$id} ^(INDICES bound+) arithmetic_expression)
     ;
 
+for_assignment
+    :    identifier ':='  integer (',' integer)* 
+         -> ^(INIT identifier integer (integer)*)
+    ;
 
 boundaries
     :   bound ':' bound -> ^(BOUND_DEC bound bound)
@@ -380,15 +384,16 @@ if_clause
 // For clause
 
 for_clause
-    :   'for' assignment 'step' expression 'until' expression 'do' statement 
-        -> ^(FOR_CLAUSE ^(INIT assignment) ^(STEP expression) ^(UNTIL expression) ^(DO statement))
+    :   'for' for_assignment! for_alts[$for_assignment.tree]
     ;
 
-// While clause
 
-while_clause 
-    :   'while'  arithmetic_expression 'do' statement 
-        -> ^(WHILE_CLAUSE ^(CONDITION arithmetic_expression) ^(DO statement))
+
+for_alts[DefaultAST ass]
+    :   ('step' arithmetic_expression 'until' arithmetic_expression)? 'do' statement
+        ->  ^(FOR_CLAUSE ^({$ass}) ^(STEP arithmetic_expression)? ^(UNTIL arithmetic_expression)? ^(DO statement))
+    |   'while' arithmetic_expression  'do' statement 
+        -> ^(FOR_CLAUSE ^({$ass}) ^(WHILE arithmetic_expression) ^(DO statement))
     ;
 
 // Intermediate parser rules	
