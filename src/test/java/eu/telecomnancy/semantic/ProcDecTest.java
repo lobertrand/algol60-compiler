@@ -239,10 +239,11 @@ public class ProcDecTest {
     public void testReturnMissingInThen() throws Exception {
         Content content = new Content();
         content.line("begin");
+        content.line("  real x;");
         content.line("  integer procedure f;");
         content.line("  begin");
         content.line("    if 5 > 3 then");
-        content.line("      integer a");
+        content.line("      x := 3.14");
         content.line("    else");
         content.line("      f := 2");
         content.line("  end");
@@ -258,12 +259,13 @@ public class ProcDecTest {
     public void testReturnMissingInElse() throws Exception {
         Content content = new Content();
         content.line("begin");
+        content.line("  real x;");
         content.line("  integer procedure f;");
         content.line("  begin");
         content.line("    if 5 > 3 then");
         content.line("      f := 5");
         content.line("    else");
-        content.line("      integer a");
+        content.line("      x := 3.14");
         content.line("  end");
         content.line("end");
 

@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import eu.telecomnancy.symbols.Symbol;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.symbols.Type;
-import java.util.Set;
 import org.antlr.runtime.RecognitionException;
 import org.junit.Test;
 
@@ -75,17 +74,17 @@ public class VarDecTest {
         Content c = new Content();
         c.line("begin");
         c.line("  integer a, b;");
+        c.line("  integer b;");
         c.line("  begin");
         c.line("    integer a;");
         c.line("    integer a");
-        c.line("  end;");
-        c.line("  integer b");
+        c.line("  end");
         c.line("end");
 
         Result result = checkSemantics(c);
-        Set<Integer> lines = getLines(result.exceptions);
+        result.printExceptions();
         assertEquals("There should be 2 exceptions", 2, result.exceptions.size());
-        assertTrue("There should be an exception at line 5", lines.contains(5));
-        assertTrue("There should be an exception at line 7", lines.contains(7));
+        assertExceptionAtLine(3, SymbolRedeclarationException.class, result);
+        assertExceptionAtLine(6, SymbolRedeclarationException.class, result);
     }
 }

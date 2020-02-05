@@ -98,15 +98,30 @@ public void reportError(RecognitionException e) { exceptions.add(e); }
 prog:   block EOF -> ^(ROOT block)
     ;
 
+// Block
+
 block 
-    :   'begin' statement (';' statement)* 'end' -> ^(BLOCK statement+)
+    :   'begin' block_head? block_tail? -> ^(BLOCK block_head? block_tail?)
+    ;
+
+block_head
+    :   declaration
+        (   ';'! ( block_head | block_tail | 'end'! )
+        |   'end'!
+        )
+    ;
+
+block_tail
+    :   statement
+        (   ';'! ( block_tail | 'end'! )
+        |   'end'!
+        )
     ;
 
 // Statement
 
 statement
-    :   declaration
-    |   goto_statement
+    :   goto_statement
     |   if_clause
     |   for_clause
     |   while_clause
