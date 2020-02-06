@@ -4,22 +4,20 @@ import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.*;
 import eu.telecomnancy.symbols.Label;
+import eu.telecomnancy.symbols.OrphanGoto;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.symbols.Type;
-import eu.telecomnancy.symbols.UndeclaredLabel;
 import eu.telecomnancy.symbols.Variable;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import org.antlr.runtime.tree.Tree;
 
 public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     private List<SemanticException> exceptions;
     private SymbolTable currentSymbolTable;
-    private Set<UndeclaredLabel> undeclaredLabels;
-    private Set<Label> declaredLabels;
-    @Deprecated private Map<Type, Set<Type>> typeCompat;
+    private List<OrphanGoto> orphanGotos;
 
     public SemanticAnalysisVisitor(SymbolTable symbolTable) {
         if (symbolTable == null) {
@@ -27,13 +25,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
         this.currentSymbolTable = symbolTable;
         this.exceptions = new ArrayList<>();
-        this.undeclaredLabels = new LinkedHashSet<>();
-        this.declaredLabels = new LinkedHashSet<>();
-        this.typeCompat = new HashMap<>();
-        typeCompat.put(Type.REAL, new HashSet<>(Arrays.asList(Type.INTEGER, Type.REAL)));
-        typeCompat.put(Type.INTEGER, new HashSet<>(Arrays.asList(Type.INTEGER, Type.REAL)));
-        typeCompat.put(Type.VOID, new HashSet<>(Collections.emptyList()));
-        typeCompat.put(Type.STRING, new HashSet<>(Collections.singletonList(Type.STRING)));
+        this.orphanGotos = new ArrayList<>();
     }
 
     public List<SemanticException> getExceptions() {
@@ -42,22 +34,6 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     public boolean hasExceptions() {
         return !exceptions.isEmpty();
-    }
-
-    private void checkLabelDeclarations() {
-        Set<String> declaredLabelIdentifiers =
-                declaredLabels.stream().map(Symbol::getIdentifier).collect(Collectors.toSet());
-
-        // Checking that all the undeclaredLabels have been declared later
-        for (UndeclaredLabel undeclaredLabel : undeclaredLabels) {
-            String identifier = undeclaredLabel.getIdentifier();
-            if (!declaredLabelIdentifiers.contains(identifier)) {
-                exceptions.add(
-                        new SymbolNotDeclaredException(
-                                String.format("Label '%s' is used but not declared.", identifier),
-                                undeclaredLabel.getTree()));
-            }
-        }
     }
 
     private void pushTable() {
@@ -80,7 +56,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     public Type visit(RootAST ast) {
         ast.getChild(0).accept(this);
         // Final operations
-        checkLabelDeclarations();
+        checkDeclarationOfEveryLabelUsedWithGoto();
         exceptions.sort(Comparator.comparingInt(SemanticException::getLine));
         return Type.VOID;
     }
@@ -620,25 +596,37 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     @Override
     public Type visit(LabelDecAST ast) {
         String name = ast.getChild(0).getText();
-
         if (currentSymbolTable.isDeclaredInScope(name)) {
             throw new SymbolRedeclarationException(
                     String.format("Label '%s' already declared in scope", name), ast);
         }
-
-        Label label = new Label(name);
-        currentSymbolTable.define(label);
-        declaredLabels.add(label);
-
+        currentSymbolTable.define(new Label(name));
         return Type.VOID;
     }
 
     @Override
     public Type visit(GoToAST ast) {
         String name = ast.getChild(0).getText();
-        // We don't know yet the scope of this label
-        undeclaredLabels.add(new UndeclaredLabel(name, ast));
+        orphanGotos.add(new OrphanGoto(name, currentSymbolTable, ast));
         return Type.VOID;
+    }
+
+    private void checkDeclarationOfEveryLabelUsedWithGoto() {
+        for (OrphanGoto orphanGoto : orphanGotos) {
+            SymbolTable table = orphanGoto.getSymbolTable();
+            String identifier = orphanGoto.getIdentifier();
+            Tree ast = orphanGoto.getTree();
+            Symbol symbol = table.resolve(orphanGoto.getIdentifier());
+            if (symbol == null) {
+                exceptions.add(
+                        new SymbolNotDeclaredException(
+                                String.format("Label '%s' is not declared", identifier), ast));
+            } else if (symbol.getKind() != Kind.LABEL) {
+                exceptions.add(
+                        new TypeMismatchException(
+                                String.format("'%s' is not a label identifier", identifier), ast));
+            }
+        }
     }
 
     @Override
