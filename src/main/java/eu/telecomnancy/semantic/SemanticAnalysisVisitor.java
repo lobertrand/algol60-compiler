@@ -299,14 +299,15 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             Type actualType = types.get(i);
             if (Types.cannotAssign(paramType, actualType)) {
                 DefaultAST paramAST = ast.getChild(1).getChild(i);
-                throw new TypeMismatchException(
-                        String.format(
-                                "Parameter #%d of procedure '%s' expects %s but it received %s",
-                                i + 1,
-                                procCallName,
-                                paramType.withPronoun(),
-                                actualType.withPronoun()),
-                        paramAST);
+                exceptions.add(
+                        new TypeMismatchException(
+                                String.format(
+                                        "Parameter #%d of procedure '%s' expects %s but it received %s",
+                                        i + 1,
+                                        procCallName,
+                                        paramType.withPronoun(),
+                                        actualType.withPronoun()),
+                                paramAST));
             }
         }
 

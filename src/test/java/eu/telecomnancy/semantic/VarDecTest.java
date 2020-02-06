@@ -82,7 +82,6 @@ public class VarDecTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        result.printExceptions();
         assertEquals("There should be 2 exceptions", 2, result.exceptions.size());
         assertExceptionAtLine(3, SymbolRedeclarationException.class, result);
         assertExceptionAtLine(6, SymbolRedeclarationException.class, result);
