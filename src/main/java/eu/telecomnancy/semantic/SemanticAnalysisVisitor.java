@@ -1,5 +1,7 @@
 package eu.telecomnancy.semantic;
 
+import static java.lang.Integer.*;
+
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.*;
@@ -454,15 +456,13 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             Type firstType = first.accept(this);
             Type lastType = last.accept(this);
             Integer firstInt =
-                    first.getType() == Algol60Parser.INT ? Integer.parseInt(first.getText()) : null;
-            Integer lastInt =
-                    last.getType() == Algol60Parser.INT ? Integer.parseInt(last.getText()) : null;
+                    first.getType() == Algol60Parser.INT ? parseInt(first.getText()) : null;
+            Integer lastInt = last.getType() == Algol60Parser.INT ? parseInt(last.getText()) : null;
 
             if (firstInt != null && lastInt != null && firstInt > lastInt) {
                 throw new IncompatibleBoundException(
                         String.format(
-                                "first bound must be superior than last bound  \n"
-                                        + "first bound %s is %s and last bound %s is %s",
+                                "first bound must be superior than last bound first bound %s is %s and last bound %s is %s",
                                 first, firstType.withPronoun(), last, lastType.withPronoun()),
                         bound);
             }
@@ -471,8 +471,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             } else {
                 throw new IncompatibleBoundException(
                         String.format(
-                                "bounds must be integer but  \n"
-                                        + "first bound %s is %s and last bound %s is %s",
+                                "bounds must be integer but first bound %s is %s and last bound %s is %s",
                                 first, firstType.withPronoun(), last, lastType.withPronoun()),
                         bound);
             }
@@ -484,6 +483,53 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ArrayAssignmentAST ast) {
+        DefaultAST id = ast.getChild(0);
+        DefaultAST indices = ast.getChild(1);
+        String name = id.getText();
+        Symbol symbol = currentSymbolTable.resolve(name);
+        if (symbol == null) {
+            throw new SymbolNotDeclaredException(
+                    String.format("Variable '%s' is not declared", name), id);
+        }
+        if (symbol.getKind() != Kind.ARRAY) {
+            throw new TypeMismatchException(
+                    String.format("variable '%s' is not an array", name), id);
+        }
+        Array array = (Array) symbol;
+        int nbIndicesDec = array.getRanges().size();
+        int nbIndicesAss = indices.getChildCount();
+        if (nbIndicesDec != nbIndicesAss) {
+            throw new IncompatibleBoundException(
+                    String.format(
+                            "the array %s expected %d indices and received %d",
+                            name, nbIndicesDec, nbIndicesAss),
+                    id);
+        }
+        int indiceCounter = 0;
+        for (DefaultAST indice : indices) {
+            Type indiceType = indice.accept(this);
+            if (indiceType != Type.INTEGER) {
+                throw new TypeMismatchException(
+                        String.format(
+                                "indices must be integer but indice %s is %s",
+                                indice, indiceType.withPronoun()),
+                        indice);
+            }
+            if (indice.getType() == Algol60Parser.INT) {
+                int intIndice = parseInt(indice.getText());
+
+                Array.Range range = array.getRanges().get(indiceCounter);
+                if (!range.isInRange(intIndice)) {
+                    throw new OutOfBoundException(
+                            String.format(
+                                    "in array %s the indice %d is out of bound, bound %s",
+                                    id.getText(), intIndice, range),
+                            indice);
+                }
+            }
+            indiceCounter++;
+        }
+
         return Type.VOID;
     }
 
