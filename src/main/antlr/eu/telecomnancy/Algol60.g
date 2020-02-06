@@ -244,10 +244,7 @@ assignment_end[DefaultAST id]
         -> ^(ARRAY_ASSIGNMENT {$id} ^(INDICES bound+) arithmetic_expression)
     ;
 
-for_assignment
-    :    identifier ':='  integer (',' integer)* 
-         -> ^(INIT identifier integer (integer)*)
-    ;
+
 
 boundaries
     :   bound ':' bound -> ^(BOUND_DEC bound bound)
@@ -387,13 +384,31 @@ for_clause
     :   'for' for_assignment! for_alts[$for_assignment.tree]
     ;
 
+for_assignment
+    :    identifier ':='  for_expression
+         -> ^(INIT identifier for_expression)
+    ;
+    
 
 
 for_alts[DefaultAST ass]
     :   ('step' arithmetic_expression 'until' arithmetic_expression)? 'do' statement
-        ->  ^(FOR_CLAUSE ^({$ass}) ^(STEP arithmetic_expression)? ^(UNTIL arithmetic_expression)? ^(DO statement))
+        ->  ^(FOR_CLAUSE ^({$ass}) (^(STEP arithmetic_expression) ^(UNTIL arithmetic_expression))? ^(DO statement))
     |   'while' arithmetic_expression  'do' statement 
         -> ^(FOR_CLAUSE ^({$ass}) ^(WHILE arithmetic_expression) ^(DO statement))
+    ;
+
+for_expression
+    :   integer (','! integer)*
+    |   identifier! for_id_expression_end[$identifier.tree]
+    |   scientific_expression
+    |   LOGICAL_VALUE
+    ;
+
+for_id_expression_end[DefaultAST id]
+    :   array_call_end[$id]
+    |   procedure_call_end[$id]
+    |   -> {$id}
     ;
 
 // Intermediate parser rules	

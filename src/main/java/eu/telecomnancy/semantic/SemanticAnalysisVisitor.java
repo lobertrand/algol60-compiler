@@ -349,44 +349,97 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ForClauseAST ast) {
-        /*DefaultAST assignment = ast.getChild(0).getChild(0);
-                DefaultAST init = assignment.getChild(0);
-                if (currentSymbolTable.resolve(init.getText()) == null) {
-                    throw new SymbolNotDeclaredException(
-                            String.format("Variable %s not declared.", init.getText()), init);
-                } else {
-                    Type assignmentValue = init.accept(this);
-                    if (assignmentValue != Type.INTEGER) {
-                        throw new TypeMismatchException(
-                                String.format("Cannot iterate on %s type.", assignmentValue), init);
-                    }
-                }
+        int nbChildren = ast.getChildCount();
+        DefaultAST init = ast.getChild(0);
+        DefaultAST action = null;
+        if (checkName(init)) {
+            init.accept(this);
+        }
+        switch (nbChildren) {
+            case 2:
+                action = ast.getChild(1).getChild(0);
 
+                break;
+            case 3:
+                DefaultAST whileClause = ast.getChild(1);
+                whileClause.accept(this);
+                action = ast.getChild(2).getChild(0);
+                break;
+            case 4:
                 DefaultAST step = ast.getChild(1).getChild(0);
                 Type stepValue = step.accept(this);
-                if (stepValue != Type.INTEGER) {
+                if (stepValue != Type.INTEGER && stepValue != Type.REAL) {
                     throw new TypeMismatchException(
-                            String.format("Expected int but got %s instead.", stepValue), step);
+                            String.format("Expected int/real but got %s instead.", stepValue),
+                            step);
                 }
                 DefaultAST until = ast.getChild(2).getChild(0);
                 Type untilValue = until.accept(this);
-                if (untilValue != Type.INTEGER) {
+                System.out.println(until);
+                if (untilValue != Type.INTEGER && untilValue != Type.REAL) {
                     throw new TypeMismatchException(
-                            String.format("Expected int but got %s instead.", untilValue), until);
+                            String.format("Expected int/real but got %s instead.", untilValue),
+                            until);
                 }
-                DefaultAST action = ast.getChild(3).getChild(0);
-                if (action.getType() != Algol60Parser.BLOCK) {
-                    throw new TypeMismatchException(
-                            String.format("Expected BLOCK but got %s instead.", action.getText()), action);
-                } else {
-                    action.accept(this);
-                }
-        */
+                action = ast.getChild(3).getChild(0);
+                break;
+        }
+        int statementType = action.getType();
+        switch (statementType) {
+            case (Algol60Parser.BLOCK):
+            case Algol60Parser.IF_STATEMENT:
+            case Algol60Parser.PROC_CALL:
+            case Algol60Parser.GOTO:
+            case Algol60Parser.FOR_CLAUSE:
+                action.accept(this);
+                break;
+            default:
+                throw new TypeMismatchException(
+                        String.format("Expected statement but got %s instead.", action.getText()),
+                        action);
+        }
+        return Type.VOID;
+    }
+
+    private boolean checkName(DefaultAST init) {
+        DefaultAST name = init.getChild(0);
+        if (currentSymbolTable.resolve(name.getText()) == null) {
+            throw new SymbolNotDeclaredException(
+                    String.format("Variable %s not declared.", name.getText()), init);
+        } else {
+            Type assignmentValue = name.accept(this);
+            if (assignmentValue != Type.INTEGER && assignmentValue != Type.REAL) {
+                throw new TypeMismatchException(
+                        String.format("Cannot iterate on %s type.", assignmentValue), init);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public Type visit(InitAST ast) {
+        DefaultAST leftPart = ast.getChild(0);
+        String leftName = leftPart.getText();
+        Type leftType = leftPart.accept(this);
+        int nbChildren = ast.getChildCount();
+        for (int i = 1; i < nbChildren; i++) {
+            DefaultAST rightPart = ast.getChild(i);
+            Type rightType = rightPart.accept(this);
+            if (Types.cannotAssign(leftType, rightType)) {
+                throw new TypeMismatchException(
+                        String.format(
+                                "Cannot assign %s to '%s' of type %s",
+                                rightType.withPronoun(), leftName, leftType),
+                        rightPart);
+            }
+        }
+
         return Type.VOID;
     }
 
     @Override
     public Type visit(WhileClauseAST ast) {
+        ast.getChild(0).accept(this);
         return Type.VOID;
     }
 

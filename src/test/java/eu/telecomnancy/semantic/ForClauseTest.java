@@ -2,6 +2,7 @@ package eu.telecomnancy.semantic;
 
 import static eu.telecomnancy.semantic.Helper.*;
 
+import eu.telecomnancy.tools.ASTTools;
 import org.antlr.runtime.RecognitionException;
 import org.junit.Test;
 
@@ -35,22 +36,6 @@ public class ForClauseTest {
 
         Result result = checkSemantics(c);
         assertExceptionQuantity(0, result);
-    }
-
-    @Test
-    public void testStringInit() throws RecognitionException {
-        Content c = new Content();
-        c.line("begin");
-        c.line("  string s;");
-        c.line("  for s := \"index\" step 1 until 20 do");
-        c.line("  begin");
-        c.line("    integer a");
-        c.line("  end");
-        c.line("end");
-
-        Result result = checkSemantics(c);
-        assertExceptionAtLine(3, TypeMismatchException.class, result);
-        assertExceptionQuantity(1, result);
     }
 
     @Test
@@ -130,6 +115,7 @@ public class ForClauseTest {
         c.line("end");
 
         Result result = checkSemantics(c);
+        ASTTools.print(result.ast);
         assertExceptionAtLine(3, TypeMismatchException.class, result);
         assertExceptionQuantity(1, result);
     }
