@@ -1,25 +1,29 @@
 package eu.telecomnancy.symbols;
 
+import java.util.List;
+
 public class Array extends Symbol {
 
-    private int start;
-    private int end;
+    private List<Integer> starts;
+    private List<Integer> ends;
 
-    public Array(String idf, Type type, Range r) {
+    public Array(String idf, Type type, List<Range> r) {
         super(idf, type, Kind.VARIABLE);
-        this.start = r.start;
-        this.end = r.end;
+        for (Range i : r) {
+            starts.add(i.start);
+            ends.add(i.end);
+        }
     }
 
     public String toString() {
         return String.format("Array: %s %s ", getType(), getIdentifier());
     }
 
-    private static class Range {
-        final int start;
-        final int end;
+    public static class Range {
+        final Integer start;
+        final Integer end;
 
-        private Range(int start, int end) {
+        public Range(Integer start, Integer end) {
             this.start = start;
             this.end = end;
         }
