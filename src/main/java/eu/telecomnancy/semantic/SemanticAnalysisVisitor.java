@@ -464,6 +464,11 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ArrayDecAST ast) {
+        Type type = Type.fromString(ast.getChild(0).getText());
+        DefaultAST id = ast.getChild(1);
+        System.out.println(type);
+        System.out.println(id);
+        DefaultAST boundList ;
         return Type.VOID;
     }
 
