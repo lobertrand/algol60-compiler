@@ -5,6 +5,7 @@ public enum Kind {
     VARIABLE,
     LABEL,
     ORPHAN_GOTO,
+    ARRAY,
     PARAMETER;
 
     @Override

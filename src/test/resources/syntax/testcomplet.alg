@@ -11,7 +11,11 @@ begin
 		begin
 
 			comment scientific notation (using #);
-
+			real procedure linearFunc(a, b, x);
+			value a, b, x; real a, b, x;
+			integer array nArr[1:100];
+			real array aa[1:100,1:100];
+			integer i;
 			real x;
 			integer y;
 			y := 3;
@@ -23,10 +27,6 @@ begin
 			outreal(1,x);
 
 			comment array, matrix with square numbers ;
-
-			integer array nArr[1:100];
-			real array aa[1:100,1:100];
-			integer i;
 
 			comment BOUCLE FOR;
 
@@ -40,8 +40,6 @@ begin
 
 			comment DEFINITION DE PROCEDURE (avec type de retour et arguments);
 
-			real procedure linearFunc(a, b, x);
-			value a, b, x; real a, b, x;
 			begin
 				linearFunc := a + b*x
 			end;
