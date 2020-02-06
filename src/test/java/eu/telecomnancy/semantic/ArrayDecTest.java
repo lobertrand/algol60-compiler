@@ -47,8 +47,10 @@ public class ArrayDecTest {
         Content c = new Content();
         c.line("begin");
         c.line("  integer a, b;");
-        c.line("  integer array myArray[a:b];");
-        c.line("  a := 6; b := 9");
+        c.line("  a := 6; b := 9;");
+        c.line("  begin");
+        c.line("    integer array myArray[a:b]");
+        c.line("  end");
         c.line("end");
 
         Result result = checkSemantics(c);

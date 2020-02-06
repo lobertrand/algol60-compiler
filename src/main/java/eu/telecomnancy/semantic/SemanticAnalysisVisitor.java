@@ -1,5 +1,8 @@
 package eu.telecomnancy.semantic;
 
+import static eu.telecomnancy.symbols.Type.INTEGER;
+import static java.sql.Types.NULL;
+
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.*;
@@ -30,8 +33,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         this.undeclaredLabels = new LinkedHashSet<>();
         this.declaredLabels = new LinkedHashSet<>();
         this.typeCompat = new HashMap<>();
-        typeCompat.put(Type.REAL, new HashSet<>(Arrays.asList(Type.INTEGER, Type.REAL)));
-        typeCompat.put(Type.INTEGER, new HashSet<>(Arrays.asList(Type.INTEGER, Type.REAL)));
+        typeCompat.put(Type.REAL, new HashSet<>(Arrays.asList(INTEGER, Type.REAL)));
+        typeCompat.put(INTEGER, new HashSet<>(Arrays.asList(INTEGER, Type.REAL)));
         typeCompat.put(Type.VOID, new HashSet<>(Collections.emptyList()));
         typeCompat.put(Type.STRING, new HashSet<>(Collections.singletonList(Type.STRING)));
     }
@@ -466,9 +469,48 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     public Type visit(ArrayDecAST ast) {
         Type type = Type.fromString(ast.getChild(0).getText());
         DefaultAST id = ast.getChild(1);
-        System.out.println(type);
-        System.out.println(id);
-        DefaultAST boundList ;
+        DefaultAST boundList = ast.getChild(2);
+        List<Array.Range> ranges = new ArrayList<Array.Range>();
+
+        for (DefaultAST t : boundList) {
+            DefaultAST first = t.getChild(0);
+            System.out.println((first));
+            DefaultAST last = t.getChild(1);
+            Type firstType = first.accept(this);
+            Type lastType = last.accept(this);
+            Integer firstInt;
+            Integer lastInt;
+            if (first.getType() == Algol60Parser.INT) {
+
+                firstInt = Integer.parseInt(first.getText());
+            } else {
+                firstInt = NULL;
+            }
+            if (last.getType() == Algol60Parser.INT) {
+                lastInt = Integer.parseInt(last.getText());
+            } else {
+                lastInt = NULL;
+            }
+            if (firstType == lastType && firstType == INTEGER) {
+                Array.Range r = new Array.Range(firstInt, lastInt);
+                ranges.add(r);
+
+                /* } else if (firstType != lastType) {
+                throw new IncompatibleBoundException(
+                        String.format(
+                                "bounds types are differents \n"
+                                        + "first bound %s is %s while last bound %s is %s",
+                                first, firstType.toString(), last, lastType.toString()),
+                        t); */
+            } else {
+                throw new IncompatibleBoundException(
+                        String.format(
+                                "bounds must be integer but  \n"
+                                        + "first bound %s is %s and last bound %s is %s",
+                                first, firstType.toString(), last, lastType.toString()),
+                        t);
+            }
+        }
         return Type.VOID;
     }
 
@@ -483,7 +525,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (types.left == Type.REAL || types.right == Type.REAL) {
             return Type.REAL;
         } else {
-            return Type.INTEGER;
+            return INTEGER;
         }
     }
 
@@ -500,7 +542,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(IntAST ast) {
-        return Type.INTEGER;
+        return INTEGER;
     }
 
     @Override
@@ -514,7 +556,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (types.left == Type.REAL || types.right == Type.REAL) {
             return Type.REAL;
         } else {
-            return Type.INTEGER;
+            return INTEGER;
         }
     }
 
@@ -560,7 +602,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     @Override
     public Type visit(IntDivAST ast) {
         checkArithmeticOperation(ast);
-        return Type.INTEGER;
+        return INTEGER;
     }
 
     @Override
@@ -569,7 +611,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (types.left == Type.REAL || types.right == Type.REAL) {
             return Type.REAL;
         } else {
-            return Type.INTEGER;
+            return INTEGER;
         }
     }
 
@@ -579,7 +621,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (types.left == Type.REAL || types.right == Type.REAL) {
             return Type.REAL;
         } else {
-            return Type.INTEGER;
+            return INTEGER;
         }
     }
 
