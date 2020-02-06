@@ -1,8 +1,5 @@
 package eu.telecomnancy.semantic;
 
-import static eu.telecomnancy.symbols.Type.INTEGER;
-import static java.sql.Types.NULL;
-
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.*;
@@ -33,8 +30,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         this.undeclaredLabels = new LinkedHashSet<>();
         this.declaredLabels = new LinkedHashSet<>();
         this.typeCompat = new HashMap<>();
-        typeCompat.put(Type.REAL, new HashSet<>(Arrays.asList(INTEGER, Type.REAL)));
-        typeCompat.put(INTEGER, new HashSet<>(Arrays.asList(INTEGER, Type.REAL)));
+        typeCompat.put(Type.REAL, new HashSet<>(Arrays.asList(Type.INTEGER, Type.REAL)));
+        typeCompat.put(Type.INTEGER, new HashSet<>(Arrays.asList(Type.INTEGER, Type.REAL)));
         typeCompat.put(Type.VOID, new HashSet<>(Collections.emptyList()));
         typeCompat.put(Type.STRING, new HashSet<>(Collections.singletonList(Type.STRING)));
     }
@@ -471,46 +468,41 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         DefaultAST id = ast.getChild(1);
         DefaultAST boundList = ast.getChild(2);
         List<Array.Range> ranges = new ArrayList<Array.Range>();
-
-        for (DefaultAST t : boundList) {
-            DefaultAST first = t.getChild(0);
-            System.out.println((first));
-            DefaultAST last = t.getChild(1);
+        if (currentSymbolTable.isDeclaredInScope(id.toString())) {
+            throw new SymbolRedeclarationException(
+                    String.format("Variable '%s' is already declared in scope", id.toString()), id);
+        }
+        for (DefaultAST bound : boundList) {
+            DefaultAST first = bound.getChild(0);
+            DefaultAST last = bound.getChild(1);
             Type firstType = first.accept(this);
             Type lastType = last.accept(this);
-            Integer firstInt;
-            Integer lastInt;
-            if (first.getType() == Algol60Parser.INT) {
+            Integer firstInt =
+                    first.getType() == Algol60Parser.INT ? Integer.parseInt(first.getText()) : null;
+            Integer lastInt =
+                    last.getType() == Algol60Parser.INT ? Integer.parseInt(last.getText()) : null;
 
-                firstInt = Integer.parseInt(first.getText());
-            } else {
-                firstInt = NULL;
-            }
-            if (last.getType() == Algol60Parser.INT) {
-                lastInt = Integer.parseInt(last.getText());
-            } else {
-                lastInt = NULL;
-            }
-            if (firstType == lastType && firstType == INTEGER) {
-                Array.Range r = new Array.Range(firstInt, lastInt);
-                ranges.add(r);
-
-                /* } else if (firstType != lastType) {
+            if (firstInt != null && lastInt != null && firstInt > lastInt) {
                 throw new IncompatibleBoundException(
                         String.format(
-                                "bounds types are differents \n"
-                                        + "first bound %s is %s while last bound %s is %s",
-                                first, firstType.toString(), last, lastType.toString()),
-                        t); */
+                                "first bound must be superior than last bound  \n"
+                                        + "first bound %s is %s and last bound %s is %s",
+                                first, firstType.withPronoun(), last, lastType.withPronoun()),
+                        bound);
+            }
+            if (firstType == Type.INTEGER && lastType == Type.INTEGER) {
+                ranges.add(new Array.Range(firstInt, lastInt));
             } else {
                 throw new IncompatibleBoundException(
                         String.format(
                                 "bounds must be integer but  \n"
                                         + "first bound %s is %s and last bound %s is %s",
-                                first, firstType.toString(), last, lastType.toString()),
-                        t);
+                                first, firstType.withPronoun(), last, lastType.withPronoun()),
+                        bound);
             }
         }
+        Array a = new Array(id.toString(), type, ranges);
+        currentSymbolTable.define(a);
         return Type.VOID;
     }
 
@@ -525,7 +517,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (types.left == Type.REAL || types.right == Type.REAL) {
             return Type.REAL;
         } else {
-            return INTEGER;
+            return Type.INTEGER;
         }
     }
 
@@ -542,7 +534,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(IntAST ast) {
-        return INTEGER;
+        return Type.INTEGER;
     }
 
     @Override
@@ -556,7 +548,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (types.left == Type.REAL || types.right == Type.REAL) {
             return Type.REAL;
         } else {
-            return INTEGER;
+            return Type.INTEGER;
         }
     }
 
@@ -602,7 +594,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     @Override
     public Type visit(IntDivAST ast) {
         checkArithmeticOperation(ast);
-        return INTEGER;
+        return Type.INTEGER;
     }
 
     @Override
@@ -611,7 +603,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (types.left == Type.REAL || types.right == Type.REAL) {
             return Type.REAL;
         } else {
-            return INTEGER;
+            return Type.INTEGER;
         }
     }
 
@@ -621,7 +613,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (types.left == Type.REAL || types.right == Type.REAL) {
             return Type.REAL;
         } else {
-            return INTEGER;
+            return Type.INTEGER;
         }
     }
 

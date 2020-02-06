@@ -26,8 +26,7 @@ public class ArrayDecTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertExceptionAtLine(2, SemanticException.class, result);
-        assertExceptionQuantity(1, result);
+        assertExceptionQuantity(0, result);
     }
 
     @Test
@@ -54,8 +53,7 @@ public class ArrayDecTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertExceptionAtLine(4, SemanticException.class, result);
-        assertExceptionQuantity(1, result);
+        assertExceptionQuantity(0, result);
     }
 
     @Test
@@ -77,7 +75,7 @@ public class ArrayDecTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertExceptionQuantity(0, result);
+        assertExceptionQuantity(1, result);
     }
 
     @Test
