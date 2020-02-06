@@ -74,8 +74,8 @@ public class LabelGotoTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertTrue("There should be no exception", result.exceptions.isEmpty());
-        assertEquals("There should be 2 sub tables", 2, subTables(result.symbolTable));
+        assertExceptionAtLine(2, SymbolNotDeclaredException.class, result);
+        assertExceptionQuantity(1, result);
     }
 
     @Test
@@ -89,8 +89,8 @@ public class LabelGotoTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertTrue("There should be no exception", result.exceptions.isEmpty());
-        assertEquals("There should be 2 sub tables", 2, subTables(result.symbolTable));
+        assertExceptionAtLine(5, SymbolNotDeclaredException.class, result);
+        assertExceptionQuantity(1, result);
     }
 
     @Test
@@ -111,5 +111,18 @@ public class LabelGotoTest {
         assertEquals("There should be 2 exceptions", 2, result.exceptions.size());
         assertTrue("There should be an exception at line 3", lines.contains(3));
         assertTrue("There should be an exception at line 6", lines.contains(6));
+    }
+
+    @Test
+    public void testGotoNotALabel() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer a;");
+        c.line("  goto a");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        assertExceptionAtLine(3, TypeMismatchException.class, result);
+        assertExceptionQuantity(1, result);
     }
 }
