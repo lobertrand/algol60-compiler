@@ -85,11 +85,14 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         for (DefaultAST t : idList) {
             String name = t.getText();
             if (currentSymbolTable.isDeclaredInScope(name)) {
-                throw new SymbolRedeclarationException(
-                        String.format("Variable '%s' is already declared in scope", name), t);
+                exceptions.add(
+                        new SymbolRedeclarationException(
+                                String.format("Variable '%s' is already declared in scope", name),
+                                t));
+            } else {
+                Variable variable = new Variable(name, type);
+                currentSymbolTable.define(variable);
             }
-            Variable variable = new Variable(name, type);
-            currentSymbolTable.define(variable);
         }
 
         return Type.VOID;
@@ -258,8 +261,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
 
         List<Type> types = new ArrayList<>();
-        for (DefaultAST defaultAST : ast.getChild(1)) {
-            Type type = defaultAST.accept(this);
+        for (DefaultAST args : ast.getChild(1)) {
+            Type type = args.accept(this);
             types.add(type);
         }
 
@@ -317,107 +320,107 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     }
 
     private String getStringRepresentation(DefaultAST ast) {
-        switch (ast.getType()) {
-            case Algol60Parser.PROC_CALL:
-                return ast.getChild(0).getText();
-            default:
-                return ast.getText();
+        if (ast.getType() == Algol60Parser.PROC_CALL) {
+            return ast.getChild(0).getText();
         }
+        return ast.getText();
     }
 
     @Override
     public Type visit(ForClauseAST ast) {
-        int nbChildren = ast.getChildCount();
-        DefaultAST init = ast.getChild(0);
-        DefaultAST action = null;
-        if (checkName(init)) {
-            init.accept(this);
-        }
-        switch (nbChildren) {
-            case 2:
-                action = ast.getChild(1).getChild(0);
+        DefaultAST init = ast.findFirst(Algol60Parser.INIT);
+        init.accept(this);
 
-                break;
-            case 3:
-                DefaultAST whileClause = ast.getChild(1);
-                whileClause.accept(this);
-                action = ast.getChild(2).getChild(0);
-                break;
-            case 4:
-                DefaultAST step = ast.getChild(1).getChild(0);
-                Type stepValue = step.accept(this);
-                if (stepValue != Type.INTEGER && stepValue != Type.REAL) {
-                    throw new TypeMismatchException(
-                            String.format("Expected int/real but got %s instead.", stepValue),
-                            step);
+        DefaultAST whileClause = ast.findFirst(Algol60Parser.WHILE);
+        if (whileClause != null) {
+            try {
+                Type conditionType = whileClause.getChild(0).accept(this);
+                if (conditionType != Type.BOOLEAN) {
+                    exceptions.add(
+                            new TypeMismatchException(
+                                    "While condition expected a boolean but received "
+                                            + conditionType.withPronoun(),
+                                    whileClause));
                 }
-                DefaultAST until = ast.getChild(2).getChild(0);
-                Type untilValue = until.accept(this);
-                System.out.println(until);
-                if (untilValue != Type.INTEGER && untilValue != Type.REAL) {
-                    throw new TypeMismatchException(
-                            String.format("Expected int/real but got %s instead.", untilValue),
-                            until);
-                }
-                action = ast.getChild(3).getChild(0);
-                break;
-        }
-        int statementType = action.getType();
-        switch (statementType) {
-            case (Algol60Parser.BLOCK):
-            case Algol60Parser.IF_STATEMENT:
-            case Algol60Parser.PROC_CALL:
-            case Algol60Parser.GOTO:
-            case Algol60Parser.FOR_CLAUSE:
-                action.accept(this);
-                break;
-            default:
-                throw new TypeMismatchException(
-                        String.format("Expected statement but got %s instead.", action.getText()),
-                        action);
-        }
-        return Type.VOID;
-    }
-
-    private boolean checkName(DefaultAST init) {
-        DefaultAST name = init.getChild(0);
-        if (currentSymbolTable.resolve(name.getText()) == null) {
-            throw new SymbolNotDeclaredException(
-                    String.format("Variable %s not declared.", name.getText()), init);
-        } else {
-            Type assignmentValue = name.accept(this);
-            if (assignmentValue != Type.INTEGER && assignmentValue != Type.REAL) {
-                throw new TypeMismatchException(
-                        String.format("Cannot iterate on %s type.", assignmentValue), init);
+            } catch (SemanticException e) {
+                exceptions.add(e);
             }
         }
-        return true;
+
+        DefaultAST step = ast.findFirst(Algol60Parser.STEP);
+        if (step != null) {
+            try {
+                Type stepValue = step.getChild(0).accept(this);
+                if (stepValue != Type.INTEGER && stepValue != Type.REAL) {
+                    exceptions.add(
+                            new TypeMismatchException(
+                                    String.format(
+                                            "Expected integer or real but got %s instead",
+                                            stepValue.withPronoun()),
+                                    step));
+                }
+            } catch (SemanticException e) {
+                exceptions.add(e);
+            }
+        }
+
+        DefaultAST until = ast.findFirst(Algol60Parser.UNTIL);
+        if (until != null) {
+            try {
+                Type untilValue = until.getChild(0).accept(this);
+                if (untilValue != Type.INTEGER && untilValue != Type.REAL) {
+                    exceptions.add(
+                            new TypeMismatchException(
+                                    String.format(
+                                            "Expected integer or real but got %s instead",
+                                            untilValue.withPronoun()),
+                                    until));
+                }
+            } catch (SemanticException e) {
+                exceptions.add(e);
+            }
+        }
+        DefaultAST action = ast.findFirst(Algol60Parser.DO).getChild(0);
+
+        if (action.getType() == Algol60Parser.LABEL_DEC) {
+            exceptions.add(
+                    new UnreachableStatementException(
+                            "Cannot declare a label inside a one-line for loop", action));
+        } else {
+            action.accept(this);
+        }
+        return Type.VOID;
     }
 
     @Override
     public Type visit(InitAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         String leftName = leftPart.getText();
-        Type leftType = leftPart.accept(this);
+        Type leftType = Type.UNDEFINED;
+        try {
+            leftType = leftPart.accept(this);
+            if (leftType != Type.INTEGER && leftType != Type.REAL) {
+                exceptions.add(
+                        new TypeMismatchException(
+                                String.format("Cannot iterate on %s type", leftType), leftPart));
+            }
+        } catch (SemanticException e) {
+            exceptions.add(e);
+        }
+
         int nbChildren = ast.getChildCount();
         for (int i = 1; i < nbChildren; i++) {
             DefaultAST rightPart = ast.getChild(i);
             Type rightType = rightPart.accept(this);
             if (Types.cannotAssign(leftType, rightType)) {
-                throw new TypeMismatchException(
-                        String.format(
-                                "Cannot assign %s to '%s' of type %s",
-                                rightType.withPronoun(), leftName, leftType),
-                        rightPart);
+                exceptions.add(
+                        new TypeMismatchException(
+                                String.format(
+                                        "Cannot assign %s to '%s' of type %s",
+                                        rightType.withPronoun(), leftName, leftType),
+                                rightPart));
             }
         }
-
-        return Type.VOID;
-    }
-
-    @Override
-    public Type visit(WhileClauseAST ast) {
-        ast.getChild(0).accept(this);
         return Type.VOID;
     }
 
@@ -493,7 +496,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
         if (symbol.getKind() != Kind.ARRAY) {
             throw new TypeMismatchException(
-                    String.format("variable '%s' is not an array", name), id);
+                    String.format("Variable '%s' is not an array", name), id);
         }
         Array array = (Array) symbol;
         int nbIndicesDec = array.getRanges().size();
@@ -501,7 +504,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (nbIndicesDec != nbIndicesAss) {
             throw new IncompatibleBoundException(
                     String.format(
-                            "the array %s expected %d indices and received %d",
+                            "array '%s' expected %d indices but received %d",
                             name, nbIndicesDec, nbIndicesAss),
                     id);
         }
@@ -511,7 +514,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             if (indiceType != Type.INTEGER) {
                 throw new TypeMismatchException(
                         String.format(
-                                "indices must be integer but indice %s is %s",
+                                "Indices must be integer values but index '%s' is %s",
                                 indice, indiceType.withPronoun()),
                         indice);
             }
@@ -522,8 +525,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                 if (!range.isInRange(intIndice)) {
                     throw new OutOfBoundException(
                             String.format(
-                                    "in array %s the indice %d is out of bound, bound %s",
-                                    id.getText(), intIndice, range),
+                                    "Array index '%d' is out of bounds in '%s' with bounds %s",
+                                    intIndice, id.getText(), range),
                             indice);
                 }
             }

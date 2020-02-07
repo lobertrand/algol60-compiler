@@ -106,20 +106,12 @@ public class Helper {
         String lineOfCode = result.text.split("\n")[line - 1].trim();
         String msg = "There should be an exception at line " + line + ": '" + lineOfCode + "'";
         Assert.assertTrue(msg, result.exceptionAt(line));
-        Exception exception =
+        boolean present =
                 result.exceptions.stream()
                         .filter(e -> e.getLine() == line)
-                        .findFirst()
-                        .orElse(null);
-        assertInstanceOf(expectedClass, exception);
-    }
-
-    public static void assertInstanceOf(Class<?> expectedClass, Object o) {
-        String msg =
-                "Expected instance of "
-                        + expectedClass.getSimpleName()
-                        + " but was "
-                        + o.getClass().getSimpleName();
-        Assert.assertTrue(msg, expectedClass.isAssignableFrom(o.getClass()));
+                        .anyMatch(e -> expectedClass.isAssignableFrom(e.getClass()));
+        if (!present) result.printExceptions();
+        String msg2 = "Exception should be of type " + expectedClass.getSimpleName();
+        Assert.assertTrue(msg2, present);
     }
 }

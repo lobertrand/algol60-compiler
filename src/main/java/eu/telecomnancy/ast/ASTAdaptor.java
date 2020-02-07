@@ -26,8 +26,8 @@ public class ASTAdaptor extends CommonTreeAdaptor {
                     return new IfStatementAST(t);
                 case Algol60Parser.FOR_CLAUSE:
                     return new ForClauseAST(t);
-                case Algol60Parser.WHILE_CLAUSE:
-                    return new WhileClauseAST(t);
+                case Algol60Parser.INIT:
+                    return new InitAST(t);
                 case Algol60Parser.ASSIGNMENT:
                     return new AssignmentAST(t);
                 case Algol60Parser.ARRAY_DEC:
