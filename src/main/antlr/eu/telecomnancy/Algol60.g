@@ -66,7 +66,7 @@ tokens {
     LESS_EQUAL;         // Less than or equal
     EQUAL;              // Equal
     NOT_EQUAL;          // Not equal
-    WHILE;	// While
+    WHILE;	            // While
 }
 
 @parser::header {
@@ -375,40 +375,51 @@ group_expr
 
 if_clause
     :   'if' arithmetic_expression 'then' statement (options{greedy=true;}:'else' statement)? 
-        -> ^(IF_STATEMENT ^(IF_DEF arithmetic_expression) ^(THEN_DEF statement) ^(ELSE_DEF statement)*)
+        -> ^(IF_STATEMENT
+                ^(IF_DEF arithmetic_expression)
+                ^(THEN_DEF statement)
+                ^(ELSE_DEF statement)*
+            )
     ;
 
 // For clause
 
 for_clause
-    :   'for' for_assignment! for_alts[$for_assignment.tree]
+    :   'for'! for_assignment!  (   for_step_until_do[$for_assignment.tree]
+                                |   for_while_do[$for_assignment.tree]
+                                |   for_do[$for_assignment.tree]
+                                )
     ;
 
 for_assignment
-    :    identifier ':='  for_expression
-         -> ^(INIT identifier for_expression)
-    ;
-    
-
-
-for_alts[DefaultAST ass]
-    :   ('step' arithmetic_expression 'until' arithmetic_expression)? 'do' statement
-        ->  ^(FOR_CLAUSE ^({$ass}) (^(STEP arithmetic_expression) ^(UNTIL arithmetic_expression))? ^(DO statement))
-    |   'while' arithmetic_expression  'do' statement 
-        -> ^(FOR_CLAUSE ^({$ass}) ^(WHILE arithmetic_expression) ^(DO statement))
+    :   identifier ':='! arithmetic_expression
     ;
 
-for_expression
-    :   integer (','! integer)*
-    |   identifier! for_id_expression_end[$identifier.tree]
-    |   scientific_expression
-    |   LOGICAL_VALUE
+for_step_until_do[DefaultAST ass]
+    :   'step' arithmetic_expression 'until' arithmetic_expression 'do' statement
+        -> ^(FOR_CLAUSE
+                ^(INIT {$ass})
+                ^(STEP arithmetic_expression)
+                ^(UNTIL arithmetic_expression)
+                ^(DO statement)
+            )
     ;
 
-for_id_expression_end[DefaultAST id]
-    :   array_call_end[$id]
-    |   procedure_call_end[$id]
-    |   -> {$id}
+for_while_do[DefaultAST ass]
+    :   'while' arithmetic_expression 'do' statement 
+        -> ^(FOR_CLAUSE
+                ^(INIT {$ass})
+                ^(WHILE arithmetic_expression)
+                ^(DO statement)
+            )
+    ;
+
+for_do[DefaultAST ass]
+    :   (',' arithmetic_expression)* 'do' statement
+        -> ^(FOR_CLAUSE
+                ^(INIT {$ass} arithmetic_expression*)
+                ^(DO statement)
+            )
     ;
 
 // Intermediate parser rules	

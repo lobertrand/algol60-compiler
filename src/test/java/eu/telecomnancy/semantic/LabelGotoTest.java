@@ -125,4 +125,19 @@ public class LabelGotoTest {
         assertExceptionAtLine(3, TypeMismatchException.class, result);
         assertExceptionQuantity(1, result);
     }
+
+    @Test
+    public void testGotoToInsideAForLoop() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer i;");
+        c.line("  for i := 1, 2, 3 do");
+        c.line("    a:;");
+        c.line("  goto a");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        assertExceptionAtLine(4, UnreachableStatementException.class, result);
+        assertExceptionQuantity(2, result);
+    }
 }

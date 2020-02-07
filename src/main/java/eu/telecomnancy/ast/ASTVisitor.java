@@ -18,8 +18,6 @@ public interface ASTVisitor<R> {
 
     R visit(ForClauseAST ast);
 
-    R visit(WhileClauseAST ast);
-
     R visit(AssignmentAST ast);
 
     R visit(ArrayDecAST ast);

@@ -10,6 +10,6 @@ public class IncompatibleBoundException extends SemanticException {
 
     @Override
     public String toString() {
-        return (String.format("The boundaries are incompatible at line %d,%s", line, getMessage()));
+        return (String.format("Incompatible bound at line %d: %s", line, getMessage()));
     }
 }
