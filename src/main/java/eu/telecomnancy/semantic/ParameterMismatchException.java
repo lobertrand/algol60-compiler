@@ -1,10 +1,10 @@
 package eu.telecomnancy.semantic;
 
-import org.antlr.runtime.tree.Tree;
+import eu.telecomnancy.ast.DefaultAST;
 
 public class ParameterMismatchException extends SemanticException {
 
-    public ParameterMismatchException(String message, Tree tree) {
+    public ParameterMismatchException(String message, DefaultAST tree) {
         super(message, tree);
     }
 

@@ -1,13 +1,13 @@
 package eu.telecomnancy.symbols;
 
-import org.antlr.runtime.tree.Tree;
+import eu.telecomnancy.ast.DefaultAST;
 
 public class OrphanGoto extends Symbol {
 
-    private Tree tree;
+    private DefaultAST tree;
     private SymbolTable symbolTable;
 
-    public OrphanGoto(String idf, SymbolTable symbolTable, Tree tree) {
+    public OrphanGoto(String idf, SymbolTable symbolTable, DefaultAST tree) {
         super(idf, Type.VOID, Kind.ORPHAN_GOTO);
         this.tree = tree;
         this.symbolTable = symbolTable;
@@ -17,7 +17,7 @@ public class OrphanGoto extends Symbol {
         return symbolTable;
     }
 
-    public Tree getTree() {
+    public DefaultAST getTree() {
         return tree;
     }
 

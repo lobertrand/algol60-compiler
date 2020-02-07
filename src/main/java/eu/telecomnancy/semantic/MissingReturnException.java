@@ -1,10 +1,10 @@
 package eu.telecomnancy.semantic;
 
-import org.antlr.runtime.tree.Tree;
+import eu.telecomnancy.ast.DefaultAST;
 
 public class MissingReturnException extends SemanticException {
 
-    public MissingReturnException(String message, Tree tree) {
+    public MissingReturnException(String message, DefaultAST tree) {
         super(message, tree);
     }
 

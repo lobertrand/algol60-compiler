@@ -7,6 +7,8 @@ import org.antlr.runtime.tree.CommonTree;
 
 public class DefaultAST extends CommonTree implements Iterable<DefaultAST> {
 
+    private boolean shiftCursorLeft = false;
+
     public DefaultAST(Token t) {
         super(t);
     }
@@ -30,6 +32,15 @@ public class DefaultAST extends CommonTree implements Iterable<DefaultAST> {
                 return getChild(index++);
             }
         };
+    }
+
+    public DefaultAST shiftCursorLeft() {
+        shiftCursorLeft = true;
+        return this;
+    }
+
+    public boolean shouldShiftCursorLeft() {
+        return shiftCursorLeft;
     }
 
     @Override

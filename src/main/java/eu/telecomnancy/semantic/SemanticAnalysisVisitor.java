@@ -13,7 +13,6 @@ import eu.telecomnancy.symbols.Variable;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.antlr.runtime.tree.Tree;
 
 public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
@@ -635,14 +634,11 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         Type rightType = rightPart.accept(this);
 
         if (Types.cannotDoArithmeticOperation(leftType, rightType)) {
-            String leftName = getStringRepresentation(leftPart);
-            String rightName = getStringRepresentation(rightPart);
             throw new TypeMismatchException(
                     String.format(
-                            "Cannot perform arithmetic operation on "
-                                    + "operands '%s' and '%s' of types %s and %s",
-                            leftName, rightName, leftType, rightType),
-                    ast);
+                            "Cannot perform arithmetic operation on operands of types %s and %s",
+                            leftType, rightType),
+                    rightPart.shiftCursorLeft());
         }
         return new PairOfTypes(leftType, rightType);
     }
@@ -715,7 +711,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         for (OrphanGoto orphanGoto : orphanGotos) {
             SymbolTable table = orphanGoto.getSymbolTable();
             String identifier = orphanGoto.getIdentifier();
-            Tree ast = orphanGoto.getTree();
+            DefaultAST ast = orphanGoto.getTree();
             Symbol symbol = table.resolve(orphanGoto.getIdentifier());
             if (symbol == null) {
                 exceptions.add(
@@ -802,14 +798,11 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         Type leftType = leftPart.accept(this);
         Type rightType = rightPart.accept(this);
         if (Types.cannotDoLogicalOperation(leftType, rightType)) {
-            String leftName = getStringRepresentation(leftPart);
-            String rightName = getStringRepresentation(rightPart);
             throw new TypeMismatchException(
                     String.format(
-                            "Cannot perform boolean operation on "
-                                    + "operands '%s' and '%s' of types %s and %s",
-                            leftName, rightName, leftType, rightType),
-                    ast);
+                            "Cannot perform boolean operation on operands of types %s and %s",
+                            leftType, rightType),
+                    rightPart.shiftCursorLeft());
         }
         return Type.BOOLEAN;
     }
@@ -820,14 +813,11 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         Type leftType = leftPart.accept(this);
         Type rightType = rightPart.accept(this);
         if (Types.cannotDoRelationalOperation(leftType, rightType)) {
-            String leftName = getStringRepresentation(leftPart);
-            String rightName = getStringRepresentation(rightPart);
             throw new TypeMismatchException(
                     String.format(
-                            "Cannot perform arithmetic operation on "
-                                    + "operands '%s' and '%s' of types %s and %s",
-                            leftName, rightName, leftType, rightType),
-                    ast);
+                            "Cannot perform arithmetic operation on operands of types %s and %s",
+                            leftType, rightType),
+                    rightPart.shiftCursorLeft());
         }
         return Type.BOOLEAN;
     }

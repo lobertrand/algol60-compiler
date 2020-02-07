@@ -22,13 +22,6 @@ public class ASTAdaptorTest {
         return parser.prog().getTree();
     }
 
-    private void print(Tree tree, String space) {
-        System.out.println(space + tree.toString() + ": " + tree.getClass().getSimpleName());
-        for (int i = 0; i < tree.getChildCount(); i++) {
-            print(tree.getChild(i), space + "  ");
-        }
-    }
-
     @Test
     public void testRoot() throws RecognitionException {
         Tree root = parse("begin a := 5 end");

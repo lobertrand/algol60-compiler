@@ -1,17 +1,19 @@
 package eu.telecomnancy.semantic;
 
-import org.antlr.runtime.tree.Tree;
+import eu.telecomnancy.ast.DefaultAST;
 
 public abstract class SemanticException extends RuntimeException {
 
     protected int line, column;
     protected String token;
+    protected DefaultAST ast;
 
-    public SemanticException(String message, Tree tree) {
+    public SemanticException(String message, DefaultAST ast) {
         super(message);
-        this.line = tree.getLine();
-        this.column = tree.getCharPositionInLine();
-        this.token = tree.getText();
+        this.line = ast.getLine();
+        this.column = ast.getCharPositionInLine();
+        this.token = ast.getText();
+        this.ast = ast;
     }
 
     public int getLine() {
@@ -20,6 +22,10 @@ public abstract class SemanticException extends RuntimeException {
 
     public int getColumn() {
         return column;
+    }
+
+    public DefaultAST getAst() {
+        return ast;
     }
 
     @Override
