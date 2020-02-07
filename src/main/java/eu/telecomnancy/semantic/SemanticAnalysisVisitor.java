@@ -551,7 +551,58 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ArrayCallAST ast) {
-        return Type.VOID;
+        DefaultAST id = ast.getChild(0);
+        String name = id.getText();
+        Symbol symbol = currentSymbolTable.resolve(name);
+        if (symbol == null) {
+            throw new SymbolNotDeclaredException(
+                    String.format(
+                            "you are calling an element from an array but this array : %s is not declared in scope",
+                            name),
+                    id);
+        }
+        if (symbol.getKind() != Kind.ARRAY) {
+            throw new TypeMismatchException(
+                    String.format("variable '%s' is not an array", name), id);
+        }
+
+        DefaultAST paramList = ast.getChild(1);
+        Array array = (Array) symbol;
+        int nbIndicesDec = array.getRanges().size();
+        int nbIndicesCall = paramList.getChildCount();
+        if (nbIndicesDec != nbIndicesCall) {
+            throw new IncompatibleBoundException(
+                    String.format(
+                            "the array %s expected %d indices and received %d",
+                            name, nbIndicesDec, nbIndicesCall),
+                    id);
+        }
+        int indiceCounter = 0;
+        for (DefaultAST param : paramList) {
+            Type indiceType = param.accept(this);
+            if (indiceType != Type.INTEGER) {
+                throw new TypeMismatchException(
+                        String.format(
+                                "indices must be integer but indice %s is %s",
+                                param, indiceType.withPronoun()),
+                        param);
+            }
+            if (param.getType() == Algol60Parser.INT) {
+                int intIndice = parseInt(param.getText());
+
+                Array.Range range = array.getRanges().get(indiceCounter);
+                if (!range.isInRange(intIndice)) {
+                    throw new OutOfBoundException(
+                            String.format(
+                                    "in array %s the indice %d is out of bound, bound %s",
+                                    id.getText(), intIndice, range),
+                            param);
+                }
+            }
+            indiceCounter++;
+        }
+        Type t = symbol.getType();
+        return t;
     }
 
     @Override
