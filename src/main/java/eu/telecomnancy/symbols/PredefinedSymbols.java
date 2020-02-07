@@ -17,6 +17,7 @@ public class PredefinedSymbols {
         result.add(new Procedure("inreal", Type.VOID, asList(Type.INTEGER, Type.REAL)));
         result.add(new Procedure("ininteger", Type.VOID, asList(Type.INTEGER, Type.INTEGER)));
         result.add(new Procedure("entier", Type.INTEGER, asList(Type.REAL)));
+
         return result;
     }
 }
