@@ -1,9 +1,10 @@
 package eu.telecomnancy.semantic;
 
-import org.antlr.runtime.tree.Tree;
+import eu.telecomnancy.ast.DefaultAST;
 
 public class OutOfBoundException extends SemanticException {
-    public OutOfBoundException(String message, Tree tree) {
+
+    public OutOfBoundException(String message, DefaultAST tree) {
         super(message, tree);
     }
 

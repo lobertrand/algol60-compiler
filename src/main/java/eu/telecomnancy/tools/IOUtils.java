@@ -66,17 +66,35 @@ public class IOUtils {
 
     public static void printSemanticException(SemanticException e, String input) {
         logError(e);
-        printInputLine(e.getLine(), e.getColumn(), input);
+        printInputLine(e.getLine(), e.getColumn(), input, e.getAst().shouldShiftCursorLeft());
     }
 
     private static void printInputLine(int lineNumber, int colNumber, String text) {
+        printInputLine(lineNumber, colNumber, text, false);
+    }
+
+    private static void printInputLine(
+            int lineNumber, int colNumber, String text, boolean shiftLeft) {
         String[] inputLines = text.split("\n");
         if (lineNumber - 1 >= 0 && lineNumber - 1 < inputLines.length) {
             String line = inputLines[lineNumber - 1].replace('\t', ' ');
+
+            if (shiftLeft) colNumber = getShiftedColNumber(colNumber, line);
+
             String pointer = repeat(" ", colNumber) + YELLOW + "^" + RESET;
             System.out.println(String.format(" %5d | %s", lineNumber, line));
             System.out.println(String.format(" %5s | %s", "", pointer));
         }
+    }
+
+    private static int getShiftedColNumber(int colNumber, String line) {
+        int right = colNumber - 1;
+        while (right >= 0 && line.charAt(right) == ' ') right--;
+        int left = right - 1;
+        while (left >= 0 && line.charAt(left) != ' ') left--;
+        int middle = left + (right - left + 1) / 2;
+        if (left != 0) colNumber = middle;
+        return colNumber;
     }
 
     public static void generateDotTree(Tree tree, String name) throws IOException {

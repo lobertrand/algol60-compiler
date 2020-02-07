@@ -1,10 +1,10 @@
 package eu.telecomnancy.semantic;
 
-import org.antlr.runtime.tree.Tree;
+import eu.telecomnancy.ast.DefaultAST;
 
 public class SymbolRedeclarationException extends SemanticException {
 
-    public SymbolRedeclarationException(String message, Tree tree) {
+    public SymbolRedeclarationException(String message, DefaultAST tree) {
         super(message, tree);
     }
 

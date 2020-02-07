@@ -1,10 +1,10 @@
 package eu.telecomnancy.semantic;
 
-import org.antlr.runtime.tree.Tree;
+import eu.telecomnancy.ast.DefaultAST;
 
 public class TypeMismatchException extends SemanticException {
 
-    public TypeMismatchException(String message, Tree tree) {
+    public TypeMismatchException(String message, DefaultAST tree) {
         super(message, tree);
     }
 
