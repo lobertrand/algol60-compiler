@@ -42,6 +42,9 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     }
 
     private void popTable() {
+        if (currentSymbolTable.getParent() == null) {
+            throw new IllegalStateException("Did more popTable() than pushTable()");
+        }
         currentSymbolTable = currentSymbolTable.getParent();
     }
 
@@ -295,6 +298,56 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     }
 
     @Override
+    public Type visit(IfExpressionAST ast) {
+        DefaultAST ifDef = ast.findFirst(Algol60Parser.IF_DEF);
+        DefaultAST condition = ifDef.getChild(0);
+        Type conditionType = condition.accept(this);
+        if (conditionType != Type.BOOLEAN) {
+            exceptions.add(
+                    new TypeMismatchException(
+                            "If condition expects a boolean expression but got "
+                                    + conditionType.withPronoun(),
+                            ifDef));
+        }
+
+        DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
+        Type thenType = Type.UNDEFINED;
+        try {
+            thenType = thenDef.getChild(0).accept(this);
+            if (thenType == Type.VOID) {
+                throw new TypeMismatchException(
+                        "Members of an if-expression must return a value", thenDef);
+            }
+        } catch (SemanticException e) {
+            exceptions.add(e);
+        }
+
+        DefaultAST elseDef = ast.findFirst(Algol60Parser.ELSE_DEF);
+        Type elseType = Type.UNDEFINED;
+        try {
+            elseType = elseDef.getChild(0).accept(this);
+            if (elseType == Type.VOID) {
+                throw new TypeMismatchException(
+                        "Expression types of an if-expression must return a value", elseDef);
+            }
+        } catch (SemanticException e) {
+            exceptions.add(e);
+        }
+
+        if (Types.cannotFindCommonType(thenType, elseType)) {
+            exceptions.add(
+                    new TypeMismatchException(
+                            String.format(
+                                    "Cannot infer type of if-expression " + "(then: %s / else: %s)",
+                                    thenType, elseType),
+                            thenDef));
+            return Type.UNDEFINED;
+        } else {
+            return Types.getMostSpecificCommonType(thenType, elseType);
+        }
+    }
+
+    @Override
     public Type visit(IfStatementAST ast) {
         DefaultAST ifDef = ast.findFirst(Algol60Parser.IF_DEF);
         DefaultAST condition = ifDef.getChild(0);
@@ -302,9 +355,9 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (conditionType != Type.BOOLEAN) {
             exceptions.add(
                     new TypeMismatchException(
-                            "If statement expects a boolean expression, not "
+                            "If condition expects a boolean expression but got "
                                     + conditionType.withPronoun(),
-                            ifDef));
+                            condition));
         }
 
         DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
@@ -445,7 +498,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                     String.format(
                             "Cannot assign %s to '%s' of type %s",
                             rightType.withPronoun(), leftName, leftType),
-                    rightPart);
+                    ast);
         }
         return Type.VOID;
     }
@@ -472,19 +525,28 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             if (firstInt != null && lastInt != null && firstInt > lastInt) {
                 throw new IncompatibleBoundException(
                         String.format(
-                                "first bound must be superior than last bound first bound %s is %s and last bound %s is %s",
-                                first, firstType.withPronoun(), last, lastType.withPronoun()),
+                                "Bound start must be inferior or equal to bound end but %s > %s",
+                                firstInt, lastInt),
                         bound);
             }
-            if (firstType == Type.INTEGER && lastType == Type.INTEGER) {
-                ranges.add(new Array.Range(firstInt, lastInt));
-            } else {
-                throw new IncompatibleBoundException(
-                        String.format(
-                                "bounds must be integer but first bound %s is %s and last bound %s is %s",
-                                first, firstType.withPronoun(), last, lastType.withPronoun()),
-                        bound);
+            if (Types.cannotAssign(Type.INTEGER, firstType)) {
+                exceptions.add(
+                        new IncompatibleBoundException(
+                                String.format(
+                                        "Bounds must be integers but bound start is %s",
+                                        firstType.withPronoun()),
+                                first));
             }
+            if (Types.cannotAssign(Type.INTEGER, lastType)) {
+                exceptions.add(
+                        new IncompatibleBoundException(
+                                String.format(
+                                        "Bounds must be integers but bound end is %s",
+                                        lastType.withPronoun()),
+                                last));
+            }
+
+            ranges.add(new Array.Range(firstInt, lastInt));
         }
         Array a = new Array(id.toString(), type, ranges);
         currentSymbolTable.define(a);
@@ -518,7 +580,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         int indiceCounter = 0;
         for (DefaultAST indice : indices) {
             Type indiceType = indice.accept(this);
-            if (indiceType != Type.INTEGER) {
+            if (Types.cannotAssign(Type.INTEGER, indiceType)) {
                 throw new TypeMismatchException(
                         String.format(
                                 "Indices must be integer values but index '%s' is %s",

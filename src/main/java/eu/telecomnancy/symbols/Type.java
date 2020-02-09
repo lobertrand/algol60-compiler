@@ -31,7 +31,7 @@ public enum Type {
     }
 
     public String withPronoun() {
-        return (this == INTEGER || this == UNDEFINED ? "an " : "a ") + name().toLowerCase();
+        return (this == INTEGER ? "an " : this == UNDEFINED ? "" : "a ") + name().toLowerCase();
     }
 
     @Override
