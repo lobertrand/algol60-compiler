@@ -77,4 +77,6 @@ public interface ASTVisitor<R> {
     R visit(IdentifierAST ast);
 
     R visit(InitAST ast);
+
+    R visit(IfExpressionAST ast);
 }

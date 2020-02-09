@@ -83,6 +83,16 @@ public final class Types {
         return type != BOOLEAN;
     }
 
+    public static boolean cannotFindCommonType(Type a, Type b) {
+        return cannotAssign(a, b) && cannotAssign(b, a);
+    }
+
+    public static Type getMostSpecificCommonType(Type a, Type b) {
+        if (a == REAL || b == REAL) return REAL;
+        if (a == INTEGER && b == INTEGER) return INTEGER;
+        return a;
+    }
+
     @SafeVarargs
     private static <T> Set<T> setOf(T... objects) {
         return new HashSet<>(Arrays.asList(objects));

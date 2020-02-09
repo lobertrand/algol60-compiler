@@ -138,6 +138,22 @@ public class LabelGotoTest {
 
         Result result = checkSemantics(c);
         assertExceptionAtLine(4, UnreachableStatementException.class, result);
+        assertExceptionAtLine(5, SymbolNotDeclaredException.class, result);
         assertExceptionQuantity(2, result);
+    }
+
+    @Test
+    public void testGotoToInsideIfStatement() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer i;");
+        c.line("  if i > 3 then");
+        c.line("    a:");
+        c.line("  else");
+        c.line("    b:");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        assertExceptionQuantity(0, result);
     }
 }
