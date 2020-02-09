@@ -5,9 +5,9 @@ import static eu.telecomnancy.semantic.Helper.*;
 import org.antlr.runtime.RecognitionException;
 import org.junit.Test;
 
-public class ArrayAssignementTest {
+public class ArrayAssignmentTest {
     @Test
-    public void testAssignementSimple() throws RecognitionException {
+    public void testAssignmentSimple() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  integer array myArray[1:10];");
@@ -19,7 +19,7 @@ public class ArrayAssignementTest {
     }
 
     @Test
-    public void testAssignementOutOfBoundSimple() throws RecognitionException {
+    public void testAssignmentOutOfBoundSimple() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  integer array myArray[1:10];");
@@ -32,7 +32,7 @@ public class ArrayAssignementTest {
     }
 
     @Test
-    public void testAssignementMultiDimensionSimple() throws RecognitionException {
+    public void testAssignmentMultiDimensionSimple() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  integer array myArray[1:10,5:20];");
@@ -44,7 +44,7 @@ public class ArrayAssignementTest {
     }
 
     @Test
-    public void testAssignementMultiDimensionOutOfBoundSimple() throws RecognitionException {
+    public void testAssignmentMultiDimensionOutOfBoundSimple() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  integer array myArray[1:10,5:20];");
@@ -57,7 +57,7 @@ public class ArrayAssignementTest {
     }
 
     @Test
-    public void testAssignementNotIntegerIndice() throws RecognitionException {
+    public void testAssignmentNotIntegerIndice() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  string b;");
@@ -70,7 +70,8 @@ public class ArrayAssignementTest {
         assertExceptionQuantity(1, result);
     }
 
-    public void testAssignementToUndeclaredVariable() throws RecognitionException {
+    @Test
+    public void testAssignmentToUndeclaredVariable() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  myArray[5] := 5");
@@ -81,7 +82,8 @@ public class ArrayAssignementTest {
         assertExceptionQuantity(1, result);
     }
 
-    public void testAssignementToNonArrayType() throws RecognitionException {
+    @Test
+    public void testAssignmentToNonArrayType() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  string b;");
@@ -93,7 +95,8 @@ public class ArrayAssignementTest {
         assertExceptionQuantity(1, result);
     }
 
-    public void testAssignementWithToManyIndices() throws RecognitionException {
+    @Test
+    public void testAssignmentWithToManyIndices() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  integer array myArray[1:10,5:20];");
@@ -105,7 +108,8 @@ public class ArrayAssignementTest {
         assertExceptionQuantity(1, result);
     }
 
-    public void testAssignementWithTofewIndices() throws RecognitionException {
+    @Test
+    public void testAssignmentWithTofewIndices() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  integer array myArray[1:10,5:20];");

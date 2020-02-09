@@ -308,11 +308,19 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
 
         DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
-        thenDef.accept(this);
+        try {
+            thenDef.accept(this);
+        } catch (SemanticException e) {
+            exceptions.add(e);
+        }
         DefaultAST elseDef = ast.findFirst(Algol60Parser.ELSE_DEF);
 
         if (elseDef != null) {
-            elseDef.accept(this);
+            try {
+                elseDef.accept(this);
+            } catch (SemanticException e) {
+                exceptions.add(e);
+            }
         }
 
         return Type.VOID;
