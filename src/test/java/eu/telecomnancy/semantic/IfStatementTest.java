@@ -105,4 +105,67 @@ public class IfStatementTest {
         Result result = checkSemantics(c);
         assertExceptionQuantity(0, result);
     }
+
+    @Test
+    public void test_StringIfCondition() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer a;");
+        c.line("  if \"true\" then");
+        c.line("    a := 5");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        assertExceptionAtLine(3, TypeMismatchException.class, result);
+        assertExceptionQuantity(1, result);
+    }
+
+    @Test
+    public void test_ErrorInThen() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer a;");
+        c.line("  if true then");
+        c.line("    a := \"str\"");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        assertExceptionAtLine(4, TypeMismatchException.class, result);
+        assertExceptionQuantity(1, result);
+    }
+
+    @Test
+    public void test_ErrorInThenAndElse() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer a;");
+        c.line("  if true then");
+        c.line("    a := \"str\"");
+        c.line("  else");
+        c.line("    a := \"str\"");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        assertExceptionAtLine(4, TypeMismatchException.class, result);
+        assertExceptionAtLine(6, TypeMismatchException.class, result);
+        assertExceptionQuantity(2, result);
+    }
+
+    @Test
+    public void test_ErrorInConditionThenAndElse() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer a;");
+        c.line("  if 1 then");
+        c.line("    a := \"str\"");
+        c.line("  else");
+        c.line("    a := \"str\"");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        assertExceptionAtLine(3, TypeMismatchException.class, result);
+        assertExceptionAtLine(4, TypeMismatchException.class, result);
+        assertExceptionAtLine(6, TypeMismatchException.class, result);
+        assertExceptionQuantity(3, result);
+    }
 }

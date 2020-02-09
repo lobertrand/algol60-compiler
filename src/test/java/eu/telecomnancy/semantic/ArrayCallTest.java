@@ -61,7 +61,7 @@ public class ArrayCallTest {
     }
 
     @Test
-    public void testCallNotIntegerIndice() throws RecognitionException {
+    public void testCallNotIntegerIndex() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  integer a ;");
@@ -76,6 +76,7 @@ public class ArrayCallTest {
         assertExceptionQuantity(1, result);
     }
 
+    @Test
     public void testCallToUndeclaredVariable() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
@@ -88,6 +89,7 @@ public class ArrayCallTest {
         assertExceptionQuantity(1, result);
     }
 
+    @Test
     public void testCallToNonArrayType() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
@@ -101,6 +103,7 @@ public class ArrayCallTest {
         assertExceptionQuantity(1, result);
     }
 
+    @Test
     public void testCallWithToManyIndices() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
@@ -114,7 +117,8 @@ public class ArrayCallTest {
         assertExceptionQuantity(1, result);
     }
 
-    public void testAssignementWithTofewIndices() throws RecognitionException {
+    @Test
+    public void testAssigementWithToFewIndices() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
         c.line("  integer a ;");
