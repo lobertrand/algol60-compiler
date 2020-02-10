@@ -13,6 +13,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import org.antlr.runtime.*;
 import org.antlr.runtime.tree.DOTTreeGenerator;
 import org.antlr.runtime.tree.Tree;
@@ -37,15 +38,13 @@ public class IOUtils {
     }
 
     public static void printRecognitionException(RecognitionException e, String input) {
-        String msg = "";
+        Optional<String> token = Optional.ofNullable(e.token).map(Token::getText);
+
+        String msg;
         try {
             throw e;
         } catch (NoViableAltException ex) {
-            if (ex.token != null) {
-                msg = "Unexpected token '" + ex.token.getText() + "'";
-            } else {
-                msg = "Unexpected token";
-            }
+            msg = token.map(t -> "Unexpected token '" + t + "'").orElse("Unexpected token");
         } catch (FailedPredicateException ex) {
             msg = "Failed predicate at token '" + ex.token.getText() + "'";
         } catch (MissingTokenException ex) {
@@ -55,9 +54,11 @@ public class IOUtils {
                 msg = "Missing token";
             }
         } catch (MismatchedTokenException ex) {
-            msg = "Mismatched token '" + ex.token.getText() + "'";
+            msg = token.map(t -> "Mismatched token '" + t + "'").orElse("Mismatch token");
         } catch (RecognitionException ex) {
-            msg = "Recognition error at token '" + ex.token.getText() + "'";
+            msg =
+                    token.map(t -> "Recognition error at token '" + t + "'")
+                            .orElse("Recognition error");
         }
         msg += " at line " + e.line;
         logError(msg);
@@ -94,7 +95,7 @@ public class IOUtils {
         while (left >= 0 && line.charAt(left) != ' ') left--;
         int middle = left + (right - left + 1) / 2;
         if (left != 0) colNumber = middle;
-        return colNumber;
+        return Math.max(colNumber, 0);
     }
 
     public static void generateDotTree(Tree tree, String name) throws IOException {

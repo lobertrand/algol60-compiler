@@ -65,14 +65,6 @@ public class SymbolTable {
         return parent;
     }
 
-    public void setParent(SymbolTable parent) {
-        this.parent = parent;
-    }
-
-    public boolean hasParent() {
-        return parent != null;
-    }
-
     public List<SymbolTable> getChildren() {
         return children;
     }
