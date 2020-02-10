@@ -1,26 +1,14 @@
 package eu.telecomnancy.ast;
 
+import static eu.telecomnancy.ast.Helper.*;
 import static org.junit.Assert.*;
 
-import eu.telecomnancy.Algol60Lexer;
-import eu.telecomnancy.Algol60Parser;
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
 import org.junit.Test;
 
 public class ASTAdaptorTest {
-
-    private Tree parse(String content) throws RecognitionException {
-        ANTLRStringStream stream = new ANTLRStringStream(content);
-        Algol60Lexer lexer = new Algol60Lexer(stream);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        Algol60Parser parser = new Algol60Parser(tokens);
-        parser.setTreeAdaptor(new ASTAdaptor());
-        return parser.prog().getTree();
-    }
 
     @Test
     public void testRoot() throws RecognitionException {

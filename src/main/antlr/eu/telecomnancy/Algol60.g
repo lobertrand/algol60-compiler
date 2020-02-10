@@ -264,9 +264,8 @@ array_call_end[DefaultAST id]
 
 expression
     :   string 
-    |   integer 
+    |   number
     |   identifier! id_expression_end[$identifier.tree]
-    |   scientific_expression
     |   LOGICAL_VALUE
     |   if_expression
     ;
@@ -437,17 +436,23 @@ for_do[DefaultAST ass]
 
 // Intermediate parser rules	
 
-integer
-    :   DASH? INT
-        // Prepends integer node with '-' if DASH is present
-        { if ($DASH != null) $INT.setText("-" + $INT.text); }
-        -> INT
-    ;
-
-scientific_expression
-    :   REAL ( '#' INT -> ^(POW_10 REAL INT)
-             |         -> REAL
-             )
+number
+    :   d1=DASH?
+        (   i1=INT  { if ($d1 != null) $i1.setText("-" + $i1.text); }
+            (   '#' d2=DASH? i2=INT
+                { if ($d2 != null) $i2.setText("-" + $i2.text); }
+                -> ^(POW_10 INT INT)
+            |                   
+                -> INT  
+            )
+        |   REAL    { if ($d1 != null) $REAL.setText("-" + $REAL.text); }
+            (   '#' d3=DASH? i3=INT
+                { if ($d3 != null) $i3.setText("-" + $i3.text); }
+                -> ^(POW_10 REAL INT)
+            |   
+                -> REAL
+            )
+        )
     ;
 
 string
