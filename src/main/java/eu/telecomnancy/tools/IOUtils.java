@@ -5,6 +5,7 @@ import static eu.telecomnancy.tools.StringTools.*;
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.semantic.SemanticException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
@@ -119,6 +120,9 @@ public class IOUtils {
 
     public static String loadString(String resourcePath) throws IOException, URISyntaxException {
         URL url = IOUtils.class.getResource(resourcePath);
+        if (url == null) {
+            throw new FileNotFoundException(resourcePath);
+        }
         URI uri = url.toURI();
         Path path = Paths.get(uri);
         return new String(Files.readAllBytes(path));
