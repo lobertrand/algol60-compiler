@@ -27,6 +27,7 @@ tokens {
     ARG_TYPE;           // Type of a procedure's argument
     PARAM_LIST;         // List of parameters
     PROC_CALL;          // Procedure call
+    IF_EXPRESSION;      // If expression
     IF_STATEMENT;       // If statement
     IF_DEF;             // First part of an if statement
     THEN_DEF;           // Then part of an if statement
@@ -267,6 +268,7 @@ expression
     |   identifier! id_expression_end[$identifier.tree]
     |   scientific_expression
     |   LOGICAL_VALUE
+    |   if_expression
     ;
 
 id_expression_end[DefaultAST id]
@@ -371,6 +373,17 @@ group_expr
     |   '('! arithmetic_expression ')'!
     ;
 
+// If expression
+
+if_expression
+    :   'if' arithmetic_expression 'then' expression (options{greedy=true;}:'else' expression)
+        -> ^(IF_EXPRESSION
+                ^(IF_DEF arithmetic_expression)
+                ^(THEN_DEF expression)
+                ^(ELSE_DEF expression)
+            )
+    ;
+
 // If clause
 
 if_clause
@@ -378,7 +391,7 @@ if_clause
         -> ^(IF_STATEMENT
                 ^(IF_DEF arithmetic_expression)
                 ^(THEN_DEF statement)
-                ^(ELSE_DEF statement)*
+                ^(ELSE_DEF statement)?
             )
     ;
 
