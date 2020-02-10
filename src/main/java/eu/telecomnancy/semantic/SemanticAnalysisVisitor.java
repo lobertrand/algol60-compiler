@@ -45,6 +45,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         currentSymbolTable = currentSymbolTable.getParent();
     }
 
+
     @Override
     public Type visit(DefaultAST ast) {
         for (DefaultAST t : ast) {

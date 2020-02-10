@@ -105,4 +105,30 @@ public class IfStatementTest {
         Result result = checkSemantics(c);
         assertExceptionQuantity(0, result);
     }
+
+    @Test
+    public void test_If() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer n;");
+        c.line("  n := 3 ;");
+        c.line("  if n < 6 then ininteger(3,n)");
+        c.line("end");
+        Result result = checkSemantics(c);
+        assertExceptionQuantity(0, result);
+    }
+
+    @Test
+    public void test_If2() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer n; integer b ;");
+        c.line("  n := 3 ;");
+        c.line("  b:= 3 ;");
+        c.line("  if n+b < 8 then a: ; ");
+        c.line("y:");
+        c.line("end");
+        Result result = checkSemantics(c);
+        assertExceptionQuantity(0, result);
+    }
 }
