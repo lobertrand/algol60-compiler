@@ -2,8 +2,8 @@ package eu.telecomnancy.ast;
 
 import org.antlr.runtime.Token;
 
-public class SwitchAST extends DefaultAST {
-    public SwitchAST(Token t) {
+public class SwitchDecAST extends DefaultAST {
+    public SwitchDecAST(Token t) {
         super(t);
     }
 
