@@ -910,7 +910,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             int intIndice = parseInt(indice.getText());
 
             int size = s.getSize();
-            if (intIndice >= size) {
+            if (intIndice > (size)||intIndice<=0) {
                 throw new OutOfBoundException(
                         String.format(
                                 "in switch %s the index %d is out of bound, bound %s",
