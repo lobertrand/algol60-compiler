@@ -77,6 +77,7 @@ import eu.telecomnancy.ast.DefaultAST;
 
 @lexer::header {
 package eu.telecomnancy;
+import eu.telecomnancy.syntax.InvalidNumberException ;
 }
 
 @parser::members {
@@ -491,6 +492,14 @@ LOGICAL_VALUE
 
 INT
     :   ('1'..'9')('0'..'9')*
+        {
+                int i = 0;
+                try {
+                    i = Integer.parseInt(getText());
+                } catch(NumberFormatException e){
+                        exceptions.add(new InvalidNumberException("Integer size exceeded : " + getText(),input));
+                }
+        }
     |   '0'
     ;
 
@@ -499,6 +508,17 @@ DASH:   '-'
 
 REAL 
     :   ('0'..'9')*'.'('0'..'9')*
+    {
+                    float i = 0;
+                    try {
+                        i = Float.parseFloat(getText());
+                        if ( i == Float.POSITIVE_INFINITY ){
+                            exceptions.add(new InvalidNumberException("Real size exceeded : " + getText(),input));
+                    }
+                    } catch(NumberFormatException e){
+                            exceptions.add(new InvalidNumberException("Real size exceeded : " + getText(),input));
+                    }
+            }
     ;
 
 IDENTIFIER

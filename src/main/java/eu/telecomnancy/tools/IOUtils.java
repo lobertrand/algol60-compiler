@@ -4,6 +4,7 @@ import static eu.telecomnancy.tools.StringTools.*;
 
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.semantic.SemanticException;
+import eu.telecomnancy.syntax.InvalidNumberException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -56,6 +57,8 @@ public class IOUtils {
             }
         } catch (MismatchedTokenException ex) {
             msg = token.map(t -> "Mismatched token '" + t + "'").orElse("Mismatch token");
+        } catch (InvalidNumberException ex) {
+            msg = ex.message;
         } catch (RecognitionException ex) {
             msg =
                     token.map(t -> "Recognition error at token '" + t + "'")
