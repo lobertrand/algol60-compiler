@@ -85,7 +85,7 @@ public class NumbersTest {
 
     @Test
     public void testAllNumbersCombined() throws Exception {
-        String content = IOUtils.loadString("/semantics/unit_tests/all_numbers.alg");
+        String content = IOUtils.loadString("/syntax/unit_tests/all_numbers.alg");
         parse(content); // Should compile without exception
     }
 }
