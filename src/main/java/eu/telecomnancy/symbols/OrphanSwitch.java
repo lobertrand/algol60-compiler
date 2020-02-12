@@ -26,4 +26,8 @@ public class OrphanSwitch {
     public String toString() {
         return String.format("Orphan switch: %s (line %d)", aSwitch, tree.getLine());
     }
+
+    public Switch getSwitch() {
+        return aSwitch;
+    }
 }

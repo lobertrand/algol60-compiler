@@ -23,9 +23,4 @@ public class SwitchCallTest {
         Result result = checkSemantics(c);
         assertExceptionQuantity(0, result);
     }
-
-    @Test
-    public void testSwitch
-
-
 }
