@@ -68,7 +68,8 @@ tokens {
     EQUAL;              // Equal
     NOT_EQUAL;          // Not equal
     WHILE;	            // While
-    SWITCH;				// Switch
+    SWITCH_DEC;				// Switch Declaration
+    SWITCH_CALL;				// Switch  Call
 }
 
 @parser::header {
@@ -177,7 +178,7 @@ identifier_list_head[Token type]
 // Switch declaration
 switch_declaration
 	:	'switch' identifier ':=' identifier_list
-		-> ^(SWITCH identifier identifier_list)
+		-> ^(SWITCH_DEC identifier identifier_list)
 	;
 	
 

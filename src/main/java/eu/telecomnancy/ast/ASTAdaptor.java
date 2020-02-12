@@ -88,8 +88,8 @@ public class ASTAdaptor extends CommonTreeAdaptor {
                     return new IdentifierAST(t);
                 case Algol60Parser.IF_EXPRESSION:
                     return new IfExpressionAST(t);
-                case Algol60Parser.SWITCH:
-                    return new SwitchAST(t);
+                case Algol60Parser.SWITCH_DEC:
+                    return new SwitchDecAST(t);
                 default:
                     break;
             }
