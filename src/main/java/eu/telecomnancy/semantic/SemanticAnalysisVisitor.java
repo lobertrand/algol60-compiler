@@ -1,7 +1,5 @@
 package eu.telecomnancy.semantic;
 
-import static java.lang.Integer.*;
-
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.*;
@@ -521,9 +519,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             DefaultAST last = bound.getChild(1);
             Type firstType = first.accept(this);
             Type lastType = last.accept(this);
-            Integer firstInt =
-                    first.getType() == Algol60Parser.INT ? parseInt(first.getText()) : null;
-            Integer lastInt = last.getType() == Algol60Parser.INT ? parseInt(last.getText()) : null;
+            Integer firstInt = parseAstToInteger(first).orElse(null);
+            Integer lastInt = parseAstToInteger(last).orElse(null);
 
             if (firstInt != null && lastInt != null && firstInt > lastInt) {
                 throw new IncompatibleBoundException(
@@ -532,19 +529,19 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                                 firstInt, lastInt),
                         bound);
             }
-            if (Types.cannotAssign(Type.INTEGER, firstType)) {
+            if (Types.cannotAssign(Type.REAL, firstType)) {
                 exceptions.add(
                         new IncompatibleBoundException(
                                 String.format(
-                                        "Bounds must be integers but bound start is %s",
+                                        "Bounds must be of type integer or real but bound start is %s",
                                         firstType.withPronoun()),
                                 first));
             }
-            if (Types.cannotAssign(Type.INTEGER, lastType)) {
+            if (Types.cannotAssign(Type.REAL, lastType)) {
                 exceptions.add(
                         new IncompatibleBoundException(
                                 String.format(
-                                        "Bounds must be integers but bound end is %s",
+                                        "Bounds must be of type integer or real but bound end is %s",
                                         lastType.withPronoun()),
                                 last));
             }
@@ -554,6 +551,19 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         Array a = new Array(id.toString(), type, ranges);
         currentSymbolTable.define(a);
         return Type.VOID;
+    }
+
+    private Optional<Integer> parseAstToInteger(DefaultAST ast) {
+        if (ast.getType() == Algol60Parser.INT) {
+            int intValue = Integer.parseInt(ast.getText());
+            return Optional.of(intValue);
+        } else if (ast.getType() == Algol60Parser.REAL) {
+            float floatValue = Float.parseFloat(ast.getText());
+            int intValue = Math.round(floatValue);
+            return Optional.of(intValue);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -576,33 +586,32 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (nbIndicesDec != nbIndicesAss) {
             throw new IncompatibleBoundException(
                     String.format(
-                            "array '%s' expected %d indices but received %d",
+                            "Array '%s' expected %d indices but received %d",
                             name, nbIndicesDec, nbIndicesAss),
                     id);
         }
-        int indiceCounter = 0;
-        for (DefaultAST indice : indices) {
-            Type indiceType = indice.accept(this);
-            if (Types.cannotAssign(Type.INTEGER, indiceType)) {
+        int indexCounter = 0;
+        for (DefaultAST index : indices) {
+            Type indexType = index.accept(this);
+            if (Types.cannotAssign(Type.REAL, indexType)) {
                 throw new TypeMismatchException(
                         String.format(
-                                "Indices must be integer values but index '%s' is %s",
-                                indice, indiceType.withPronoun()),
-                        indice);
+                                "Indices must be integer or real values but index '%s' is %s",
+                                index, indexType.withPronoun()),
+                        index);
             }
-            if (indice.getType() == Algol60Parser.INT) {
-                int intIndice = parseInt(indice.getText());
-
-                Array.Range range = array.getRanges().get(indiceCounter);
-                if (!range.isInRange(intIndice)) {
+            Integer intIndex = parseAstToInteger(index).orElse(null);
+            if (intIndex != null) {
+                Array.Range range = array.getRanges().get(indexCounter);
+                if (!range.isInRange(intIndex)) {
                     throw new OutOfBoundException(
                             String.format(
                                     "Array index '%d' is out of bounds in '%s' with bounds %s",
-                                    intIndice, id.getText(), range),
-                            indice);
+                                    intIndex, id.getText(), range),
+                            index);
                 }
             }
-            indiceCounter++;
+            indexCounter++;
         }
 
         return Type.VOID;
@@ -632,13 +641,13 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (symbol == null) {
             throw new SymbolNotDeclaredException(
                     String.format(
-                            "you are calling an element from an array but this array : %s is not declared in scope",
+                            "You are calling an element from an array but this array : %s is not declared in scope",
                             name),
                     id);
         }
         if (symbol.getKind() != Kind.ARRAY) {
             throw new TypeMismatchException(
-                    String.format("variable '%s' is not an array", name), id);
+                    String.format("Variable '%s' is not an array", name), id);
         }
 
         DefaultAST paramList = ast.getChild(1);
@@ -648,36 +657,34 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (nbIndicesDec != nbIndicesCall) {
             throw new IncompatibleBoundException(
                     String.format(
-                            "the array %s expected %d indices and received %d",
+                            "The array %s expected %d indices and received %d",
                             name, nbIndicesDec, nbIndicesCall),
                     id);
         }
-        int indiceCounter = 0;
+        int indexCounter = 0;
         for (DefaultAST param : paramList) {
-            Type indiceType = param.accept(this);
-            if (indiceType != Type.INTEGER) {
+            Type indexType = param.accept(this);
+            if (Types.cannotAssign(Type.REAL, indexType)) {
                 throw new TypeMismatchException(
                         String.format(
-                                "indices must be integer but indice %s is %s",
-                                param, indiceType.withPronoun()),
+                                "Indices must be real or integer but index %s is %s",
+                                param, indexType.withPronoun()),
                         param);
             }
-            if (param.getType() == Algol60Parser.INT) {
-                int intIndice = parseInt(param.getText());
-
-                Array.Range range = array.getRanges().get(indiceCounter);
-                if (!range.isInRange(intIndice)) {
+            Integer intIndex = parseAstToInteger(param).orElse(null);
+            if (intIndex != null) {
+                Array.Range range = array.getRanges().get(indexCounter);
+                if (!range.isInRange(intIndex)) {
                     throw new OutOfBoundException(
                             String.format(
-                                    "in array %s the indice %d is out of bound, bound %s",
-                                    id.getText(), intIndice, range),
+                                    "In array %s the index %d is out of bound, bound %s",
+                                    id.getText(), intIndex, range),
                             param);
                 }
             }
-            indiceCounter++;
+            indexCounter++;
         }
-        Type t = symbol.getType();
-        return t;
+        return symbol.getType();
     }
 
     @Override
