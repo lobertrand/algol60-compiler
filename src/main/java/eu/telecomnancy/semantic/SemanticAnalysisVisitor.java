@@ -19,6 +19,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     private List<SemanticException> exceptions;
     private SymbolTable currentSymbolTable;
     private List<OrphanGoto> orphanGotos;
+    private List<OrphanGoto> orphanSwitches;
 
     public SemanticAnalysisVisitor(SymbolTable symbolTable) {
         if (symbolTable == null) {
@@ -27,6 +28,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         this.currentSymbolTable = symbolTable;
         this.exceptions = new ArrayList<>();
         this.orphanGotos = new ArrayList<>();
+        this.orphanSwitches = new ArrayList<>();
     }
 
     public List<SemanticException> getExceptions() {
@@ -864,11 +866,19 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     public Type visit(SwitchDecAST ast) {
         DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        Type leftType = leftPart.accept(this);
-        for (DefaultAST child : rightPart) {
-            child.accept(this);
+        String idf = leftPart.getText();
+        DefaultAST idList = ast.getChild(1);
+        Switch s = new Switch(idf);
+        if (currentSymbolTable.isDeclaredInScope(idf)) {
+            throw new SymbolRedeclarationException(
+                    String.format("Switch '%s' is already declared in scope", idf), ast);
         }
+        currentSymbolTable.define(s);
+        for (DefaultAST t : idList) {
+            String name = t.getText();
+            s.add(name);
+        }
+
         return Type.VOID;
     }
 

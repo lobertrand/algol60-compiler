@@ -2,16 +2,16 @@ package eu.telecomnancy.symbols;
 
 import eu.telecomnancy.ast.DefaultAST;
 
-public class OrphanGoto {
+public class OrphanSwitch {
 
     private DefaultAST tree;
     private SymbolTable symbolTable;
-    private String identifier;
+    private Switch aSwitch;
 
-    public OrphanGoto(String idf, SymbolTable symbolTable, DefaultAST tree) {
+    public OrphanSwitch(Switch aSwitch, SymbolTable symbolTable, DefaultAST tree) {
         this.tree = tree;
         this.symbolTable = symbolTable;
-        this.identifier = idf;
+        this.aSwitch = aSwitch;
     }
 
     public SymbolTable getSymbolTable() {
@@ -22,12 +22,8 @@ public class OrphanGoto {
         return tree;
     }
 
-    public String getIdentifier() {
-        return identifier;
-    }
-
     @Override
     public String toString() {
-        return String.format("Orphan goto: %s (line %d)", identifier, tree.getLine());
+        return String.format("Orphan switch: %s (line %d)", aSwitch, tree.getLine());
     }
 }
