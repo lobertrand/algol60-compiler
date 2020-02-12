@@ -21,5 +21,7 @@ public class Switch extends Symbol {
         this.names.add(string);
     }
 
-    public int getSize(){ return names.size();}
+    public int getSize() {
+        return names.size();
+    }
 }
