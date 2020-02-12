@@ -799,24 +799,28 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     }
 
     private void checkDeclarationOfEveryLabelUsedWithSwitch() {
-        for (OrphanSwitch aSwitch : orphanSwitches) {
-            SymbolTable table = aSwitch.getSymbolTable();
-            String identifier = aSwitch.getSwitch().getIdentifier();
-            DefaultAST ast = aSwitch.getTree();
-            Symbol symbol = table.resolve(identifier);
-            if (symbol.getKind() != Kind.SWITCH) {
+        for (OrphanSwitch orphanSwitch : orphanSwitches) {
+            SymbolTable table = orphanSwitch.getSymbolTable();
+            String identifier = orphanSwitch.getSwitch().getIdentifier();
+            DefaultAST ast = orphanSwitch.getTree();
+            Symbol switchSymbol = table.resolve(identifier);
+            if (switchSymbol.getKind() != Kind.SWITCH) {
                 exceptions.add(
                         new TypeMismatchException(
                                 String.format("'%s' is not a switch identifier", identifier), ast));
 
             } else {
-                Switch aSwitch1 = (Switch) symbol;
-                for (String name : aSwitch1.getNames()) {
-                    Symbol symbol1 = table.resolve(name);
-                    if (symbol1 == null) {
+                Switch aSwitch = (Switch) switchSymbol;
+                for (String name : aSwitch.getNames()) {
+                    Symbol labelSymbol = table.resolve(name);
+                    if (labelSymbol == null) {
                         exceptions.add(
                                 new SymbolNotDeclaredException(
                                         String.format("Label '%s' is not declared", name), ast));
+                    } else if (labelSymbol.getKind() != Kind.LABEL) {
+                        exceptions.add(
+                                new TypeMismatchException(
+                                        String.format("'%s' Type Mismatch", name), ast));
                     }
                 }
             }
@@ -904,6 +908,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             String name = t.getText();
             s.add(name);
         }
+        orphanSwitches.add(new OrphanSwitch(s, currentSymbolTable, ast));
 
         return Type.VOID;
     }

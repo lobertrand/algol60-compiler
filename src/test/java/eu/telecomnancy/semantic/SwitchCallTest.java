@@ -41,6 +41,7 @@ public class SwitchCallTest {
         Result result = checkSemantics(c);
         assertExceptionQuantity(0, result);
     }
+
     @Test
     public void testSwitchUndeclared() throws RecognitionException {
         Content c = new Content();
