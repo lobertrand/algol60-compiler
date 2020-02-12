@@ -6,7 +6,8 @@ public enum Kind {
     LABEL,
     ORPHAN_GOTO,
     ARRAY,
-    PARAMETER;
+    PARAMETER,
+    SWITCH;
 
     @Override
     public String toString() {
