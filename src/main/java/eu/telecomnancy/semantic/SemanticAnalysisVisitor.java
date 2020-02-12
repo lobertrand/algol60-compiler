@@ -883,6 +883,42 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     }
 
     public Type visit(SwitchCallAST ast) {
+        DefaultAST id = ast.getChild(0);
+        DefaultAST indice = ast.getChild(1);
+        String name = id.getText();
+        Symbol symbol = currentSymbolTable.resolve(name);
+        if (symbol == null) {
+            throw new SymbolNotDeclaredException(
+                    String.format(
+                            "you are calling an element from a switch but this switch: %s is not declared in scope",
+                            name),
+                    id);
+        }
+        if (symbol.getKind() != Kind.SWITCH) {
+            throw new TypeMismatchException(
+                    String.format("variable '%s' is not a switch", name), id);
+        }
+        Switch s = (Switch) symbol;
+        Type indiceType = indice.accept(this);
+        if (indiceType != Type.INTEGER) {
+            throw new TypeMismatchException(
+                    String.format(
+                            "index must be integer but %s is %s", indice, indiceType.withPronoun()),
+                    indice);
+        }
+        if (indice.getType() == Algol60Parser.INT) {
+            int intIndice = parseInt(indice.getText());
+
+            int size = s.getSize();
+            if (intIndice >= size) {
+                throw new OutOfBoundException(
+                        String.format(
+                                "in switch %s the index %d is out of bound, bound %s",
+                                id.getText(), intIndice, size),
+                        indice);
+            }
+        }
+        Type t = symbol.getType();
         return Type.VOID;
     }
 
