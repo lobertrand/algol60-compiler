@@ -79,4 +79,8 @@ public interface ASTVisitor<R> {
     R visit(InitAST ast);
 
     R visit(IfExpressionAST ast);
+
+    R visit(SwitchDecAST ast);
+
+    R visit(SwitchCallAST ast);
 }

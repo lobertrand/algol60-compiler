@@ -862,6 +862,21 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         return checkRelationalOperation(ast);
     }
 
+    public Type visit(SwitchDecAST ast) {
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        Type leftType = leftPart.accept(this);
+        for (DefaultAST child : rightPart) {
+            child.accept(this);
+        }
+        return Type.VOID;
+    }
+
+    public Type visit(SwitchCallAST ast) {
+        DefaultAST
+        return Type.VOID;
+    }
+
     private Type checkLogicalOperation(DefaultAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);

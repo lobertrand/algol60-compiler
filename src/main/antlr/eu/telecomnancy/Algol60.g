@@ -68,6 +68,8 @@ tokens {
     EQUAL;              // Equal
     NOT_EQUAL;          // Not equal
     WHILE;	            // While
+    SWITCH_DEC;				// Switch Declaration
+    SWITCH_CALL;				// Switch  Call
 }
 
 @parser::header {
@@ -152,6 +154,7 @@ label_dec_end[DefaultAST id]
 declaration
     :   TYPE! type_declaration_end[$TYPE]
     |   procedure_declaration_no_type
+    |	switch_declaration
     ;
 
 type_declaration_end[Token type]
@@ -172,6 +175,13 @@ identifier_list_head[Token type]
     |   'array' identifier '[' boundaries(',' boundaries)* ']' 
         -> ^(ARRAY_DEC {new DefaultAST($type)} identifier ^(BOUND_LIST boundaries+))
     ;
+    
+// Switch declaration
+switch_declaration
+	:	'switch' identifier ':=' identifier_list
+		-> ^(SWITCH_DEC identifier identifier_list)
+	;
+	
 
 // Procedure declaration
 
@@ -470,6 +480,7 @@ TYPE:   'real'
     |   'integer'
     |   'boolean'
     |   'string'
+    |	'switch'
     ;
 
 COMMENT
