@@ -873,7 +873,6 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     }
 
     public Type visit(SwitchCallAST ast) {
-        DefaultAST
         return Type.VOID;
     }
 

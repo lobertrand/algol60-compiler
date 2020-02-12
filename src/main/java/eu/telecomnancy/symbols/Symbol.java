@@ -22,4 +22,6 @@ public abstract class Symbol {
     public Kind getKind() {
         return kind;
     }
+
+
 }
