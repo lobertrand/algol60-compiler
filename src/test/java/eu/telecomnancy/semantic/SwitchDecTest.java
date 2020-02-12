@@ -100,15 +100,15 @@ public class SwitchDecTest {
     public void testScope2() throws RecognitionException {
         Content c = new Content();
         c.line("begin");
+        c.line("switch a:= c,d;");
         c.line("    begin");
         c.line("         c:;");
         c.line("         d:");
-        c.line("    end;");
-        c.line("switch a:= c,d;");
+        c.line("    end");
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertExceptionAtLine(6, SymbolNotDeclaredException.class, result);
+        assertExceptionAtLine(2, SymbolNotDeclaredException.class, result);
         assertExceptionQuantity(1, result);
     }
 

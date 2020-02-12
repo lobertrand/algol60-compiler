@@ -24,4 +24,8 @@ public class Switch extends Symbol {
     public int getSize() {
         return names.size();
     }
+
+    public List<String> getNames() {
+        return names;
+    }
 }

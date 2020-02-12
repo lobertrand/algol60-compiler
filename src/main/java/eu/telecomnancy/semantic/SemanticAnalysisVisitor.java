@@ -19,7 +19,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     private List<SemanticException> exceptions;
     private SymbolTable currentSymbolTable;
     private List<OrphanGoto> orphanGotos;
-    private List<OrphanGoto> orphanSwitches;
+    private List<OrphanSwitch> orphanSwitches;
 
     public SemanticAnalysisVisitor(SymbolTable symbolTable) {
         if (symbolTable == null) {
@@ -63,6 +63,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         ast.getChild(0).accept(this);
         // Final operations
         checkDeclarationOfEveryLabelUsedWithGoto();
+        checkDeclarationOfEveryLabelUsedWithSwitch();
         exceptions.sort(Comparator.comparingInt(SemanticException::getLine));
         return Type.VOID;
     }
@@ -784,7 +785,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             SymbolTable table = orphanGoto.getSymbolTable();
             String identifier = orphanGoto.getIdentifier();
             DefaultAST ast = orphanGoto.getTree();
-            Symbol symbol = table.resolve(orphanGoto.getIdentifier());
+            Symbol symbol = table.resolve(identifier);
             if (symbol == null) {
                 exceptions.add(
                         new SymbolNotDeclaredException(
@@ -793,6 +794,31 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                 exceptions.add(
                         new TypeMismatchException(
                                 String.format("'%s' is not a label identifier", identifier), ast));
+            }
+        }
+    }
+
+    private void checkDeclarationOfEveryLabelUsedWithSwitch() {
+        for (OrphanSwitch aSwitch : orphanSwitches) {
+            SymbolTable table = aSwitch.getSymbolTable();
+            String identifier = aSwitch.getSwitch().getIdentifier();
+            DefaultAST ast = aSwitch.getTree();
+            Symbol symbol = table.resolve(identifier);
+            if (symbol.getKind() != Kind.SWITCH) {
+                exceptions.add(
+                        new TypeMismatchException(
+                                String.format("'%s' is not a switch identifier", identifier), ast));
+
+            } else {
+                Switch aSwitch1 = (Switch) symbol;
+                for (String name : aSwitch1.getNames()) {
+                    Symbol symbol1 = table.resolve(name);
+                    if (symbol1 == null) {
+                        exceptions.add(
+                                new SymbolNotDeclaredException(
+                                        String.format("Label '%s' is not declared", name), ast));
+                    }
+                }
             }
         }
     }
@@ -910,7 +936,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             int intIndice = parseInt(indice.getText());
 
             int size = s.getSize();
-            if (intIndice > (size)||intIndice<=0) {
+            if (intIndice > (size) || intIndice <= 0) {
                 throw new OutOfBoundException(
                         String.format(
                                 "in switch %s the index %d is out of bound, bound %s",
