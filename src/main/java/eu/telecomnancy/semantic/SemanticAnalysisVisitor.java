@@ -945,7 +945,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                     indice);
         }
         if (indice.getType() == Algol60Parser.INT) {
-            int intIndice = parseInt(indice.getText());
+            int intIndice = Integer.parseInt(indice.getText());
 
             int size = s.getSize();
             if (intIndice > (size) || intIndice <= 0) {

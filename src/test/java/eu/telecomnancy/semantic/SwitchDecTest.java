@@ -48,7 +48,8 @@ public class SwitchDecTest {
 
         Result result = checkSemantics(c);
         assertExceptionAtLine(3, SymbolRedeclarationException.class, result);
-        assertExceptionQuantity(1, result);
+        assertExceptionAtLine(2, TypeMismatchException.class, result);
+        assertExceptionQuantity(2, result);
     }
 
     @Test
@@ -109,7 +110,7 @@ public class SwitchDecTest {
 
         Result result = checkSemantics(c);
         assertExceptionAtLine(2, SymbolNotDeclaredException.class, result);
-        assertExceptionQuantity(1, result);
+        assertExceptionQuantity(2, result);
     }
 
     @Test
@@ -124,6 +125,7 @@ public class SwitchDecTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertExceptionQuantity(0, result);
+        assertExceptionQuantity(1, result);
+        assertExceptionAtLine(2, SymbolNotDeclaredException.class, result);
     }
 }
