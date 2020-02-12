@@ -49,7 +49,7 @@ public class Main {
         IOUtils.print(symbolTable);
         reportSemanticExceptions(semanticAnalysisVisitor, input);
 
-        ASTTools.print(pr.getTree());
+        // ASTTools.print(pr.getTree());
     }
 
     private static void reportSemanticExceptions(
