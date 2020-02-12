@@ -142,7 +142,12 @@ id_statement_end[DefaultAST id]
 // Label / goto statement
 
 goto_statement
-    :   'goto' identifier -> ^(GOTO identifier)
+    :   'goto'! identifier! goto_statement_end[$identifier.tree]
+    ;
+
+goto_statement_end[DefaultAST id]
+    : -> ^(GOTO {$id})
+    |'[' arithmetic_expression ']' -> ^(SWITCH_CALL {$id} arithmetic_expression)
     ;
 
 label_dec_end[DefaultAST id]

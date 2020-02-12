@@ -5,7 +5,6 @@ import eu.telecomnancy.semantic.SemanticAnalysisVisitor;
 import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.symbols.PredefinedSymbols;
 import eu.telecomnancy.symbols.SymbolTable;
-import eu.telecomnancy.tools.ASTTools;
 import eu.telecomnancy.tools.IOUtils;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -49,7 +48,7 @@ public class Main {
         IOUtils.print(symbolTable);
         reportSemanticExceptions(semanticAnalysisVisitor, input);
 
-        //ASTTools.print(pr.getTree());
+        // ASTTools.print(pr.getTree());
     }
 
     private static void reportSemanticExceptions(
