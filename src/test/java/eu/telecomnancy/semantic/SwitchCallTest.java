@@ -97,7 +97,8 @@ public class SwitchCallTest {
         c.line("goto  sw[y];");
         c.line("end");
         Result result = checkSemantics(c);
-        assertExceptionQuantity(1, result);
+        assertExceptionQuantity(3, result);
+        assertExceptionAtLine(2, SymbolNotDeclaredException.class, result);
         assertExceptionAtLine(4, TypeMismatchException.class, result);
     }
 }
