@@ -922,7 +922,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     public Type visit(SwitchCallAST ast) {
         DefaultAST id = ast.getChild(0);
-        DefaultAST indice = ast.getChild(1);
+        DefaultAST index = ast.getChild(1);
         String name = id.getText();
         Symbol symbol = currentSymbolTable.resolve(name);
         if (symbol == null) {
@@ -937,26 +937,25 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                     String.format("variable '%s' is not a switch", name), id);
         }
         Switch s = (Switch) symbol;
-        Type indiceType = indice.accept(this);
-        if (indiceType != Type.INTEGER) {
+        Type indexType = index.accept(this);
+        if (Types.cannotAssign(Type.REAL, indexType)) {
             throw new TypeMismatchException(
                     String.format(
-                            "index must be integer but %s is %s", indice, indiceType.withPronoun()),
-                    indice);
+                            "Index must be integer or real but %s is %s",
+                            index, indexType.withPronoun()),
+                    index);
         }
-        if (indice.getType() == Algol60Parser.INT) {
-            int intIndice = parseInt(indice.getText());
-
+        Integer intIndex = parseAstToInteger(index).orElse(null);
+        if (intIndex != null) {
             int size = s.getSize();
-            if (intIndice > (size) || intIndice <= 0) {
+            if (intIndex > (size) || intIndex <= 0) {
                 throw new OutOfBoundException(
                         String.format(
-                                "in switch %s the index %d is out of bound, bound %s",
-                                id.getText(), intIndice, size),
-                        indice);
+                                "In switch %s the index %d is out of bound, bound %s",
+                                id.getText(), intIndex, size),
+                        index);
             }
         }
-        Type t = symbol.getType();
         return Type.VOID;
     }
 
