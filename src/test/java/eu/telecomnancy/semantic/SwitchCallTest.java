@@ -101,4 +101,16 @@ public class SwitchCallTest {
         assertExceptionAtLine(2, SymbolNotDeclaredException.class, result);
         assertExceptionAtLine(4, TypeMismatchException.class, result);
     }
+
+    @Test
+    public void testNotASwitch() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  integer i;");
+        c.line("  goto i[3]");
+        c.line("end");
+        Result result = checkSemantics(c);
+        assertExceptionQuantity(1, result);
+        assertExceptionAtLine(3, TypeMismatchException.class, result);
+    }
 }

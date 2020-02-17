@@ -312,4 +312,35 @@ public class ProcDecTest {
         assertEquals("There should be 1 exception", 1, result.exceptions.size());
         assertTrue("Missing return", result.exceptions.get(0) instanceof MissingReturnException);
     }
+
+    @Test
+    public void testMissingParameterType() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line("  integer procedure f(a, b);");
+        content.line("  integer a;");
+        content.line("  begin");
+        content.line("    f := 42");
+        content.line("  end");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+        assertExceptionAtLine(2, ParameterMismatchException.class, result);
+        assertExceptionQuantity(1, result);
+    }
+
+    @Test
+    public void testProcedureRedeclaration() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line("  integer procedure f;");
+        content.line("  begin f := 42 end;");
+        content.line("  integer procedure f;");
+        content.line("  begin f := 43 end;");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+        assertExceptionAtLine(4, SymbolRedeclarationException.class, result);
+        assertExceptionQuantity(1, result);
+    }
 }
