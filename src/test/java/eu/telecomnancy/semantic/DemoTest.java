@@ -10,6 +10,7 @@ public class DemoTest {
     @Test
     public void testDemo1() throws Exception {
         String content = IOUtils.loadString("/semantics/demo/valid_procedure.alg");
-        checkSemantics(content);
+        Result result = checkSemantics(content);
+        assertExceptionQuantity(0, result);
     }
 }

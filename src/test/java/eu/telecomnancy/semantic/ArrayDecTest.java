@@ -112,4 +112,18 @@ public class ArrayDecTest {
         assertExceptionAtLine(3, SemanticException.class, result);
         assertExceptionQuantity(1, result);
     }
+
+    @Test
+    public void testWrongTypes() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  string array myArray[\"str\":2];");
+        c.line("  string array myArray2[45.2:true]");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        assertExceptionAtLine(2, TypeMismatchException.class, result);
+        assertExceptionAtLine(3, TypeMismatchException.class, result);
+        assertExceptionQuantity(2, result);
+    }
 }

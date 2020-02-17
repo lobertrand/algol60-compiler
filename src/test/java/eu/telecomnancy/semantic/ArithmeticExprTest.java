@@ -119,4 +119,19 @@ public class ArithmeticExprTest {
         }
         assertEquals("There should be 12 exceptions", 12, result.exceptions.size());
     }
+
+    @Test
+    public void testScientificNotation() throws RecognitionException {
+        Content c = new Content();
+        c.line("begin");
+        c.line("  real r;");
+        c.line("  integer i;");
+        c.line("  r := 3.14#20;");
+        c.line("  i := 3.14#20;");
+        c.line("end");
+
+        Result result = checkSemantics(c);
+        assertExceptionAtLine(5, TypeMismatchException.class, result);
+        assertExceptionQuantity(1, result);
+    }
 }
