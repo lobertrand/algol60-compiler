@@ -506,10 +506,10 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ArrayDecAST ast) {
-        Type type = Type.fromString(ast.getChild(0).getText());
+        Type type = Type.fromString(ast.getChild(0).getText()).toArrayType();
         DefaultAST id = ast.getChild(1);
         DefaultAST boundList = ast.getChild(2);
-        List<Array.Range> ranges = new ArrayList<Array.Range>();
+        List<Array.Range> ranges = new ArrayList<>();
         if (currentSymbolTable.isDeclaredInScope(id.toString())) {
             throw new SymbolRedeclarationException(
                     String.format("Variable '%s' is already declared in scope", id.toString()), id);
@@ -614,6 +614,18 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             indexCounter++;
         }
 
+        DefaultAST rightPart = ast.getChild(2);
+        Type rightType = rightPart.accept(this);
+        Type leftType = array.getType().toArrayContentType();
+
+        if (Types.cannotAssign(leftType, rightType)) {
+            throw new TypeMismatchException(
+                    String.format(
+                            "Cannot assign %s into array '%s' of content type %s",
+                            rightType.withPronoun(), name, leftType),
+                    ast);
+        }
+
         return Type.VOID;
     }
 
@@ -640,10 +652,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         Symbol symbol = currentSymbolTable.resolve(name);
         if (symbol == null) {
             throw new SymbolNotDeclaredException(
-                    String.format(
-                            "You are calling an element from an array but this array : %s is not declared in scope",
-                            name),
-                    id);
+                    String.format("'%s' is not declared in scope", name), id);
         }
         if (symbol.getKind() != Kind.ARRAY) {
             throw new TypeMismatchException(
@@ -684,7 +693,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             }
             indexCounter++;
         }
-        return symbol.getType();
+        return symbol.getType().toArrayContentType();
     }
 
     @Override
