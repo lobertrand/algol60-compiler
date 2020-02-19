@@ -68,8 +68,8 @@ tokens {
     EQUAL;              // Equal
     NOT_EQUAL;          // Not equal
     WHILE;	            // While
-    SWITCH_DEC;				// Switch Declaration
-    SWITCH_CALL;				// Switch  Call
+    SWITCH_DEC;			// Switch Declaration
+    SWITCH_CALL;		// Switch Call
 }
 
 @parser::header {
@@ -146,8 +146,8 @@ goto_statement
     ;
 
 goto_statement_end[DefaultAST id]
-    : -> ^(GOTO {$id})
-    |'[' arithmetic_expression ']' -> ^(SWITCH_CALL {$id} arithmetic_expression)
+    :   -> ^(GOTO {$id})
+    |   '[' arithmetic_expression ']' -> ^(SWITCH_CALL {$id} arithmetic_expression)
     ;
 
 label_dec_end[DefaultAST id]
@@ -224,8 +224,14 @@ value_part
     ;
 
 specification_part
-    :   ( TYPE identifier_list ';' )*
-        -> ^(SPEC_PART ^(ARG_TYPE TYPE identifier_list)*)
+    :   ( specifier identifier_list ';' )*
+        -> ^(SPEC_PART ^(ARG_TYPE specifier identifier_list)*)
+    ;
+
+specifier
+    :   TYPE ARRAY?
+        { if ($ARRAY != null) $TYPE.setText($TYPE.text + "_array"); }
+        -> TYPE
     ;
 
 procedure_body
@@ -260,8 +266,6 @@ assignment_end[DefaultAST id]
     |   '[' bound (',' bound)* ']' ':=' arithmetic_expression
         -> ^(ARRAY_ASSIGNMENT {$id} ^(INDICES bound+) arithmetic_expression)
     ;
-
-
 
 boundaries
     :   bound ':' bound -> ^(BOUND_DEC bound bound)
@@ -481,11 +485,14 @@ identifier
 
 // LEXER RULES
 
+ARRAY
+    :   'array'
+    ;
+
 TYPE:   'real'
     |   'integer'
     |   'boolean'
     |   'string'
-    |	'switch'
     ;
 
 COMMENT
@@ -509,12 +516,12 @@ LOGICAL_VALUE
 INT
     :   ('1'..'9')('0'..'9')*
         {
-                int i = 0;
-                try {
-                    i = Integer.parseInt(getText());
-                } catch(NumberFormatException e){
-                        exceptions.add(new InvalidNumberException("Integer size exceeded : " + getText(),input));
-                }
+            int i = 0;
+            try {
+                i = Integer.parseInt(getText());
+            } catch(NumberFormatException e) {
+                exceptions.add(new InvalidNumberException("Integer size exceeded : " + getText(),input));
+            }
         }
     |   '0'
     ;
@@ -525,16 +532,16 @@ DASH:   '-'
 REAL 
     :   ('0'..'9')*'.'('0'..'9')*
     {
-                    float i = 0;
-                    try {
-                        i = Float.parseFloat(getText());
-                        if ( i == Float.POSITIVE_INFINITY ){
-                            exceptions.add(new InvalidNumberException("Real size exceeded : " + getText(),input));
-                    }
-                    } catch(NumberFormatException e){
-                            exceptions.add(new InvalidNumberException("Real size exceeded : " + getText(),input));
-                    }
+        float i = 0;
+        try {
+            i = Float.parseFloat(getText());
+            if (i == Float.POSITIVE_INFINITY) {
+                exceptions.add(new InvalidNumberException("Real size exceeded : " + getText(),input));
             }
+        } catch(NumberFormatException e) {
+            exceptions.add(new InvalidNumberException("Real size exceeded : " + getText(),input));
+        }
+    }
     ;
 
 IDENTIFIER

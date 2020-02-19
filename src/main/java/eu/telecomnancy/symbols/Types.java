@@ -14,6 +14,10 @@ public final class Types {
         assignableTypes.put(INTEGER, setOf(INTEGER));
         assignableTypes.put(STRING, setOf(STRING));
         assignableTypes.put(BOOLEAN, setOf(BOOLEAN));
+        assignableTypes.put(REAL_ARRAY, setOf(REAL_ARRAY));
+        assignableTypes.put(INTEGER_ARRAY, setOf(INTEGER_ARRAY));
+        assignableTypes.put(STRING_ARRAY, setOf(STRING_ARRAY));
+        assignableTypes.put(BOOLEAN_ARRAY, setOf(BOOLEAN_ARRAY));
 
         arithmeticTypes.put(REAL, setOf(INTEGER, REAL));
         arithmeticTypes.put(INTEGER, setOf(INTEGER, REAL));
