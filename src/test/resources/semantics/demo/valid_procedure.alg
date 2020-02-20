@@ -6,30 +6,29 @@ begin
             max := if a > b then a else b
         end;
         integer result;
+
         result := max(12, 3)
     end;
 
     begin
-        integer array a[1:3];
-        integer procedure max(arr);
-        value arr; integer array arr;
+        integer procedure max(arr, startIndex, endIndex);
+        value arr, startIndex, endIndex;
+        integer array arr; integer startIndex, endIndex;
         begin
-            max := 0
+            integer i, maximum;
+            for i := startIndex step 1 until endIndex do
+            begin
+                if arr[i] > maximum then
+                    maximum := arr[i]
+            end;
+            max := maximum
         end;
+        integer array a[1:3];
         integer result;
 
-        a[1] := 5;
-        a[2] := 15;
-        a[3] := 10;
-        result := max(a);
+        a[1] := 6;
+        a[2] := 8;
+        a[3] := 3;
+        result := max(a, 1, 3);
     end;
-
-    begin
-        integer array a[1:100];
-        integer i;
-        for i := 1 step 1 until 100 do
-        begin
-            a[i] := i
-        end
-    end
 end

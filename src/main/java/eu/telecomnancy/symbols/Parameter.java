@@ -1,5 +1,6 @@
 package eu.telecomnancy.symbols;
 
+@Deprecated
 public class Parameter extends Symbol {
 
     private boolean byValue;

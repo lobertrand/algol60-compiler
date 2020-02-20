@@ -192,8 +192,14 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                 specTypes.remove(index);
                 specTrees.remove(index);
             }
-            Parameter parameter = new Parameter(name, type);
-            if (!valueNames.contains(name)) parameter.setByValue(false);
+
+            Symbol parameter =
+                    type.isArrayType()
+                            ? new Array(name, type, Collections.emptyList())
+                            : new Variable(name, type);
+            parameter.setMode(
+                    valueNames.contains(name) ? Symbol.Mode.VALUE : Symbol.Mode.REFERENCE);
+
             orderedTypes.add(type);
             currentSymbolTable.define(parameter);
         }
@@ -213,7 +219,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         // Define fictive result variable
         if (procType != Type.VOID) {
             Variable returnValue = new Variable(procName, procType);
-            returnValue.setResultValue(true);
+            returnValue.setMode(Symbol.Mode.PROCEDURE_RESULT);
             currentSymbolTable.define(returnValue);
         }
 
@@ -581,14 +587,16 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                     String.format("Variable '%s' is not an array", name), id);
         }
         Array array = (Array) symbol;
-        int nbIndicesDec = array.getRanges().size();
-        int nbIndicesAss = indices.getChildCount();
-        if (nbIndicesDec != nbIndicesAss) {
-            throw new IncompatibleBoundException(
-                    String.format(
-                            "Array '%s' expected %d indices but received %d",
-                            name, nbIndicesDec, nbIndicesAss),
-                    id);
+        if (!array.isParameter()) {
+            int nbIndicesDec = array.getRanges().size();
+            int nbIndicesAss = indices.getChildCount();
+            if (nbIndicesDec != nbIndicesAss) {
+                throw new IncompatibleBoundException(
+                        String.format(
+                                "Array '%s' expected %d indices but received %d",
+                                name, nbIndicesDec, nbIndicesAss),
+                        id);
+            }
         }
         int indexCounter = 0;
         for (DefaultAST index : indices) {
@@ -600,15 +608,17 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                                 index, indexType.withPronoun()),
                         index);
             }
-            Integer intIndex = parseAstToInteger(index).orElse(null);
-            if (intIndex != null) {
-                Array.Range range = array.getRanges().get(indexCounter);
-                if (!range.isInRange(intIndex)) {
-                    throw new OutOfBoundException(
-                            String.format(
-                                    "Array index '%d' is out of bounds in '%s' with bounds %s",
-                                    intIndex, id.getText(), range),
-                            index);
+            if (!array.isParameter()) {
+                Integer intIndex = parseAstToInteger(index).orElse(null);
+                if (intIndex != null) {
+                    Array.Range range = array.getRanges().get(indexCounter);
+                    if (!range.isInRange(intIndex)) {
+                        throw new OutOfBoundException(
+                                String.format(
+                                        "Array index '%d' is out of bounds in '%s' with bounds %s",
+                                        intIndex, id.getText(), range),
+                                index);
+                    }
                 }
             }
             indexCounter++;
@@ -661,14 +671,16 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
         DefaultAST paramList = ast.getChild(1);
         Array array = (Array) symbol;
-        int nbIndicesDec = array.getRanges().size();
-        int nbIndicesCall = paramList.getChildCount();
-        if (nbIndicesDec != nbIndicesCall) {
-            throw new IncompatibleBoundException(
-                    String.format(
-                            "The array %s expected %d indices and received %d",
-                            name, nbIndicesDec, nbIndicesCall),
-                    id);
+        if (!array.isParameter()) {
+            int nbIndicesDec = array.getRanges().size();
+            int nbIndicesCall = paramList.getChildCount();
+            if (nbIndicesDec != nbIndicesCall) {
+                throw new IncompatibleBoundException(
+                        String.format(
+                                "The array %s expected %d indices and received %d",
+                                name, nbIndicesDec, nbIndicesCall),
+                        id);
+            }
         }
         int indexCounter = 0;
         for (DefaultAST param : paramList) {
@@ -680,15 +692,17 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                                 param, indexType.withPronoun()),
                         param);
             }
-            Integer intIndex = parseAstToInteger(param).orElse(null);
-            if (intIndex != null) {
-                Array.Range range = array.getRanges().get(indexCounter);
-                if (!range.isInRange(intIndex)) {
-                    throw new OutOfBoundException(
-                            String.format(
-                                    "In array %s the index %d is out of bound, bound %s",
-                                    id.getText(), intIndex, range),
-                            param);
+            if (!array.isParameter()) {
+                Integer intIndex = parseAstToInteger(param).orElse(null);
+                if (intIndex != null) {
+                    Array.Range range = array.getRanges().get(indexCounter);
+                    if (!range.isInRange(intIndex)) {
+                        throw new OutOfBoundException(
+                                String.format(
+                                        "In array %s the index %d is out of bound, bound %s",
+                                        id.getText(), intIndex, range),
+                                param);
+                    }
                 }
             }
             indexCounter++;

@@ -18,7 +18,8 @@ public class Array extends Symbol {
 
     public String toString() {
         String rangesStr = ranges.stream().map(Range::toString).collect(Collectors.joining(", "));
-        return String.format("Array: %s %s[%s] ", getType(), getIdentifier(), rangesStr);
+        return String.format(
+                "Array: %s %s[%s] %s", getType(), getIdentifier(), rangesStr, modeToString());
     }
 
     public static class Range {
