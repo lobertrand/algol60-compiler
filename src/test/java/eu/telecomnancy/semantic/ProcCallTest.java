@@ -152,4 +152,19 @@ public class ProcCallTest {
         assertExceptionAtLine(5, TypeMismatchException.class, result);
         assertExceptionQuantity(1, result);
     }
+
+    @Test
+    public void testProcedureArrayArgument() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line("  integer procedure f(myArray);");
+        content.line("  integer array myArray;");
+        content.line(" begin f := 23  end;");
+        content.line("  integer array IArray[1:12];");
+        content.line("  f(IArray);");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+        assertExceptionQuantity(0, result);
+    }
 }

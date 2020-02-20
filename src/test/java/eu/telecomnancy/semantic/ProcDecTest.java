@@ -343,4 +343,19 @@ public class ProcDecTest {
         assertExceptionAtLine(4, SymbolRedeclarationException.class, result);
         assertExceptionQuantity(1, result);
     }
+
+    @Test
+    public void testProcedureArrayArgument() throws Exception {
+        Content content = new Content();
+        content.line("begin");
+        content.line("  integer procedure f(myArray);");
+        content.line("  integer array myArray;");
+        content.line(" begin ");
+        content.line(" f := 23;");
+        content.line("end");
+        content.line("end");
+
+        Result result = checkSemantics(content);
+        assertExceptionQuantity(0, result);
+    }
 }
