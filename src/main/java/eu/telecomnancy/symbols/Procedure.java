@@ -26,6 +26,8 @@ public class Procedure extends Symbol {
 
     @Override
     public String toString() {
-        return String.format("Procedure: %s %s%s", getType(), getIdentifier(), parameterTypes);
+        return String.format(
+                "Procedure: %s %s%s %s",
+                getType(), getIdentifier(), parameterTypes, modeToString());
     }
 }
