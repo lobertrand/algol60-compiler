@@ -48,7 +48,6 @@ public enum Type {
             case REAL_ARRAY:
             case STRING_ARRAY:
             case BOOLEAN_ARRAY:
-            case UNDEFINED:
                 return true;
             default:
                 return false;
