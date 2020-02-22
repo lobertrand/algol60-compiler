@@ -23,6 +23,7 @@ repositories {
 dependencies {
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+    testCompile group: 'pl.pragmatists', name: 'JUnitParams', version: '0.3.6'
 
     // use ANTLR version 3
     antlr "org.antlr:antlr-complete:3.5.2"
