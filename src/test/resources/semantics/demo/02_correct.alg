@@ -1,5 +1,5 @@
 begin
-    comment Array as parameter;
+    comment Array as parameter of procedure;
     integer procedure max(arr, a, b);
     value arr, a, b; integer array arr; integer a, b;
     begin

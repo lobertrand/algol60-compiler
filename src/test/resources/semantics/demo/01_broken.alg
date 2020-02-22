@@ -1,13 +1,27 @@
 begin
-    comment Procedure declaration;
-    integer procedure max(a, b, c);
-    value a, b; integer b;
-    begin
-        comment If-expression;
-        max := if a > b then a else b
-    end;
-    integer result;
+    integer a, b;
+    ininteger(0, a);
+    ininteger(0, b);
 
-    comment Procedure call;
-    result := max("12.5", 3.5)
+    begin
+        comment Switch declaration;
+        switch state := first, second, extra;
+        boolean chooseFirst;
+
+        first:;
+            outstring(1, "first operation");
+            goto switchEnd;
+
+        second:;
+            outstring(1, "second operation");
+            goto switchEnd;
+
+        comment If-expression;
+        chooseFirst := b > 5 \/ a + 3 /\ a+b < 40;
+        goto state[if chooseFirst then 1 else 2]
+    end;
+
+    begin
+        switchEnd:
+    end
 end
