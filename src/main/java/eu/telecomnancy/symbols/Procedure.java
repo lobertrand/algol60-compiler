@@ -1,6 +1,7 @@
 package eu.telecomnancy.symbols;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Procedure extends Symbol {
 
@@ -26,8 +27,9 @@ public class Procedure extends Symbol {
 
     @Override
     public String toString() {
+        String parameters =
+                parameterTypes.stream().map(Type::toString).collect(Collectors.joining(", "));
         return String.format(
-                "Procedure: %s %s%s %s",
-                getType(), getIdentifier(), parameterTypes, modeToString());
+                "Procedure: %s %s(%s) %s", getType(), getIdentifier(), parameters, modeToString());
     }
 }

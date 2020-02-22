@@ -358,13 +358,17 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     public Type visit(IfStatementAST ast) {
         DefaultAST ifDef = ast.findFirst(Algol60Parser.IF_DEF);
         DefaultAST condition = ifDef.getChild(0);
-        Type conditionType = condition.accept(this);
-        if (conditionType != Type.BOOLEAN) {
-            exceptions.add(
-                    new TypeMismatchException(
-                            "If condition expects a boolean expression but got "
-                                    + conditionType.withPronoun(),
-                            condition));
+        try {
+            Type conditionType = condition.accept(this);
+            if (conditionType != Type.BOOLEAN) {
+                exceptions.add(
+                        new TypeMismatchException(
+                                "If condition expects a boolean expression but got "
+                                        + conditionType.withPronoun(),
+                                condition));
+            }
+        } catch (SemanticException e) {
+            exceptions.add(e);
         }
 
         DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
@@ -832,8 +836,11 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         for (OrphanSwitch orphanSwitch : orphanSwitches) {
             SymbolTable table = orphanSwitch.getSymbolTable();
             Switch aSwitch = orphanSwitch.getSwitch();
-            DefaultAST ast = orphanSwitch.getTree();
-            for (String name : aSwitch.getNames()) {
+            List<DefaultAST> trees = aSwitch.getLabelTrees();
+            List<String> names = aSwitch.getNames();
+            for (int i = 0; i < names.size(); i++) {
+                String name = names.get(i);
+                DefaultAST ast = trees.get(i);
                 Symbol labelSymbol = table.resolve(name);
                 if (labelSymbol == null) {
                     exceptions.add(
@@ -927,7 +934,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         currentSymbolTable.define(s);
         for (DefaultAST t : idList) {
             String name = t.getText();
-            s.add(name);
+            s.addLabelName(name, t);
         }
         orphanSwitches.add(new OrphanSwitch(s, currentSymbolTable, ast));
 
@@ -961,7 +968,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             if (intIndex > size || intIndex <= 0) {
                 throw new OutOfBoundException(
                         String.format(
-                                "In switch '%s', index %d is out of bound (1..%d)",
+                                "In switch '%s', index %d is out of bound 1:%d",
                                 id.getText(), intIndex, size),
                         index);
             }

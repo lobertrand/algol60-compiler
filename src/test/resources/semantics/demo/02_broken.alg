@@ -1,6 +1,6 @@
 begin
-    comment Array as parameter;
-    integer procedure max(arr, a, b);
+    comment Array as parameter of procedure;
+    integer procedure max(arr, a, b, extra);
     value arr, a, b; string array arr; integer a, b;
     begin
         integer i, result;
