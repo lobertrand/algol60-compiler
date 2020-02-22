@@ -16,8 +16,8 @@ begin
             outstring(1, "second operation");
             goto switchEnd;
 
-        comment If-expression;
         chooseFirst := b > 5 \/ a > 3 /\ a+b < 40;
+        comment If-expression;
         goto state[if chooseFirst then 1 else 2]
     end;
     
