@@ -15,7 +15,7 @@ begin
     a := 1;
     begin
         string array messages[a:3];
-        string msg;
+        comment string msg;
 
         messages[1] := "bad";
         messages[2] := "okay";
