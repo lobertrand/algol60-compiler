@@ -67,9 +67,9 @@ tokens {
     LESS_EQUAL;         // Less than or equal
     EQUAL;              // Equal
     NOT_EQUAL;          // Not equal
-    WHILE;	            // While
-    SWITCH_DEC;			// Switch Declaration
-    SWITCH_CALL;		// Switch Call
+    WHILE;              // While
+    SWITCH_DEC;         // Switch Declaration
+    SWITCH_CALL;        // Switch Call
 }
 
 @parser::header {
@@ -159,7 +159,7 @@ label_dec_end[DefaultAST id]
 declaration
     :   TYPE! type_declaration_end[$TYPE]
     |   procedure_declaration_no_type
-    |	switch_declaration
+    |   switch_declaration
     ;
 
 type_declaration_end[Token type]
@@ -183,10 +183,9 @@ identifier_list_head[Token type]
     
 // Switch declaration
 switch_declaration
-	:	'switch' identifier ':=' identifier_list
-		-> ^(SWITCH_DEC identifier identifier_list)
-	;
-	
+    :   'switch' identifier ':=' identifier_list
+        -> ^(SWITCH_DEC identifier identifier_list)
+    ;
 
 // Procedure declaration
 
@@ -395,11 +394,11 @@ group_expr
 // If expression
 
 if_expression
-    :   'if' arithmetic_expression 'then' expression (options{greedy=true;}:'else' expression)
+    :   'if' a=arithmetic_expression 'then' b=arithmetic_expression (options{greedy=true;}:'else' c=expression)
         -> ^(IF_EXPRESSION
-                ^(IF_DEF arithmetic_expression)
-                ^(THEN_DEF expression)
-                ^(ELSE_DEF expression)
+                ^(IF_DEF $a)
+                ^(THEN_DEF $b)
+                ^(ELSE_DEF $c)
             )
     ;
 
@@ -454,7 +453,7 @@ for_do[DefaultAST ass]
             )
     ;
 
-// Intermediate parser rules	
+// Intermediate parser rules
 
 number
     :   d1=DASH?
