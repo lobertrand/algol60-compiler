@@ -72,7 +72,7 @@ public class SwitchCallTest {
         c.line("end");
         Result result = checkSemantics(c);
         assertExceptionQuantity(1, result);
-        assertExceptionAtLine(5, OutOfBoundException.class, result);
+        assertExceptionAtLine(5, IndexOutOfBoundsException.class, result);
     }
 
     @Test

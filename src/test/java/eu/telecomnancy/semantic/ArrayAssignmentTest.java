@@ -27,7 +27,7 @@ public class ArrayAssignmentTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertExceptionAtLine(3, OutOfBoundException.class, result);
+        assertExceptionAtLine(3, IndexOutOfBoundsException.class, result);
         assertExceptionQuantity(1, result);
     }
 
@@ -52,7 +52,7 @@ public class ArrayAssignmentTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertExceptionAtLine(3, OutOfBoundException.class, result);
+        assertExceptionAtLine(3, IndexOutOfBoundsException.class, result);
         assertExceptionQuantity(1, result);
     }
 
