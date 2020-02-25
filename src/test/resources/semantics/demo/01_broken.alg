@@ -1,5 +1,6 @@
 begin
     integer a, b;
+    real a;
     ininteger(0, a);
     ininteger(0, b);
 

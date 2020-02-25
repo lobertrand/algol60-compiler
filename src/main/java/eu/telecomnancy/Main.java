@@ -57,6 +57,9 @@ public class Main {
             for (SemanticException e : semanticAnalysisVisitor.getExceptions()) {
                 IOUtils.printSemanticException(e, input.toString());
             }
+            int n = semanticAnalysisVisitor.getExceptions().size();
+            IOUtils.logError(
+                    String.format("Terminated with %d semantic exception%s", n, n > 1 ? "s" : ""));
         } else {
             IOUtils.log("Semantic analysis successful");
         }
@@ -67,6 +70,9 @@ public class Main {
             for (RecognitionException e : parser.getExceptions()) {
                 IOUtils.printRecognitionException(e, input.toString());
             }
+            int n = parser.getExceptions().size();
+            IOUtils.logError(
+                    String.format("Terminated with %d syntactic exception%s", n, n > 1 ? "s" : ""));
         } else {
             IOUtils.log("Syntactic analysis successful");
         }
@@ -77,6 +83,9 @@ public class Main {
             for (RecognitionException e : lexer.getExceptions()) {
                 IOUtils.printRecognitionException(e, input.toString());
             }
+            int n = lexer.getExceptions().size();
+            IOUtils.logError(
+                    String.format("Terminated with %d lexical exception%s", n, n > 1 ? "s" : ""));
         } else {
             IOUtils.log("Lexical analysis successful");
         }

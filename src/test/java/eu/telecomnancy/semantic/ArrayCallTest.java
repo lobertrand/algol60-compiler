@@ -29,7 +29,7 @@ public class ArrayCallTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertExceptionAtLine(4, OutOfBoundException.class, result);
+        assertExceptionAtLine(4, IndexOutOfBoundsException.class, result);
         assertExceptionQuantity(1, result);
     }
 
@@ -56,7 +56,7 @@ public class ArrayCallTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertExceptionAtLine(4, OutOfBoundException.class, result);
+        assertExceptionAtLine(4, IndexOutOfBoundsException.class, result);
         assertExceptionQuantity(1, result);
     }
 
@@ -168,7 +168,7 @@ public class ArrayCallTest {
         c.line("end");
 
         Result result = checkSemantics(c);
-        assertExceptionAtLine(4, OutOfBoundException.class, result);
+        assertExceptionAtLine(4, IndexOutOfBoundsException.class, result);
         assertExceptionQuantity(1, result);
     }
 }

@@ -499,7 +499,13 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     public Type visit(AssignmentAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         String leftName = leftPart.getText();
-        Type leftType = leftPart.accept(this);
+        Type leftType;
+        try {
+            leftType = leftPart.accept(this);
+        } catch (SemanticException e) {
+            leftType = Type.UNDEFINED;
+            exceptions.add(e);
+        }
 
         DefaultAST rightPart = ast.getChild(1);
         Type rightType = rightPart.accept(this);
@@ -582,55 +588,59 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         DefaultAST indices = ast.getChild(1);
         String name = id.getText();
         Symbol symbol = currentSymbolTable.resolve(name);
+        Type arrayContentType = Type.UNDEFINED;
         if (symbol == null) {
-            throw new SymbolNotDeclaredException(
-                    String.format("Variable '%s' is not declared", name), id);
-        }
-        if (symbol.getKind() != Kind.ARRAY) {
-            throw new TypeMismatchException(
-                    String.format("Variable '%s' is not an array", name), id);
-        }
-        Array array = (Array) symbol;
-        if (!array.isParameter()) {
-            int nbIndicesDec = array.getRanges().size();
-            int nbIndicesAss = indices.getChildCount();
-            if (nbIndicesDec != nbIndicesAss) {
-                throw new IncompatibleBoundException(
-                        String.format(
-                                "Array '%s' expected %d indices but received %d",
-                                name, nbIndicesDec, nbIndicesAss),
-                        id);
-            }
-        }
-        int indexCounter = 0;
-        for (DefaultAST index : indices) {
-            Type indexType = index.accept(this);
-            if (Types.cannotAssign(Type.REAL, indexType)) {
-                throw new TypeMismatchException(
-                        String.format(
-                                "Indices must be integer or real values but index '%s' is %s",
-                                index, indexType.withPronoun()),
-                        index);
-            }
+            exceptions.add(
+                    new SymbolNotDeclaredException(
+                            String.format("Variable '%s' is not declared", name), id));
+        } else if (symbol.getKind() != Kind.ARRAY) {
+            exceptions.add(
+                    new TypeMismatchException(
+                            String.format("Variable '%s' is not an array", name), id));
+        } else {
+            Array array = (Array) symbol;
+            arrayContentType = array.getType();
             if (!array.isParameter()) {
-                Integer intIndex = parseAstToInteger(index).orElse(null);
-                if (intIndex != null) {
-                    Array.Range range = array.getRanges().get(indexCounter);
-                    if (!range.isInRange(intIndex)) {
-                        throw new OutOfBoundException(
-                                String.format(
-                                        "Array index '%d' is out of bounds in '%s' with bounds %s",
-                                        intIndex, id.getText(), range),
-                                index);
-                    }
+                int nbIndicesDec = array.getRanges().size();
+                int nbIndicesAss = indices.getChildCount();
+                if (nbIndicesDec != nbIndicesAss) {
+                    throw new IncompatibleBoundException(
+                            String.format(
+                                    "Array '%s' expected %d indices but received %d",
+                                    name, nbIndicesDec, nbIndicesAss),
+                            id);
                 }
             }
-            indexCounter++;
+            int indexCounter = 0;
+            for (DefaultAST index : indices) {
+                Type indexType = index.accept(this);
+                if (Types.cannotAssign(Type.REAL, indexType)) {
+                    throw new TypeMismatchException(
+                            String.format(
+                                    "Indices must be integer or real values but index '%s' is %s",
+                                    index, indexType.withPronoun()),
+                            index);
+                }
+                if (!array.isParameter()) {
+                    Integer intIndex = parseAstToInteger(index).orElse(null);
+                    if (intIndex != null) {
+                        Array.Range range = array.getRanges().get(indexCounter);
+                        if (!range.isInRange(intIndex)) {
+                            throw new IndexOutOfBoundsException(
+                                    String.format(
+                                            "Array index '%d' is out of bounds in '%s' with bounds %s",
+                                            intIndex, id.getText(), range),
+                                    index);
+                        }
+                    }
+                }
+                indexCounter++;
+            }
         }
 
         DefaultAST rightPart = ast.getChild(2);
         Type rightType = rightPart.accept(this);
-        Type leftType = array.getType().toArrayContentType();
+        Type leftType = arrayContentType.toArrayContentType();
 
         if (Types.cannotAssign(leftType, rightType)) {
             throw new TypeMismatchException(
@@ -701,7 +711,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                 if (intIndex != null) {
                     Array.Range range = array.getRanges().get(indexCounter);
                     if (!range.isInRange(intIndex)) {
-                        throw new OutOfBoundException(
+                        throw new IndexOutOfBoundsException(
                                 String.format(
                                         "In array %s the index %d is out of bound, bound %s",
                                         id.getText(), intIndex, range),
@@ -966,7 +976,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         if (intIndex != null) {
             int size = s.getSize();
             if (intIndex > size || intIndex <= 0) {
-                throw new OutOfBoundException(
+                throw new IndexOutOfBoundsException(
                         String.format(
                                 "In switch '%s', index %d is out of bound 1:%d",
                                 id.getText(), intIndex, size),
