@@ -57,6 +57,17 @@ public class SymbolTable {
         }
     }
 
+    public Symbol resolveWithKind(String identifier, Kind kind) {
+        Symbol result = symbols.get(identifier);
+        if (result != null && result.getKind() == kind) {
+            return result;
+        } else if (parent != null) {
+            return parent.resolveWithKind(identifier, kind);
+        } else {
+            return null;
+        }
+    }
+
     public Symbol resolveInScope(String identifier) {
         return symbols.get(identifier);
     }
