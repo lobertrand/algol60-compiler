@@ -1,0 +1,20 @@
+f000  origine
+f010  debut d'execution
+4865   emplacement : 61440  (0xf000)  ligne n° 21	HELLO       string  "Hello World!\n"
+6c6c   emplacement : 61442  (0xf002) 
+6f20   emplacement : 61444  (0xf004) 
+576f   emplacement : 61446  (0xf006) 
+726c   emplacement : 61448  (0xf008) 
+6421   emplacement : 61450  (0xf00a) 
+5c6e   emplacement : 61452  (0xf00c) 
+0000   emplacement : 61454  (0xf00e) 
+6080   emplacement : 61456  (0xf010)  ligne n° 27	    LDW R0, #HELLO
+f000   emplacement : 61458  (0xf012) 
+0b00   emplacement : 61460  (0xf014)  ligne n° 28	    TRP #WRITE_EXC
+0042   emplacement : 61462  (0xf016) 
+6080   emplacement : 61464  (0xf018)  ligne n° 30	    LDW R0, #HELLO
+f000   emplacement : 61466  (0xf01a) 
+0b00   emplacement : 61468  (0xf01c)  ligne n° 31	    TRP #WRITE_EXC
+0042   emplacement : 61470  (0xf01e) 
+0b00   emplacement : 61472  (0xf020)  ligne n° 33	    TRP #EXIT_EXC           // EXIT: arrjte le programme
+0040   emplacement : 61474  (0xf022) 
