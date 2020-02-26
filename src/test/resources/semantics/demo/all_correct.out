@@ -1,0 +1,72 @@
+Algol60> Lexical analysis successful
+Algol60> Syntactic analysis successful
+┌───────────────────────────────────────────────┐
+│ level: 0, tableNumber: 0                      │
+├───────────────────────────────────────────────┤
+│ Procedure: void outstring(integer, string)    │
+│ Procedure: void outboolean(integer, boolean)  │
+│ Procedure: void outinteger(integer, integer)  │
+│ Procedure: void outreal(integer, real)        │
+│ Procedure: void inreal(integer, real)         │
+│ Procedure: void ininteger(integer, integer)   │
+│ Procedure: integer entier(real)               │
+└───────────────────────────────────────────────┘
+    ┌──────────────────────────┐
+    │ level: 1, tableNumber: 1 │
+    ├──────────────────────────┤
+    └──────────────────────────┘
+        ┌──────────────────────────┐
+        │ level: 2, tableNumber: 2 │
+        ├──────────────────────────┤
+        │ Variable: integer a      │
+        │ Variable: integer b      │
+        │ Label: switchEnd         │
+        └──────────────────────────┘
+            ┌────────────────────────────────┐
+            │ level: 3, tableNumber: 3       │
+            ├────────────────────────────────┤
+            │ Switch: state [first, second]  │
+            │ Variable: boolean chooseFirst  │
+            │ Label: first                   │
+            │ Label: second                  │
+            └────────────────────────────────┘
+        ┌──────────────────────────────────────────────────────────┐
+        │ level: 2, tableNumber: 4                                 │
+        ├──────────────────────────────────────────────────────────┤
+        │ Procedure: integer max(integer array, integer, integer)  │
+        │ Array: integer array a[1:3]                              │
+        └──────────────────────────────────────────────────────────┘
+            ┌──────────────────────────────────────────┐
+            │ level: 3, tableNumber: 5                 │
+            ├──────────────────────────────────────────┤
+            │ Array: integer array arr[] (value param) │
+            │ Variable: integer a (value param)        │
+            │ Variable: integer b (value param)        │
+            │ Variable: integer max (proc. result)     │
+            │ Variable: integer i                      │
+            │ Variable: integer result                 │
+            └──────────────────────────────────────────┘
+                ┌──────────────────────────┐
+                │ level: 4, tableNumber: 6 │
+                ├──────────────────────────┤
+                └──────────────────────────┘
+        ┌───────────────────────────────────────────────┐
+        │ level: 2, tableNumber: 7                      │
+        ├───────────────────────────────────────────────┤
+        │ Procedure: integer getMessageNumber(integer)  │
+        │ Variable: integer a                           │
+        └───────────────────────────────────────────────┘
+            ┌───────────────────────────────────────────────────┐
+            │ level: 3, tableNumber: 8                          │
+            ├───────────────────────────────────────────────────┤
+            │ Variable: integer grade (value param)             │
+            │ Variable: integer getMessageNumber (proc. result) │
+            └───────────────────────────────────────────────────┘
+            ┌────────────────────────────────────┐
+            │ level: 3, tableNumber: 9           │
+            ├────────────────────────────────────┤
+            │ Array: string array messages[?:3]  │
+            │ Variable: string msg               │
+            └────────────────────────────────────┘
+
+Algol60> Semantic analysis successful

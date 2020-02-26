@@ -1,0 +1,49 @@
+Algol60> Lexical analysis successful
+Algol60> Syntactic analysis successful
+┌───────────────────────────────────────────────┐
+│ level: 0, tableNumber: 0                      │
+├───────────────────────────────────────────────┤
+│ Procedure: void outstring(integer, string)    │
+│ Procedure: void outboolean(integer, boolean)  │
+│ Procedure: void outinteger(integer, integer)  │
+│ Procedure: void outreal(integer, real)        │
+│ Procedure: void inreal(integer, real)         │
+│ Procedure: void ininteger(integer, integer)   │
+│ Procedure: integer entier(real)               │
+└───────────────────────────────────────────────┘
+    ┌──────────────────────────┐
+    │ level: 1, tableNumber: 1 │
+    ├──────────────────────────┤
+    │ Variable: integer a      │
+    │ Variable: integer b      │
+    └──────────────────────────┘
+        ┌──────────────────────────────────────┐
+        │ level: 2, tableNumber: 2             │
+        ├──────────────────────────────────────┤
+        │ Switch: state [first, second, extra] │
+        │ Variable: boolean chooseFirst        │
+        │ Label: first                         │
+        │ Label: second                        │
+        └──────────────────────────────────────┘
+        ┌──────────────────────────┐
+        │ level: 2, tableNumber: 3 │
+        ├──────────────────────────┤
+        │ Label: switchEnd         │
+        └──────────────────────────┘
+
+Algol60> Symbol redeclaration at line 3: Variable 'a' is already declared in scope
+     3 |     real a;
+       |          ^
+Algol60> Symbol not declared at line 9: Label 'extra' is not declared
+     9 |         switch state := first, second, extra;
+       |                                        ^
+Algol60> Symbol not declared at line 14: Label 'switchEnd' is not declared
+    14 |             goto switchEnd;
+       |                  ^
+Algol60> Symbol not declared at line 18: Label 'switchEnd' is not declared
+    18 |             goto switchEnd;
+       |                  ^
+Algol60> Type mismatch at line 20: Cannot perform boolean operation on operands of types integer and boolean
+    20 |         chooseFirst := b > 5 \/ a + 3 /\ a+b < 40;
+       |                                       ^
+Algol60> Terminated with 5 semantic exceptions
