@@ -1,21 +1,21 @@
 package eu.telecomnancy;
 
 import eu.telecomnancy.ast.ASTAdaptor;
+import eu.telecomnancy.codegen.Assembly;
 import eu.telecomnancy.semantic.SemanticAnalysisVisitor;
 import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.symbols.PredefinedSymbols;
 import eu.telecomnancy.symbols.SymbolTable;
+import eu.telecomnancy.tools.IOListener;
 import eu.telecomnancy.tools.IOUtils;
-import java.io.FileInputStream;
-import java.io.IOException;
-import org.antlr.runtime.ANTLRInputStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
+import java.io.*;
+import org.antlr.runtime.*;
+import projetIUP.Lanceur;
 
 public class Main {
 
     public static void main(String[] args) {
-        ANTLRInputStream input = parseArguments(args);
+        CharStream input = parseArguments(args);
 
         // Lexical and syntactic analysis
         Algol60Lexer lexer = new Algol60Lexer(input);
@@ -34,12 +34,6 @@ public class Main {
         reportSyntacticExceptions(parser, input);
         if (lexer.hasExceptions() || parser.hasExceptions()) IOUtils.exit();
 
-        try {
-            IOUtils.generateDotTree(pr.getTree(), "AST");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         // Semantic analysis
         SymbolTable symbolTable = new SymbolTable();
         PredefinedSymbols.get().forEach(symbolTable::define);
@@ -47,12 +41,26 @@ public class Main {
         pr.getTree().accept(semanticAnalysisVisitor);
         IOUtils.print(symbolTable);
         reportSemanticExceptions(semanticAnalysisVisitor, input);
+        if (semanticAnalysisVisitor.hasExceptions()) IOUtils.exit();
 
-        // ASTTools.print(pr.getTree());
+        Assembly asm = Assembly.exampleWrite("HELLO  ");
+        assembleAndExecute(asm.toString());
+    }
+
+    private static void assembleAndExecute(String asm) {
+        IOUtils.writeStringToFile(asm, "program.asm");
+
+        IOListener.listen(() -> Lanceur.main(new String[] {"-ass", "program.asm"}))
+                .ifError(IOUtils::logError)
+                .ifError(IOUtils::exit)
+                .ifNoError(() -> IOUtils.log("Assembly code compiled successfully"));
+
+        IOUtils.log("Executing program...");
+        Lanceur.main(new String[] {"-batch", "program.iup"});
     }
 
     private static void reportSemanticExceptions(
-            SemanticAnalysisVisitor semanticAnalysisVisitor, ANTLRInputStream input) {
+            SemanticAnalysisVisitor semanticAnalysisVisitor, CharStream input) {
         if (semanticAnalysisVisitor.hasExceptions()) {
             for (SemanticException e : semanticAnalysisVisitor.getExceptions()) {
                 IOUtils.printSemanticException(e, input.toString());
@@ -65,7 +73,7 @@ public class Main {
         }
     }
 
-    private static void reportSyntacticExceptions(Algol60Parser parser, ANTLRInputStream input) {
+    private static void reportSyntacticExceptions(Algol60Parser parser, CharStream input) {
         if (parser.hasExceptions()) {
             for (RecognitionException e : parser.getExceptions()) {
                 IOUtils.printRecognitionException(e, input.toString());
@@ -78,7 +86,7 @@ public class Main {
         }
     }
 
-    private static void reportLexicalExceptions(Algol60Lexer lexer, ANTLRInputStream input) {
+    private static void reportLexicalExceptions(Algol60Lexer lexer, CharStream input) {
         if (lexer.hasExceptions()) {
             for (RecognitionException e : lexer.getExceptions()) {
                 IOUtils.printRecognitionException(e, input.toString());
@@ -91,17 +99,24 @@ public class Main {
         }
     }
 
-    private static ANTLRInputStream parseArguments(String[] args) {
-        if (args.length > 1) {
-            IOUtils.logError("Only one argument is expected (an Algol60 filename).");
-            IOUtils.exit();
-        }
+    private static CharStream parseArguments(String[] args) {
         try {
-            return args.length == 1
-                    ? new ANTLRInputStream(new FileInputStream(args[0]))
-                    : new ANTLRInputStream(System.in);
+            if (args.length == 0) {
+                IOUtils.logError("Possible arguments:");
+                IOUtils.logError("    <Path to Algol60 file>");
+                IOUtils.logError("    <begin> <integer> <a> <;> ... <end>");
+                IOUtils.exit();
+            } else if (args.length == 1) {
+                if (!new File(args[0]).exists()) {
+                    IOUtils.logError("File '" + args[0] + "' doesn't exit");
+                    IOUtils.exit();
+                }
+                return new ANTLRInputStream(new FileInputStream(args[0]));
+            } else {
+                return new ANTLRStringStream(String.join(" ", args));
+            }
         } catch (Exception e) {
-            IOUtils.logError(e.getClass().getSimpleName() + ": " + e.getMessage());
+            IOUtils.logError(e);
             IOUtils.exit();
         }
         return null;

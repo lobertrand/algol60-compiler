@@ -28,6 +28,9 @@ dependencies {
     // use ANTLR version 3
     antlr "org.antlr:antlr-complete:3.5.2"
     compile "org.antlr:antlr-runtime:3.5.2"
+
+    implementation files('lib/microPIUPK.jar')
+    runtime fileTree(dir: 'lib', include: 'microPIUPK.jar')
 }
 
 application {

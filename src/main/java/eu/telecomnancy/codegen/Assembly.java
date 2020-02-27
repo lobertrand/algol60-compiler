@@ -2,7 +2,6 @@ package eu.telecomnancy.codegen;
 
 public class Assembly {
     public static final String INDENT = "    ";
-    public static final int GUIDE = 24;
     public static final String LINE_SEPARATOR = "\n";
 
     private StringBuilder lines;
@@ -11,19 +10,8 @@ public class Assembly {
         lines = new StringBuilder();
     }
 
-    public void code(String code) {
-        lines.append(INDENT).append(code);
-        lines.append(LINE_SEPARATOR);
-    }
-
     public void code(String code, String comment) {
-        lines.append(String.format("%-" + GUIDE + "s%s", INDENT + code, " // " + comment));
-        lines.append(LINE_SEPARATOR);
-    }
-
-    public void label(String label) {
-        lines.append(LINE_SEPARATOR);
-        lines.append(label);
+        lines.append(String.format("%-24s%s", INDENT + code, " // " + comment));
         lines.append(LINE_SEPARATOR);
     }
 
@@ -43,27 +31,15 @@ public class Assembly {
     }
 
     public void comment(String code, String comment) {
-        lines.append(String.format("%-" + GUIDE + "s%s", INDENT + "// " + code, " // " + comment));
-        lines.append(LINE_SEPARATOR);
-    }
-
-    public void string(String constant, String value) {
-        lines.append(INDENT);
-        lines.append(String.format("%-10s string  %s", constant, '"' + value + '"'));
+        lines.append(String.format("%-24s%s", INDENT + "// " + code, " // " + comment));
         lines.append(LINE_SEPARATOR);
     }
 
     public void string(String constant, String value, String comment) {
         lines.append(INDENT);
-        lines.append(
-                String.format(
-                        "%-10s string  %-10s %s", constant, '"' + value + '"', "// " + comment));
-        lines.append(LINE_SEPARATOR);
-    }
-
-    public void equ(String constant, String value) {
-        lines.append(INDENT);
-        lines.append(String.format("%-10s equ     %s", constant, value));
+        String quotedStr = '"' + value + '"';
+        String pattern = "%-10s string  %-10s %s";
+        lines.append(String.format(pattern, constant, quotedStr, "// " + comment));
         lines.append(LINE_SEPARATOR);
     }
 
@@ -73,9 +49,14 @@ public class Assembly {
         lines.append(LINE_SEPARATOR);
     }
 
-    public Assembly newline() {
+    public void def(String key, String value, String comment) {
+        lines.append(INDENT);
+        lines.append(String.format("%-10s %-18s %s", key, value, "// " + comment));
         lines.append(LINE_SEPARATOR);
-        return this;
+    }
+
+    public void newline() {
+        lines.append(LINE_SEPARATOR);
     }
 
     public void insert(Assembly other) {
@@ -87,33 +68,38 @@ public class Assembly {
         return String.join("\n", lines);
     }
 
-    public static void main(String[] args) {
-        Assembly a = new Assembly();
+    public static Assembly exampleWrite(String str) {
+        Assembly asm = new Assembly();
 
-        a.equ("SP", "R15");
-        a.equ("BP", "R13", "Comment");
+        asm.equ("EXIT_EXC", "64", "n° d'exceptoin de EXIT");
+        asm.equ("READ_EXC", "65", "n° d'exception de READ (lit 1 ligne)");
+        asm.equ("WRITE_EXC", "66", "n° d'exception de WRITE (affiche 1 ligne)");
+        asm.equ("STACK_ADRS", "0x1000", "base de pile en 1000h (par exemple)");
+        asm.equ("LOAD_ADRS", "0xF000", "adresse de chargement de l'exécutable");
 
-        a.newline();
+        asm.newline();
+        asm.equ("SP", "R15", "alias pour R15, pointeur de pile");
+        asm.equ("WR", "R14", "Work Register (registre de travail)");
+        asm.equ("BP", "R13", "frame Base Pointer (pointage environnement)");
 
-        a.string("NEWLINE", "\\n", "Ceci est un commentaire");
-        a.string("OTHER", "other");
+        asm.newline();
+        asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
+        asm.def("START", "main_", "adresse de démarrage");
 
-        a.label("print_", "Fonction d'affichage sur stdout");
-        a.code("LDQ 0, R1", "R1 = taille données locales (ici 0) de fonction appelée");
-        a.comment("LINK (R1)", "crée et lie l'environnement de fonction appelée");
-        a.code("ADQ -2, SP", "décrémente le pointeur de pile SP");
-        a.code("STW BP, (SP)", "sauvegarde le contenu du registre BP sur la pile");
-        a.code("LDW BP, SP", "charge contenu SP ds BP qui pointe sur sa sauvegarde");
-        a.code("SUB SP, R1, SP", "réserve R1 octets sur la pile pour la variable locale z");
+        asm.newline();
+        asm.string("VALUE", str, "valeur à imprimer");
 
-        a.newline();
+        asm.label("main_", "début du programme");
 
-        a.comment("charge R0 avec le paramètre p de déplacement 4");
-        a.comment("LDW R0, (BP)4", "R0 = M[BP + 4]");
-        a.code("LDW R0, BP", "R0 = BP");
-        a.code("ADQ 4, R0", "R0 pointe sur p");
-        a.code("LDW R0, (R0)", "R0 = p = adresse du début du texte à afficher");
+        asm.code("LDW R0, #VALUE", "place le string dans R0");
+        asm.code("LDQ WRITE_EXC, WR", "place la trappe WRITE dans WR");
+        asm.code("TRP WR", "lance la trappe WRITE");
 
-        System.out.println(a);
+        //        asm.code("TRP #READ_EXC", "lance la trappe READ");
+        //        asm.code("TRP #WRITE_EXC", "lance la trappe WRITE");
+
+        asm.newline();
+        asm.code("TRP #EXIT_EXC", "arrete le programme");
+        return asm;
     }
 }

@@ -27,7 +27,4 @@ main_
     LDW R0, #HELLO
     TRP #WRITE_EXC
 
-    LDW R0, #HELLO
-    TRP #WRITE_EXC
-
     TRP #EXIT_EXC           // EXIT: arrête le programme

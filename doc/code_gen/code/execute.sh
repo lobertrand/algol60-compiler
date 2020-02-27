@@ -22,4 +22,4 @@ if [[ $? -ne 0 || ! -f $iup_file ]] ; then
   exit 1
 fi
 
-java -jar $microPIUPK  -batch $iup_file | sed 's/\\n/\n/g' | head -n -2 | sed 's/Simulation terminée.*//g'
+java -jar $microPIUPK  -batch $iup_file # | sed 's/\\n/\n/g' | head -n -2 | sed 's/Simulation terminée.*//g'

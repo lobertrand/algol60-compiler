@@ -21,15 +21,16 @@ local.properties
 obj/
 
 # Generated
-AST.dot
-AST.pdf
+/*.dot
+/*.pdf
+/*.alg
+/*.asm
+*.iup
 
 # AntlrWorks
 output/
+
 .idea/
-*.dot
 doc/report_trees/*.pdf
 out/
-
-/test.alg
 
