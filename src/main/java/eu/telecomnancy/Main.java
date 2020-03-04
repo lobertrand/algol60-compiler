@@ -2,6 +2,7 @@ package eu.telecomnancy;
 
 import eu.telecomnancy.ast.ASTAdaptor;
 import eu.telecomnancy.codegen.Assembly;
+import eu.telecomnancy.codegen.CodeGeneratorVisitor;
 import eu.telecomnancy.semantic.SemanticAnalysisVisitor;
 import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.symbols.PredefinedSymbols;
@@ -43,7 +44,10 @@ public class Main {
         reportSemanticExceptions(semanticAnalysisVisitor, input);
         if (semanticAnalysisVisitor.hasExceptions()) IOUtils.exit();
 
-        Assembly asm = Assembly.exampleWrite("HELLO  ");
+        // Assembly asm = Assembly.exampleWrite("HELLO  ");
+        Assembly asm = new Assembly();
+        CodeGeneratorVisitor codeGenerator = new CodeGeneratorVisitor(symbolTable, asm);
+        pr.getTree().accept(codeGenerator);
         assembleAndExecute(asm.toString());
     }
 
