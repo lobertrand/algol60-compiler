@@ -10,27 +10,25 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     private Assembly asm;
 
     public CodeGeneratorVisitor(SymbolTable symbolTable, Assembly asm) {
-        this.asm = asm;
-        asm.equ("EXIT_EXC", "64", "n° d'exceptoin de EXIT");
-        asm.equ("READ_EXC", "65", "n° d'exception de READ (lit 1 ligne)");
-        asm.equ("WRITE_EXC", "66", "n° d'exception de WRITE (affiche 1 ligne)");
-        asm.equ("STACK_ADRS", "0x1000", "base de pile en 1000h (par exemple)");
-        asm.equ("LOAD_ADRS", "0xF000", "adresse de chargement de l'exécutable");
+        PredefinedCode.appendAliases(asm);
 
         asm.newline();
-        asm.equ("SP", "R15", "alias pour R15, pointeur de pile");
-        asm.equ("WR", "R14", "Work Register (registre de travail)");
-        asm.equ("BP", "R13", "frame Base Pointer (pointage environnement)");
-        /*
-               asm.newline();
-               asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
-               asm.def("START", "main_", "adresse de démarrage");
+        asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
+        asm.def("START", "main", "adresse de démarrage");
 
-        */
-        if (symbolTable == null) {
-            throw new IllegalArgumentException("Symbol table cannot be null");
-        }
+        asm.string("HELLO", "Hello world!", "chaine");
+
+        asm.newline();
+        asm.label("main", "Point d'entrée");
+        asm.code("LDW R1, #HELLO", "charge adresse de la chaîne n°0 dans R1");
+        asm.code("STW R1, -(SP)", "empile paramètre p = STRING0 contenu dans R1 :");
+        asm.code("JSR @outstring", "appelle la fonction d'adresse outstring:");
+        asm.code("TRP #EXIT_EXC", "EXIT: arrête le programme");
+
+        PredefinedCode.appendOutstringCode(asm);
+
         this.currentSymbolTable = symbolTable;
+        this.asm = asm;
     }
 
     private void pushTable() {

@@ -24,6 +24,7 @@ public class Assembly {
     }
 
     public void comment(String code) {
+        lines.append(LINE_SEPARATOR);
         lines.append(INDENT);
         lines.append("// ");
         lines.append(code);
