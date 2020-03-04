@@ -12,7 +12,8 @@ public class SymbolTable {
     private int tableNumber;
     private int level;
     private AtomicInteger numberOfTables;
-
+    private int currentVariableShift = 0;
+    private int currentParameterShift = 0;
     /** This constructor is used to create the root of a SymbolTable tree */
     public SymbolTable() {
         // LinkedHashMap keeps the keys in the order they are stored
@@ -39,6 +40,13 @@ public class SymbolTable {
     }
 
     public void define(Symbol symbol) {
+        if (symbol.isParameter()) {
+            this.currentParameterShift -= symbol.getShift();
+            symbol.SetShift(this.currentParameterShift);
+        } else {
+            this.currentVariableShift += symbol.getShift();
+            symbol.SetShift(this.currentVariableShift);
+        }
         symbols.put(symbol.getIdentifier(), symbol);
     }
 
