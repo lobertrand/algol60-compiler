@@ -7,6 +7,7 @@ import eu.telecomnancy.symbols.*;
 public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     private SymbolTable currentSymbolTable;
+    private int currentTableNumber;
     private Assembly asm;
 
     public CodeGeneratorVisitor(SymbolTable symbolTable, Assembly asm) {
@@ -28,11 +29,12 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         PredefinedCode.appendOutstringCode(asm);
 
         this.currentSymbolTable = symbolTable;
+        this.currentTableNumber = 0;
         this.asm = asm;
     }
 
     private void pushTable() {
-        currentSymbolTable = currentSymbolTable.createChild();
+        currentSymbolTable = currentSymbolTable.getChildWithNumber(++currentTableNumber);
     }
 
     private void popTable() {
@@ -116,7 +118,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
         thenDef.accept(this);
         DefaultAST elseDef = ast.findFirst(Algol60Parser.ELSE_DEF);
-        elseDef.accept(this);
+        if (elseDef != null) {
+            elseDef.accept(this);
+        }
         return CodeInfo.empty();
     }
 
@@ -126,14 +130,19 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         init.accept(this);
 
         DefaultAST whileClause = ast.findFirst(Algol60Parser.WHILE);
-
-        whileClause.getChild(0).accept(this);
+        if (whileClause != null) {
+            whileClause.getChild(0).accept(this);
+        }
 
         DefaultAST step = ast.findFirst(Algol60Parser.STEP);
-        step.getChild(0).accept(this);
+        if (step != null) {
+            step.getChild(0).accept(this);
+        }
 
         DefaultAST until = ast.findFirst(Algol60Parser.UNTIL);
-        until.getChild(0).accept(this);
+        if (until != null) {
+            until.getChild(0).accept(this);
+        }
 
         DefaultAST action = ast.findFirst(Algol60Parser.DO).getChild(0);
 

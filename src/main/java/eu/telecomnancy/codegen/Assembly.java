@@ -60,6 +60,10 @@ public class Assembly {
         lines.append(LINE_SEPARATOR);
     }
 
+    public void insert(String code) {
+        lines.append(code);
+    }
+
     public void insert(Assembly other) {
         lines.append(other.toString());
     }

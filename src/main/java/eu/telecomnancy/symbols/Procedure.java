@@ -1,5 +1,6 @@
 package eu.telecomnancy.symbols;
 
+import eu.telecomnancy.codegen.LabelFactory;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -7,10 +8,12 @@ public class Procedure extends Symbol {
 
     private SymbolTable symbolTable;
     private List<Type> parameterTypes;
+    private String asmLabel;
 
     public Procedure(String identifier, Type returnType, List<Type> parameterTypes) {
         super(identifier, returnType, Kind.PROCEDURE);
         this.parameterTypes = parameterTypes;
+        this.asmLabel = LabelFactory.fromName(identifier);
     }
 
     public void setSymbolTable(SymbolTable symbolTable) {
@@ -23,6 +26,10 @@ public class Procedure extends Symbol {
 
     public List<Type> getParameterTypes() {
         return parameterTypes;
+    }
+
+    public String getAsmLabel() {
+        return asmLabel;
     }
 
     @Override
