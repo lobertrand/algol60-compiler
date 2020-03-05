@@ -9,6 +9,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     private SymbolTable currentSymbolTable;
     private int currentTableNumber;
     private Assembly asm;
+    private String instruction;
 
     public CodeGeneratorVisitor(SymbolTable symbolTable, Assembly asm) {
         PredefinedCode.appendAliases(asm);
@@ -23,7 +24,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.label("main", "Point d'entrée");
         asm.code("LDW R1, #HELLO", "charge adresse de la chaîne n°0 dans R1");
         asm.code("STW R1, -(SP)", "empile paramètre p = STRING0 contenu dans R1 :");
-        asm.code("JSR @outstring", "appelle la fonction d'adresse outstring:");
+        // asm.code("JSR @outstring", "appelle la fonction d'adresse outstring:");
+        asm.code("JSR @factorial_", "appelle la fonction d'adresse outstring:");
+
         asm.code("TRP #EXIT_EXC", "EXIT: arrête le programme");
 
         PredefinedCode.appendOutstringCode(asm);
@@ -77,7 +80,28 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ProcDecAST ast) {
-
+        DefaultAST procHeading = ast.findFirst(Algol60Parser.PROC_HEADING);
+        String procName = procHeading.getChild(0).getText();
+        DefaultAST typeAST = ast.findFirst(Algol60Parser.TYPE);
+        Symbol procedure = currentSymbolTable.resolve(procName);
+        System.out.println("procedure = " + procedure);
+        System.out.println(currentSymbolTable);
+        int shift = procedure.getShift();
+        Type procType = typeAST != null ? Type.fromString(typeAST.getText()) : Type.VOID;
+        asm.label(String.format("%s_", procName), "declaration de la fonction");
+        asm.code("STW BP, -(SP)", "empile le contenu du registre BP");
+        asm.code("LDW BP, SP", "charge contenu SP ds BP");
+        if (procType != Type.VOID) {
+            asm.code(
+                    String.format("STW R0, (BP)%d", shift),
+                    "code du calcul de l'expression, résultat dans R0");
+            asm.code("LDW SP, BP ", "bandon infos locales");
+            asm.code("LDW BP, (SP)+ ", "charge BP avec ancien BP");
+            asm.code(" RTS ", " retour au programme appelant");
+        }
+        asm.code("LDW SP, BP ", "bandon infos locales");
+        asm.code("LDW BP, (SP)+ ", "charge BP avec ancien BP");
+        asm.code(" RTS ", " retour au programme appelant");
         DefaultAST block = ast.findFirst(Algol60Parser.BLOCK);
         pushTable(); // Enter symbol table of procedure
         for (DefaultAST t : block) {
@@ -165,11 +189,24 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(AssignmentAST ast) {
+        asm.label("     ", "ASSIGNMENT");
         DefaultAST leftPart = ast.getChild(0);
-        leftPart.getText();
+        Symbol s = currentSymbolTable.resolve(leftPart.getText());
         leftPart.accept(this);
         DefaultAST rightPart = ast.getChild(1);
         rightPart.accept(this);
+        switch (rightPart.getType()) {
+            case (Algol60Parser.INT):
+                asm.code(
+                        String.format("LDW R1, #%s", rightPart.getText()),
+                        "R1 = VALEUR DE RIGHTPART");
+                asm.code(
+                        String.format("STW R1, (BP)-%d", s.getShift()),
+                        "affecte variable LeftPart de déplacement Shift avec contenu de R1");
+            case (Algol60Parser.STR):
+            default:
+                break;
+        }
         return CodeInfo.empty();
     }
 
@@ -252,7 +289,29 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(AddAST ast) {
+        String leftPart = ast.getChild(0).toString();
+        Symbol leftPartSymbol = currentSymbolTable.resolve(leftPart);
+        String rightPart = ast.getChild(1).toString();
+        Symbol rightPartSymbol = currentSymbolTable.resolve(rightPart);
         checkArithmeticOperation(ast);
+        asm.label("", "Add");
+        asm.code(
+                String.format("LDW R1, (BP)%d", leftPartSymbol.getShift()),
+                "charge le paramètre leftpart de déplacement Shift dans R1 :");
+        asm.code("LDW WR, BP ", "WR = BP");
+        asm.code(
+                String.format("ADQ %d, WR ", leftPartSymbol.getShift()),
+                "WR pointe sur paramètre leftpart");
+        asm.code("LDW R1, (WR) ", "R1 = LeftPart");
+        asm.code(
+                String.format("LDW R2, (BP)%d", rightPartSymbol.getShift()),
+                "charge le paramètre RIGHTpart de déplacement Shift dans R2 :");
+        asm.code("LDW WR, BP ", "WR = BP");
+        asm.code(
+                String.format("ADQ %d, WR ", rightPartSymbol.getShift()),
+                "WR pointe sur paramètre rightpart");
+        asm.code("LDW R2, (WR) ", "R2 = LeftPart");
+        asm.code("ADD R1 ,R2,R1", "fait le calcul et le stock dans R1");
         return CodeInfo.empty();
     }
 

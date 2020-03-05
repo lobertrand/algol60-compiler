@@ -81,6 +81,7 @@ public class Assembly {
         asm.equ("WRITE_EXC", "66", "n° d'exception de WRITE (affiche 1 ligne)");
         asm.equ("STACK_ADRS", "0x1000", "base de pile en 1000h (par exemple)");
         asm.equ("LOAD_ADRS", "0xF000", "adresse de chargement de l'exécutable");
+        asm.equ("INT_SIZE", "4", "TAILLE D'UN INT");
 
         asm.newline();
         asm.equ("SP", "R15", "alias pour R15, pointeur de pile");
