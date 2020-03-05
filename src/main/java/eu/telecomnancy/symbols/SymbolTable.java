@@ -65,12 +65,24 @@ public class SymbolTable {
         }
     }
 
-    public Symbol resolveWithKind(String identifier, Kind kind) {
+    @SuppressWarnings("unchecked")
+    public <T extends Symbol> T resolve(String identifier, Class<T> clazz) {
+        Symbol result = symbols.get(identifier);
+        if (result != null && result.getClass() == clazz) {
+            return (T) result;
+        } else if (parent != null) {
+            return parent.resolve(identifier, clazz);
+        } else {
+            return null;
+        }
+    }
+
+    public Symbol resolve(String identifier, Kind kind) {
         Symbol result = symbols.get(identifier);
         if (result != null && result.getKind() == kind) {
             return result;
         } else if (parent != null) {
-            return parent.resolveWithKind(identifier, kind);
+            return parent.resolve(identifier, kind);
         } else {
             return null;
         }

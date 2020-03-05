@@ -18,7 +18,9 @@ public class PredefinedCode {
     }
 
     public static void appendOutstringCode(Assembly asm) {
-        asm.label("outstring", "fonction d'affichage (string)");
+        asm.beginProcedureDeclaration();
+        asm.label("outstring_", "fonction d'affichage (string)");
         asm.insert(IOUtils.loadString("/code/oustring_risc.asm"));
+        asm.endProcedureDeclaration();
     }
 }

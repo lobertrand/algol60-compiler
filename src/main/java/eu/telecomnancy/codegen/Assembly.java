@@ -5,38 +5,56 @@ public class Assembly {
     public static final String LINE_SEPARATOR = "\n";
     public static final String STRING_DEF_MARKER = "###_STRING_DEF_###";
 
-    private StringBuilder lines;
+    private StringBuilder normalLines;
     private StringBuilder stringDefinitions;
+    private StringBuilder procedureDeclarations;
+    private Mode mode;
 
     public Assembly() {
-        lines = new StringBuilder();
+        normalLines = new StringBuilder();
         stringDefinitions = new StringBuilder();
+        procedureDeclarations = new StringBuilder();
+        mode = Mode.NORMAL;
+    }
+
+    public void beginProcedureDeclaration() {
+        mode = Mode.PROC_DEC;
+    }
+
+    public void endProcedureDeclaration() {
+        if (mode != Mode.PROC_DEC)
+            throw new IllegalStateException("Was not in procedure declaration mode");
+        mode = Mode.NORMAL;
     }
 
     public void code(String code, String comment) {
-        lines.append(String.format("%-23s%s", INDENT + code, " // " + comment));
-        lines.append(LINE_SEPARATOR);
+        StringBuilder b = getBuilder(mode);
+        b.append(String.format("%-23s%s", INDENT + code, " // " + comment));
+        b.append(LINE_SEPARATOR);
     }
 
     public void label(String label, String comment) {
-        lines.append(LINE_SEPARATOR);
-        lines.append(label);
-        lines.append(" // ");
-        lines.append(comment);
-        lines.append(LINE_SEPARATOR);
+        StringBuilder b = getBuilder(mode);
+        b.append(LINE_SEPARATOR);
+        b.append(label);
+        b.append(" // ");
+        b.append(comment);
+        b.append(LINE_SEPARATOR);
     }
 
     public void comment(String code) {
-        lines.append(LINE_SEPARATOR);
-        lines.append(INDENT);
-        lines.append("// ");
-        lines.append(code);
-        lines.append(LINE_SEPARATOR);
+        StringBuilder b = getBuilder(mode);
+        b.append(LINE_SEPARATOR);
+        b.append(INDENT);
+        b.append("// ");
+        b.append(code);
+        b.append(LINE_SEPARATOR);
     }
 
     public void comment(String code, String comment) {
-        lines.append(String.format("%-23s%s", INDENT + "// " + code, " // " + comment));
-        lines.append(LINE_SEPARATOR);
+        StringBuilder b = getBuilder(mode);
+        b.append(String.format("%-23s%s", INDENT + "// " + code, " // " + comment));
+        b.append(LINE_SEPARATOR);
     }
 
     public void string(String constant, String value) {
@@ -48,37 +66,38 @@ public class Assembly {
     }
 
     public void putStringDefinitionsHere() {
-        lines.append(STRING_DEF_MARKER);
-        lines.append(LINE_SEPARATOR);
+        normalLines.append(STRING_DEF_MARKER);
+        normalLines.append(LINE_SEPARATOR);
     }
 
     public void equ(String constant, String value, String comment) {
-        lines.append(INDENT);
-        lines.append(String.format("%-10s equ     %-10s %s", constant, value, "// " + comment));
-        lines.append(LINE_SEPARATOR);
+        normalLines.append(INDENT);
+        normalLines.append(
+                String.format("%-10s equ     %-10s %s", constant, value, "// " + comment));
+        normalLines.append(LINE_SEPARATOR);
     }
 
     public void def(String key, String value, String comment) {
-        lines.append(INDENT);
-        lines.append(String.format("%-10s %-18s %s", key, value, "// " + comment));
-        lines.append(LINE_SEPARATOR);
+        normalLines.append(INDENT);
+        normalLines.append(String.format("%-10s %-18s %s", key, value, "// " + comment));
+        normalLines.append(LINE_SEPARATOR);
     }
 
     public void newline() {
-        lines.append(LINE_SEPARATOR);
+        normalLines.append(LINE_SEPARATOR);
     }
 
     public void insert(String code) {
-        lines.append(code);
-    }
-
-    public void insert(Assembly other) {
-        lines.append(other.toString());
+        StringBuilder b = getBuilder(mode);
+        b.append(code);
     }
 
     @Override
     public String toString() {
-        return lines.toString().replaceFirst(STRING_DEF_MARKER, stringDefinitions.toString());
+        return normalLines
+                .toString()
+                .replaceFirst(STRING_DEF_MARKER, stringDefinitions.toString())
+                .concat(procedureDeclarations.toString());
     }
 
     public static Assembly exampleWrite(String str) {
@@ -115,5 +134,21 @@ public class Assembly {
         asm.newline();
         asm.code("TRP #EXIT_EXC", "arrete le programme");
         return asm;
+    }
+
+    private enum Mode {
+        NORMAL,
+        PROC_DEC
+    }
+
+    private StringBuilder getBuilder(Mode mode) {
+        switch (mode) {
+            case NORMAL:
+                return normalLines;
+            case PROC_DEC:
+                return procedureDeclarations;
+            default:
+                throw new IllegalStateException();
+        }
     }
 }

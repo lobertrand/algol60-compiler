@@ -14,7 +14,7 @@ public final class UniqueReference {
             return symbolName + '_' + n;
         } else {
             usedLabelNames.put(symbolName, 1);
-            return symbolName;
+            return symbolName + '_';
         }
     }
 
