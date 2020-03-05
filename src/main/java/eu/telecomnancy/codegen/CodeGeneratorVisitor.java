@@ -18,9 +18,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
         asm.def("START", "main", "adresse de démarrage");
 
-        asm.string("HELLO", "Hello world!", "chaine");
+        asm.comment("Définitions de chaînes de caractère");
+        asm.putStringDefinitionsHere();
+        asm.string("HELLO", "Hello world!");
 
-        asm.newline();
         asm.label("main", "Point d'entrée");
         asm.code("LDW R1, #HELLO", "charge adresse de la chaîne n°0 dans R1");
         asm.code("STW R1, -(SP)", "empile paramètre p = STRING0 contenu dans R1 :");
