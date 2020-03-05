@@ -93,7 +93,6 @@ public class SymbolTable {
     }
 
     public SymbolTable getChildWithNumber(int tableNumber) {
-        System.out.println("tableNumber = " + tableNumber);
         for (SymbolTable child : children) if (child.getTableNumber() == tableNumber) return child;
         throw new RuntimeException(
                 "Child #" + tableNumber + " doesn't exist on table #" + tableNumber);

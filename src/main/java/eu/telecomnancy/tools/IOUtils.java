@@ -7,7 +7,6 @@ import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.syntax.InvalidNumberException;
 import java.io.*;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -128,13 +127,17 @@ public class IOUtils {
         }
     }
 
-    public static String loadString(String resourcePath) throws IOException, URISyntaxException {
-        URL url = IOUtils.class.getResource(resourcePath);
-        if (url == null) {
-            throw new FileNotFoundException(resourcePath);
+    public static String loadString(String resourcePath) {
+        try {
+            URL url = IOUtils.class.getResource(resourcePath);
+            if (url == null) {
+                throw new FileNotFoundException(resourcePath);
+            }
+            URI uri = url.toURI();
+            Path path = Paths.get(uri);
+            return new String(Files.readAllBytes(path));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        URI uri = url.toURI();
-        Path path = Paths.get(uri);
-        return new String(Files.readAllBytes(path));
     }
 }

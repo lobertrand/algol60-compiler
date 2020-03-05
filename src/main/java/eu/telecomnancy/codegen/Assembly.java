@@ -3,15 +3,18 @@ package eu.telecomnancy.codegen;
 public class Assembly {
     public static final String INDENT = "    ";
     public static final String LINE_SEPARATOR = "\n";
+    public static final String STRING_DEF_MARKER = "###_STRING_DEF_###";
 
     private StringBuilder lines;
+    private StringBuilder stringDefinitions;
 
     public Assembly() {
         lines = new StringBuilder();
+        stringDefinitions = new StringBuilder();
     }
 
     public void code(String code, String comment) {
-        lines.append(String.format("%-24s%s", INDENT + code, " // " + comment));
+        lines.append(String.format("%-23s%s", INDENT + code, " // " + comment));
         lines.append(LINE_SEPARATOR);
     }
 
@@ -32,15 +35,20 @@ public class Assembly {
     }
 
     public void comment(String code, String comment) {
-        lines.append(String.format("%-24s%s", INDENT + "// " + code, " // " + comment));
+        lines.append(String.format("%-23s%s", INDENT + "// " + code, " // " + comment));
         lines.append(LINE_SEPARATOR);
     }
 
-    public void string(String constant, String value, String comment) {
-        lines.append(INDENT);
+    public void string(String constant, String value) {
+        stringDefinitions.append(INDENT);
         String quotedStr = '"' + value + '"';
-        String pattern = "%-10s string  %-10s %s";
-        lines.append(String.format(pattern, constant, quotedStr, "// " + comment));
+        String pattern = "%-10s string  %-10s";
+        stringDefinitions.append(String.format(pattern, constant, quotedStr));
+        stringDefinitions.append(LINE_SEPARATOR);
+    }
+
+    public void putStringDefinitionsHere() {
+        lines.append(STRING_DEF_MARKER);
         lines.append(LINE_SEPARATOR);
     }
 
@@ -70,7 +78,7 @@ public class Assembly {
 
     @Override
     public String toString() {
-        return String.join("\n", lines);
+        return lines.toString().replaceFirst(STRING_DEF_MARKER, stringDefinitions.toString());
     }
 
     public static Assembly exampleWrite(String str) {
@@ -92,7 +100,7 @@ public class Assembly {
         asm.def("START", "main_", "adresse de démarrage");
 
         asm.newline();
-        asm.string("VALUE", str, "valeur à imprimer");
+        asm.string("VALUE", str);
 
         asm.label("main_", "début du programme");
 

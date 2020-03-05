@@ -1,6 +1,6 @@
 package eu.telecomnancy.symbols;
 
-import eu.telecomnancy.codegen.LabelFactory;
+import eu.telecomnancy.codegen.UniqueReference;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,7 +13,7 @@ public class Procedure extends Symbol {
     public Procedure(String identifier, Type returnType, List<Type> parameterTypes) {
         super(identifier, returnType, Kind.PROCEDURE);
         this.parameterTypes = parameterTypes;
-        this.asmLabel = LabelFactory.fromName(identifier);
+        this.asmLabel = UniqueReference.forLabel(identifier);
     }
 
     public void setSymbolTable(SymbolTable symbolTable) {
