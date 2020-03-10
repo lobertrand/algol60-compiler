@@ -1,5 +1,7 @@
 package eu.telecomnancy.codegen;
 
+import java.util.Stack;
+
 public class Assembly {
     public static final String INDENT = "    ";
     public static final String LINE_SEPARATOR = "\n";
@@ -8,23 +10,30 @@ public class Assembly {
     private StringBuilder normalLines;
     private StringBuilder stringDefinitions;
     private StringBuilder procedureDeclarations;
+    private Stack<StringBuilder> procedureStack;
     private Mode mode;
 
     public Assembly() {
         normalLines = new StringBuilder();
         stringDefinitions = new StringBuilder();
         procedureDeclarations = new StringBuilder();
+        procedureStack = new Stack<>();
         mode = Mode.NORMAL;
     }
 
     public void beginProcedureDeclaration() {
         mode = Mode.PROC_DEC;
+        procedureStack.push(new StringBuilder(LINE_SEPARATOR));
     }
 
     public void endProcedureDeclaration() {
-        if (mode != Mode.PROC_DEC)
-            throw new IllegalStateException("Was not in procedure declaration mode");
-        mode = Mode.NORMAL;
+        if (procedureStack.isEmpty()) {
+            throw new IllegalStateException("Too many endProcedureDeclaration()");
+        }
+        procedureDeclarations.append(procedureStack.pop());
+        if (procedureStack.isEmpty()) {
+            mode = Mode.NORMAL;
+        }
     }
 
     public void code(String code, String comment) {
@@ -146,7 +155,7 @@ public class Assembly {
             case NORMAL:
                 return normalLines;
             case PROC_DEC:
-                return procedureDeclarations;
+                return procedureStack.peek();
             default:
                 throw new IllegalStateException();
         }

@@ -13,6 +13,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     public CodeGeneratorVisitor(SymbolTable symbolTable, Assembly asm) {
         PredefinedCode.appendAliases(asm);
+        PredefinedCode.appendOutstringCode(asm);
 
         asm.newline();
         asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
@@ -20,17 +21,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         asm.comment("Définitions de chaînes de caractère");
         asm.putStringDefinitionsHere();
-        asm.string("HELLO", "Hello world!");
-
-        asm.label("main", "Point d'entrée");
-        asm.code("LDW R1, #HELLO", "charge adresse de la chaîne n°0 dans R1");
-        asm.code("STW R1, -(SP)", "empile paramètre p = STRING0 contenu dans R1 :");
-        // asm.code("JSR @outstring_", "appelle la fonction d'adresse outstring:");
-        asm.code("JSR @factorial_", "appelle la fonction d'adresse outstring:");
-
-        asm.code("TRP #EXIT_EXC", "EXIT: arrête le programme");
-
-        PredefinedCode.appendOutstringCode(asm);
 
         this.currentSymbolTable = symbolTable;
         this.currentTableNumber = 0;
@@ -58,8 +48,24 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(RootAST ast) {
+        // Beginning of the program
+        asm.label("main", "Point d'entrée");
+
+        // DEBUGGING CODE (REMOVE LATER)
+        // // in visit(StrAST)
+        // asm.string("HELLO", "Hello world!");
+        // // In visit(ProcCallAST)
+        // asm.code("LDW R1, #HELLO", "charge adresse de la chaîne n°0 dans R1");
+        // asm.code("STW R1, -(SP)", "empile paramètre p = STRING0 contenu dans R1 :");
+        // asm.code("JSR @outstring_", "appelle la fonction d'adresse outstring:");
+        // asm.code("JSR @factorial_", "appelle la fonction d'adresse outstring:");
+        // END OF DEBUGGING CODE
+
+        // Main block instructions
         ast.getChild(0).accept(this);
+
         // Final operations
+        asm.code("TRP #EXIT_EXC", "EXIT: arrête le programme");
 
         return CodeInfo.empty();
     }
@@ -89,6 +95,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String label = procedure.getAsmLabel();
         int shift = procedure.getShift();
 
+        // TODO: Finish the declaration of procedure
         asm.label(label, "declaration de la fonction");
         asm.code("STW BP, -(SP)", "empile le contenu du registre BP");
         asm.code("LDW BP, SP", "charge contenu SP ds BP");
@@ -115,9 +122,21 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ProcCallAST ast) {
+        // TODO: For each argument passed to the procedure call
         for (DefaultAST args : ast.getChild(1)) {
+            // Evaluate the argument value and put it in R1 (in other visit() methods)
+            // The simplest one to implement is probably visit(IdentifierAST)
             args.accept(this);
+            // Push the argument value to the stack
+            // asm.code("STW R1, -(SP)", "empile paramètre contenu dans R1 :");
         }
+        // Call the procedure using the generated procedure label (Label::getAsmLabel())
+        // asm.code("JSR @outstring_", "appelle la fonction d'adresse outstring:");
+
+        // Example :
+        // asm.code("LDW R1, #HELLO", "charge adresse de la chaîne n°0 dans R1");
+        // asm.code("STW R1, -(SP)", "empile paramètre p = STRING0 contenu dans R1 :");
+        // asm.code("JSR @outstring_", "appelle la fonction d'adresse outstring:");
         return CodeInfo.empty();
     }
 
@@ -190,6 +209,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(AssignmentAST ast) {
+        // TODO: Finish the assignment of values (int values first)
         asm.comment("Assignment");
         DefaultAST leftPart = ast.getChild(0);
         Symbol s = currentSymbolTable.resolve(leftPart.getText());
@@ -258,6 +278,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IntAST ast) {
+        // TODO: Put the int value into R1
         return CodeInfo.empty();
     }
 
@@ -279,6 +300,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(StrAST ast) {
+        // TODO: register the string value into "asm" variable using the UniqueReference class
         return CodeInfo.empty();
     }
 
@@ -336,6 +358,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IdentifierAST ast) {
+        // TODO: Find the variable with a "resolve" in the current symbol table
+        // Get its shift and compute the address where the value of the variable is stored
+        // (Take into account whether the variable is local or non-local)
+        // Put the value of the variable into R1
         return CodeInfo.empty();
     }
 

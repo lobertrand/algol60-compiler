@@ -1,6 +1,7 @@
 package eu.telecomnancy;
 
 import eu.telecomnancy.ast.ASTAdaptor;
+import eu.telecomnancy.ast.DefaultAST;
 import eu.telecomnancy.codegen.Assembly;
 import eu.telecomnancy.codegen.CodeGeneratorVisitor;
 import eu.telecomnancy.semantic.SemanticAnalysisVisitor;
@@ -36,10 +37,11 @@ public class Main {
         if (lexer.hasExceptions() || parser.hasExceptions()) IOUtils.exit();
 
         // Semantic analysis
+        DefaultAST ast = pr.getTree();
         SymbolTable symbolTable = new SymbolTable();
         PredefinedSymbols.get().forEach(symbolTable::define);
         SemanticAnalysisVisitor semanticAnalysisVisitor = new SemanticAnalysisVisitor(symbolTable);
-        pr.getTree().accept(semanticAnalysisVisitor);
+        ast.accept(semanticAnalysisVisitor);
         IOUtils.print(symbolTable);
         reportSemanticExceptions(semanticAnalysisVisitor, input);
         if (semanticAnalysisVisitor.hasExceptions()) IOUtils.exit();
@@ -47,7 +49,7 @@ public class Main {
         // Assembly asm = Assembly.exampleWrite("HELLO  ");
         Assembly asm = new Assembly();
         CodeGeneratorVisitor codeGenerator = new CodeGeneratorVisitor(symbolTable, asm);
-        pr.getTree().accept(codeGenerator);
+        ast.accept(codeGenerator);
         assembleAndExecute(asm.toString());
     }
 
