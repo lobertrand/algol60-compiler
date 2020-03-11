@@ -14,12 +14,16 @@ if [ ! -f $asm_file ] ; then
   exit 1
 fi
 
-iup_file=$(echo $asm_file | sed "s/\.asm/\.iup/g")
+iup_file=$(echo $asm_file | sed "s/\.src/\.iup/g")
 
 java -jar $microPIUPK -ass $asm_file >/dev/null
+
+echo "> Fichier assemblé -> $iup_file"
 
 if [[ $? -ne 0 || ! -f $iup_file ]] ; then
   exit 1
 fi
 
-java -jar $microPIUPK  -batch $iup_file # | sed 's/\\n/\n/g' | head -n -2 | sed 's/Simulation terminée.*//g'
+echo "> Exécution de $iup_file"
+
+java -jar $microPIUPK -batch $iup_file

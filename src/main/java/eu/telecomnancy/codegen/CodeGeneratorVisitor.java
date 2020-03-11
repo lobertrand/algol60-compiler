@@ -124,14 +124,19 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(ProcCallAST ast) {
         // TODO: For each argument passed to the procedure call
         for (DefaultAST args : ast.getChild(1)) {
+            asm.code("ADQ -2, SP", "décrémente le pointeur de pile SP");
+            asm.code("STW R1, (SP)", "sauvegarde le contenu du registre R1 sur la pile");
             // Evaluate the argument value and put it in R1 (in other visit() methods)
             // The simplest one to implement is probably visit(IdentifierAST)
             args.accept(this);
             // Push the argument value to the stack
-            // asm.code("STW R1, -(SP)", "empile paramètre contenu dans R1 :");
+            asm.code("STW R1, -(SP)", "empile paramètre contenu dans R1 :");
         }
-        // Call the procedure using the generated procedure label (Label::getAsmLabel())
-        // asm.code("JSR @outstring_", "appelle la fonction d'adresse outstring:");
+        Procedure procedure =
+                currentSymbolTable.resolve(ast.getChild(0).getText(), Procedure.class);
+        // Call the procedure using the generated procedure label (Procedure::getAsmLabel())
+        String label = procedure.getAsmLabel();
+        asm.code("JSR @" + label, "appelle la fonction d'adresse outstring:");
 
         // Example :
         // asm.code("LDW R1, #HELLO", "charge adresse de la chaîne n°0 dans R1");
@@ -301,6 +306,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(StrAST ast) {
         // TODO: register the string value into "asm" variable using the UniqueReference class
+        String content = ast.getText();
+        String label = UniqueReference.forString();
+        asm.string(label, content);
+        asm.code("LDW R1, #" + label, "charge adresse de la chaîne dans R1");
         return CodeInfo.empty();
     }
 

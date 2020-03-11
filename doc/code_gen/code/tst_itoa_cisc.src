@@ -1,0 +1,232 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sp          equ r15
+wr          equ r14
+bp          equ r13
+
+SP          equ r15
+WR          equ r14
+BP          equ r13
+
+EXIT_EXC   EQU   64    
+READ_EXC   EQU   65    
+WRITE_EXC  EQU   66    
+
+NUL         equ  0     
+NULL        equ  0     
+NIL         equ  0     
+
+STACK_ADRS  equ 0x1000 
+LOAD_ADRS   equ 0xFE00 
+
+            org LOAD_ADRS
+            start main_
+
+
+
+
+
+main_   ldw sp, #STACK_ADRS 
+        ldw bp, #NIL        
+
+
+
+
+        stw bp, -(sp)
+        ldw bp, sp
+
+
+   
+   
+        adi sp, sp, #-8   
+                          
+
+
+        adi sp, sp, #-2   
+                          
+
+
+        ldw r0, #-23      
+        stw r0, (bp)-10   
+
+
+
+        ldw r0, #10       
+        stw r0, -(sp)     
+
+        adi bp, r0, #-8   
+        stw r0, -(sp)     
+
+        ldw r0, (bp)-8   
+        stw r0, -(sp)     
+
+        jsr @itoa_        
+
+        adi sp, sp, #6    
+                          
+
+
+
+        adi bp, r0, #-8   
+        stw r0, -(sp)     
+        
+        jsr @print_       
+
+        adi sp, sp, #2    
+                          
+
+
+        ldw sp, bp        
+        ldw bp, (sp)+     
+        trp #EXIT_EXC     
+        jea @main_        
+                          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     
+
+ITOA_I      equ 4      
+ITOA_P      equ 6      
+ITOA_B      equ 8      
+
+ASCII_MINUS equ 45     
+ASCII_PLUS  equ 43     
+ASCII_SP    equ 32     
+ASCII_0     equ 48     
+ASCII_A     equ 65     
+
+
+
+itoa_   stw bp, -(sp)
+        ldw bp, sp
+
+
+        ldw r0, (bp)ITOA_I    
+        ldw r1, (bp)ITOA_B    
+        
+
+
+
+        ldq ASCII_SP, r3      
+        ldq 10, wr            
+        cmp r1, wr            
+        bne NOSIGN-$-2        
+        ldq ASCII_PLUS, r3    
+        tst r0                
+        bge POSIT-$-2         
+        neg r0, r0            
+        ldq ASCII_MINUS, r3   
+POSIT   NOP                   
+
+
+
+NOSIGN  ldw r2, r0            
+CNVLOOP ldw r0, r2            
+   
+   
+   
+   
+        srl r1, r1            
+        ani r0, r4, #1        
+                              
+        srl r0, r0            
+        div r0, r1, r2        
+        shl r0, r0            
+        add r0, r4, r0        
+        shl r1, r1            
+
+        adq -10, r0           
+        bge LETTER-$-2        
+        adq 10+ASCII_0, r0    
+                              
+        bmp STKCHR-$-2        
+
+LETTER  adq ASCII_A, r0       
+                              
+STKCHR  stw r0, -(sp)         
+                              
+        tst r2                
+        bne CNVLOOP-$-2       
+
+
+
+
+        ldw r1, (bp)ITOA_P    
+        stb r3, (r1)+         
+CPYLOOP ldw r0, (sp)+         
+        stb r0, (r1)+         
+        cmp sp, bp            
+        bne CPYLOOP-$-2       
+        ldq NUL, r0           
+        stb r0, (r1)+         
+
+
+        ldw r0, (bp)ITOA_P    
+
+    
+        ldw sp, bp            
+        ldw bp, (sp)+         
+
+        rts                   
+
+
+
+
+
+
+
+print_     LDQ 0, R1      
+
+     
+           STW BP, -(SP)  
+           LDW BP, SP     
+           SUB SP, R1, SP 
+
+
+           LDW R0, (BP)4  
+
+
+           TRP #WRITE_EXC 
+
+
+
+    
+           LDW SP, BP    
+           LDW BP, (SP)+ 
+
+           RTS  
