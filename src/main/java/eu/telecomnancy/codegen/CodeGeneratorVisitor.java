@@ -3,6 +3,7 @@ package eu.telecomnancy.codegen;
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.*;
+import eu.telecomnancy.tools.ASTTools;
 
 public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
@@ -82,6 +83,13 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(VarDecAST ast) {
+        ASTTools.print(ast);
+        for (DefaultAST var : ast.getChild(1)) {
+            String var_name = var.getText();
+            Symbol variable = currentSymbolTable.resolve(var_name);
+            asm.code("LDW WR, #0", "");
+            asm.code("LDW WR, -(SP)", "");
+        }
         return CodeInfo.empty();
     }
 
@@ -217,22 +225,16 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         // TODO: Finish the assignment of values (int values first)
         asm.comment("Assignment");
         DefaultAST leftPart = ast.getChild(0);
-        Symbol s = currentSymbolTable.resolve(leftPart.getText());
-        leftPart.accept(this);
+        String identifier = leftPart.getText();
+        Variable variable = currentSymbolTable.resolve(identifier, Variable.class);
         DefaultAST rightPart = ast.getChild(1);
         rightPart.accept(this);
-        switch (rightPart.getType()) {
-            case (Algol60Parser.INT):
-                asm.code(
-                        String.format("LDW R1, #%s", rightPart.getText()),
-                        "R1 = VALEUR DE RIGHTPART");
-                asm.code(
-                        String.format("STW R1, (BP)-%d", s.getShift()),
-                        "affecte variable LeftPart de déplacement Shift avec contenu de R1");
-            case (Algol60Parser.STR):
-            default:
-                break;
-        }
+
+        asm.code("LDW WR, BP", "");
+        asm.code(String.format("ADQ %d,WR", variable.getShift()), "");
+        asm.code("STW R1,(WR)", "");
+        leftPart.accept(this);
+
         return CodeInfo.empty();
     }
 
@@ -284,6 +286,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(IntAST ast) {
         // TODO: Put the int value into R1
+        String integer = ast.getText();
+        asm.comment("INT");
+        asm.code(String.format("LDW R1,#%s", integer), "");
+        asm.code("STW R1, -(SP)", "empile l'entier contenu dans R1");
+        // asm.code();
         return CodeInfo.empty();
     }
 
@@ -321,29 +328,16 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(AddAST ast) {
-        String leftPart = ast.getChild(0).toString();
-        Symbol leftPartSymbol = currentSymbolTable.resolve(leftPart);
-        String rightPart = ast.getChild(1).toString();
-        Symbol rightPartSymbol = currentSymbolTable.resolve(rightPart);
-        checkArithmeticOperation(ast);
-        asm.label("", "Add");
-        asm.code(
-                String.format("LDW R1, (BP)%d", leftPartSymbol.getShift()),
-                "charge le paramètre leftpart de déplacement Shift dans R1 :");
-        asm.code("LDW WR, BP ", "WR = BP");
-        asm.code(
-                String.format("ADQ %d, WR ", leftPartSymbol.getShift()),
-                "WR pointe sur paramètre leftpart");
-        asm.code("LDW R1, (WR) ", "R1 = LeftPart");
-        asm.code(
-                String.format("LDW R2, (BP)%d", rightPartSymbol.getShift()),
-                "charge le paramètre RIGHTpart de déplacement Shift dans R2 :");
-        asm.code("LDW WR, BP ", "WR = BP");
-        asm.code(
-                String.format("ADQ %d, WR ", rightPartSymbol.getShift()),
-                "WR pointe sur paramètre rightpart");
-        asm.code("LDW R2, (WR) ", "R2 = LeftPart");
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        asm.comment("Add");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Depile");
+        asm.code("LDW R2, (SP)+", "Depile");
         asm.code("ADD R1 ,R2,R1", "fait le calcul et le stock dans R1");
+        asm.code("STW R1,-(SP)", "");
+
         return CodeInfo.empty();
     }
 
@@ -371,6 +365,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         // Get its shift and compute the address where the value of the variable is stored
         // (Take into account whether the variable is local or non-local)
         // Put the value of the variable into R1
+
         return CodeInfo.empty();
     }
 

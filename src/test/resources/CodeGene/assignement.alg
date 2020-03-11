@@ -2,8 +2,9 @@ begin
 	integer a;
 	integer b;
 	integer c;
-	a := 3;
-	b:= 6;
-	c := a +b 	
+        comment a := 3;
+        comment b:= 6;
+    c := 3 + 4 ;
+	b := c + 2 + 7 ;
 
 end
