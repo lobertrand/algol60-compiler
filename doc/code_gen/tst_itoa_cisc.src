@@ -61,7 +61,7 @@ main_   ldw sp, #STACK_ADRS // pile sera au dessus de STACK_ADRS
                           // déplacement de value est -10
 
 // value = -23; 
-        ldw r0, #-23      // charge r0 avec -23 = C2(23) = FFE9
+        ldw r0, #60      // charge r0 avec -23 = C2(23) = FFE9
         stw r0, (bp)-10   // sauve r0 à l'adresse bp-10       
 
 // itoa(value, text, 10); // appelle itoa avec i = value, p = text, b = 10

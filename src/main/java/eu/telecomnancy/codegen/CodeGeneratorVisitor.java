@@ -15,6 +15,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeGeneratorVisitor(SymbolTable symbolTable, Assembly asm) {
         PredefinedCode.appendAliases(asm);
         PredefinedCode.appendOutstringCode(asm);
+        PredefinedCode.appendItoaCode(asm);
+        PredefinedCode.appendOutintegerCode(asm);
 
         asm.newline();
         asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
@@ -51,16 +53,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(RootAST ast) {
         // Beginning of the program
         asm.label("main", "Point d'entrée");
-
-        // DEBUGGING CODE (REMOVE LATER)
-        // // in visit(StrAST)
-        // asm.string("HELLO", "Hello world!");
-        // // In visit(ProcCallAST)
-        // asm.code("LDW R1, #HELLO", "charge adresse de la chaîne n°0 dans R1");
-        // asm.code("STW R1, -(SP)", "empile paramètre p = STRING0 contenu dans R1 :");
-        // asm.code("JSR @outstring_", "appelle la fonction d'adresse outstring:");
-        // asm.code("JSR @factorial_", "appelle la fonction d'adresse outstring:");
-        // END OF DEBUGGING CODE
 
         // Main block instructions
         ast.getChild(0).accept(this);
@@ -145,7 +137,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         // Call the procedure using the generated procedure label (Procedure::getAsmLabel())
         String label = procedure.getAsmLabel();
         asm.code("JSR @" + label, "appelle la fonction d'adresse outstring:");
-
+        int nbParams = ast.getChild(1).getChildCount();
+        if (nbParams != 0) {
+            asm.code("LDW WR, #" + nbParams, "WR = taille totale des paramètres");
+            asm.code("ADD WR, SP, SP", "abandon paramètres");
+        }
         // Example :
         // asm.code("LDW R1, #HELLO", "charge adresse de la chaîne n°0 dans R1");
         // asm.code("STW R1, -(SP)", "empile paramètre p = STRING0 contenu dans R1 :");
