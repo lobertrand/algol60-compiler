@@ -75,7 +75,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(VarDecAST ast) {
-        ASTTools.print(ast);
         for (DefaultAST var : ast.getChild(1)) {
             String var_name = var.getText();
             Symbol variable = currentSymbolTable.resolve(var_name);
@@ -126,11 +125,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         for (DefaultAST args : ast.getChild(1)) {
             asm.code("ADQ -2, SP", "décrémente le pointeur de pile SP");
             asm.code("STW R1, (SP)", "sauvegarde le contenu du registre R1 sur la pile");
-            // Evaluate the argument value and put it in R1 (in other visit() methods)
-            // The simplest one to implement is probably visit(IdentifierAST)
+            // Evaluate the argument value and put it on the stack (in other visit() methods)
             args.accept(this);
-            // Push the argument value to the stack
-            asm.code("STW R1, -(SP)", "empile paramètre contenu dans R1 :");
         }
         Procedure procedure =
                 currentSymbolTable.resolve(ast.getChild(0).getText(), Procedure.class);
@@ -313,6 +309,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String label = UniqueReference.forString();
         asm.string(label, content);
         asm.code("LDW R1, #" + label, "charge adresse de la chaîne dans R1");
+        asm.code("STW R1, -(SP)", "empile le string");
         return CodeInfo.empty();
     }
 
