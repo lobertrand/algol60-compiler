@@ -4,7 +4,7 @@
 // récupération des paramètres depuis pile vers registres
         LDW R0, (BP)ITOA_I    // R0 = i    
         LDW R1, (BP)ITOA_B    // R1 = b
-        
+
 // gère le signe: normalement itoa gère des int c'est à dire des entiers signés, 
 // mais en fait seulement pour b=10;
 // dans ce cas calcule le signe dans R3 et charge R0 avec la valeur absolue de i

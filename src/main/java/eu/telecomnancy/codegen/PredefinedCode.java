@@ -54,4 +54,11 @@ public class PredefinedCode {
         asm.insert(IOUtils.loadString("/code/outinteger_cisc.asm"));
         asm.endProcedureDeclaration();
     }
+
+    public static void appendLineCode(Assembly asm) {
+        asm.beginProcedureDeclaration();
+        asm.label("line_", "fonction de retour à la ligne");
+        asm.insert(IOUtils.loadString("/code/line.asm"));
+        asm.endProcedureDeclaration();
+    }
 }

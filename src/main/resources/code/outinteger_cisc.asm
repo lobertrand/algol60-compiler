@@ -8,7 +8,7 @@
 // char toto[7];
    // réserve 7+1 = 8 caractères en pile
    // (entier pair supérieur à 7 demandé pour pas désaligner pile)
-        ADI SP, SP, #-8   // réserve place pour text sur pile (8 octets); 
+        ADI SP, SP, #-8   // réserve place pour text sur pile (8 octets);
                           // déplacement du début du tableau est -8
 
 // int value;
@@ -54,6 +54,5 @@
 // }  // fermeture du bloc englobant de main
         LDW SP, BP        // abandonne variables locales de main
         LDW BP, (SP)+     // dépile ancien BP dans BP
-        TRP #EXIT_EXC     // lance trappe EXIT
 
 

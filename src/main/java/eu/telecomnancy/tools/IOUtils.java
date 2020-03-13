@@ -6,12 +6,8 @@ import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.syntax.InvalidNumberException;
 import java.io.*;
-import java.net.URI;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.Scanner;
 import org.antlr.runtime.*;
 import org.antlr.runtime.tree.DOTTreeGenerator;
 import org.antlr.runtime.tree.Tree;
@@ -129,13 +125,9 @@ public class IOUtils {
 
     public static String loadString(String resourcePath) {
         try {
-            URL url = IOUtils.class.getResource(resourcePath);
-            if (url == null) {
-                throw new FileNotFoundException(resourcePath);
-            }
-            URI uri = url.toURI();
-            Path path = Paths.get(uri);
-            return new String(Files.readAllBytes(path));
+            InputStream inputStream = IOUtils.class.getResourceAsStream(resourcePath);
+            Scanner scanner = new Scanner(inputStream, "UTF-8").useDelimiter("\\A");
+            return scanner.next();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

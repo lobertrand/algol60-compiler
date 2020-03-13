@@ -3,7 +3,6 @@ package eu.telecomnancy.codegen;
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.*;
-import eu.telecomnancy.tools.ASTTools;
 
 public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
@@ -17,10 +16,14 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         PredefinedCode.appendOutstringCode(asm);
         PredefinedCode.appendItoaCode(asm);
         PredefinedCode.appendOutintegerCode(asm);
+        PredefinedCode.appendLineCode(asm);
 
         asm.newline();
         asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
         asm.def("START", "main", "adresse de démarrage");
+
+        asm.newline();
+        asm.code("NEWLINE byte 10", "New line character");
 
         asm.comment("Définitions de chaînes de caractère");
         asm.putStringDefinitionsHere();
@@ -58,6 +61,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         ast.getChild(0).accept(this);
 
         // Final operations
+        asm.code("LDW R0, #NEWLINE", "puts newline char in R0");
+        asm.code("TRP #WRITE_EXC", "prints the newline char");
+        asm.code("LDW R0, #NEWLINE", "puts newline char in R0");
+        asm.code("TRP #WRITE_EXC", "prints the newline char");
+
         asm.code("TRP #EXIT_EXC", "EXIT: arrête le programme");
 
         return CodeInfo.empty();
@@ -128,8 +136,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             // Evaluate the argument value and put it on the stack (in other visit() methods)
             args.accept(this);
         }
-        Procedure procedure =
-                currentSymbolTable.resolve(ast.getChild(0).getText(), Procedure.class);
+        String name = ast.getChild(0).getText();
+        Procedure procedure = currentSymbolTable.resolve(name, Procedure.class);
         // Call the procedure using the generated procedure label (Procedure::getAsmLabel())
         String label = procedure.getAsmLabel();
         asm.code("JSR @" + label, "appelle la fonction d'adresse outstring:");
