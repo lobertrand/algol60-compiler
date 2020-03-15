@@ -49,6 +49,7 @@ public class Main {
         // Assembly asm = Assembly.exampleWrite("HELLO  ");
         Assembly asm = new Assembly();
         CodeGeneratorVisitor codeGenerator = new CodeGeneratorVisitor(symbolTable, asm);
+        codeGenerator.setInput(String.valueOf(input));
         ast.accept(codeGenerator);
         assembleAndExecute(asm.toString());
     }

@@ -95,7 +95,7 @@ public enum Type {
             case INTEGER:
             case REAL:
             case STRING:
-                return 4;
+                return 2;
             default:
                 return 0;
         }

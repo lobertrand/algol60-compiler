@@ -14,6 +14,8 @@ public class SymbolTable {
     private AtomicInteger numberOfTables;
     private int currentVariableShift = 0;
     private int currentParameterShift = 0;
+    private int localVariableSize = 0;
+
     /** This constructor is used to create the root of a SymbolTable tree */
     public SymbolTable() {
         // LinkedHashMap keeps the keys in the order they are stored
@@ -41,13 +43,20 @@ public class SymbolTable {
 
     public void define(Symbol symbol) {
         if (symbol.isParameter()) {
-            this.currentParameterShift -= symbol.getShift();
-            symbol.SetShift(this.currentParameterShift);
+            this.currentParameterShift += symbol.getSize();
+            symbol.setShift(this.currentParameterShift);
         } else {
-            this.currentVariableShift += symbol.getShift();
-            symbol.SetShift(this.currentVariableShift);
+            this.currentVariableShift -= symbol.getSize();
+            symbol.setShift(this.currentVariableShift);
         }
         symbols.put(symbol.getIdentifier(), symbol);
+        if (!symbol.isParameter()) {
+            localVariableSize += symbol.getSize();
+        }
+    }
+
+    public int getLocalVariableSize() {
+        return localVariableSize;
     }
 
     public boolean isDeclaredInScope(String idf) {

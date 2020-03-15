@@ -39,6 +39,10 @@ public abstract class Symbol {
         return type;
     }
 
+    public int getSize() {
+        return type.getSize();
+    }
+
     public Kind getKind() {
         return kind;
     }
@@ -52,7 +56,7 @@ public abstract class Symbol {
         return this.shift;
     }
 
-    public void SetShift(int shift) {
+    public void setShift(int shift) {
         this.shift = shift;
     }
 

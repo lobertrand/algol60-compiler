@@ -8,15 +8,15 @@ public class Assembly {
     public static final String STRING_DEF_MARKER = "###_STRING_DEF_###";
 
     private StringBuilder normalLines;
-    private StringBuilder stringDefinitions;
-    private StringBuilder procedureDeclarations;
+    private StringBuilder constants;
+    private StringBuilder procedures;
     private Stack<StringBuilder> procedureStack;
     private Mode mode;
 
     public Assembly() {
         normalLines = new StringBuilder();
-        stringDefinitions = new StringBuilder();
-        procedureDeclarations = new StringBuilder();
+        constants = new StringBuilder();
+        procedures = new StringBuilder();
         procedureStack = new Stack<>();
         mode = Mode.NORMAL;
     }
@@ -30,7 +30,7 @@ public class Assembly {
         if (procedureStack.isEmpty()) {
             throw new IllegalStateException("Too many endProcedureDeclaration()");
         }
-        procedureDeclarations.append(procedureStack.pop());
+        procedures.append(procedureStack.pop());
         if (procedureStack.isEmpty()) {
             mode = Mode.NORMAL;
         }
@@ -67,11 +67,18 @@ public class Assembly {
     }
 
     public void string(String constant, String value) {
-        stringDefinitions.append(INDENT);
+        constants.append(INDENT);
         String quotedStr = '"' + value + '"';
-        String pattern = "%-10s string  %-10s";
-        stringDefinitions.append(String.format(pattern, constant, quotedStr));
-        stringDefinitions.append(LINE_SEPARATOR);
+        String pattern = "%-12s string  %-8s";
+        constants.append(String.format(pattern, constant, quotedStr));
+        constants.append(LINE_SEPARATOR);
+    }
+
+    public void byteDef(String constant, int value) {
+        constants.append(INDENT);
+        String pattern = "%-12s byte    %-8d";
+        constants.append(String.format(pattern, constant, value));
+        constants.append(LINE_SEPARATOR);
     }
 
     public void putStringDefinitionsHere() {
@@ -82,13 +89,13 @@ public class Assembly {
     public void equ(String constant, String value, String comment) {
         normalLines.append(INDENT);
         normalLines.append(
-                String.format("%-10s equ     %-10s %s", constant, value, "// " + comment));
+                String.format("%-12s equ     %-8s %s", constant, value, "// " + comment));
         normalLines.append(LINE_SEPARATOR);
     }
 
     public void def(String key, String value, String comment) {
         normalLines.append(INDENT);
-        normalLines.append(String.format("%-10s %-18s %s", key, value, "// " + comment));
+        normalLines.append(String.format("%-12s %-16s %s", key, value, "// " + comment));
         normalLines.append(LINE_SEPARATOR);
     }
 
@@ -105,8 +112,8 @@ public class Assembly {
     public String toString() {
         return normalLines
                 .toString()
-                .replaceFirst(STRING_DEF_MARKER, stringDefinitions.toString())
-                .concat(procedureDeclarations.toString());
+                .replaceFirst(STRING_DEF_MARKER, constants.toString())
+                .concat(procedures.toString());
     }
 
     public static Assembly exampleWrite(String str) {

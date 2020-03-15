@@ -1,9 +1,9 @@
     // prépare l'environnement de la fonction appelée (prologue) :
-    LDQ 0, R1           // R1 = taille données locales (ici 0) de fonction appelée
+    // LDQ 0, R1           // R1 = taille données locales (ici 0) de fonction appelée
     ADQ -2, SP          // décrémente le pointeur de pile SP
     STW BP, (SP)        // sauvegarde le contenu du registre BP sur la pile
     LDW BP, SP          // charge contenu SP ds BP qui pointe sur sa sauvegarde
-    SUB SP, R1, SP      // réserve R1 octets sur la pile pour la variable locale z
+    // SUB SP, R1, SP      // réserve R1 octets sur la pile pour la variable locale z
 
     // charge R0 avec le paramètre p de déplacement 4
     LDW R0, BP          // R0 = BP

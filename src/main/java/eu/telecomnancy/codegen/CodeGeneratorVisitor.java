@@ -9,7 +9,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     private SymbolTable currentSymbolTable;
     private int currentTableNumber;
     private Assembly asm;
-    private String instruction;
+    private String[] input;
 
     public CodeGeneratorVisitor(SymbolTable symbolTable, Assembly asm) {
         PredefinedCode.appendAliases(asm);
@@ -23,14 +23,24 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.def("START", "main", "adresse de démarrage");
 
         asm.newline();
-        asm.code("NEWLINE byte 10", "New line character");
+        asm.byteDef("NEWLINE", 10);
 
-        asm.comment("Définitions de chaînes de caractère");
+        asm.comment("Définitions de constantes");
         asm.putStringDefinitionsHere();
 
         this.currentSymbolTable = symbolTable;
         this.currentTableNumber = 0;
         this.asm = asm;
+    }
+
+    public void setInput(String inputCode) {
+        this.input = inputCode.split("\n");
+    }
+
+    private String getLineOfCode(DefaultAST ast) {
+        if (input == null) return "Use function setInput() to display lines of code";
+        int index = ast.getLine() - 1;
+        return input[index].trim();
     }
 
     private void pushTable() {
@@ -55,18 +65,27 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(RootAST ast) {
         // Beginning of the program
-        asm.label("main", "Point d'entrée");
+        asm.label("main", "Entry point");
+
+        int size = currentSymbolTable.getLocalVariableSize();
+        asm.comment("Prepare main environment");
+        //        asm.code("LDW R1, #" + size, "Local variables size into R1");
+        asm.code("ADQ -2, SP", "Decrement stack pointer");
+        asm.code("STW BP, (SP)", "Save base pointer on the stack");
+        asm.code("LDW BP, SP", "Update base pointer");
+        //        asm.code("SUB SP, R1, SP", "Make space for local variables on the stack");
 
         // Main block instructions
         ast.getChild(0).accept(this);
 
         // Final operations
-        asm.code("LDW R0, #NEWLINE", "puts newline char in R0");
-        asm.code("TRP #WRITE_EXC", "prints the newline char");
-        asm.code("LDW R0, #NEWLINE", "puts newline char in R0");
-        asm.code("TRP #WRITE_EXC", "prints the newline char");
+        asm.comment("White space at the end");
+        asm.code("LDW R0, #NEWLINE", "Put newline byte in R0");
+        asm.code("TRP #WRITE_EXC", "Print newline");
+        asm.code("TRP #WRITE_EXC", "Print newline");
 
-        asm.code("TRP #EXIT_EXC", "EXIT: arrête le programme");
+        asm.comment("Exit");
+        asm.code("TRP #EXIT_EXC", "Exit program");
 
         return CodeInfo.empty();
     }
@@ -84,10 +103,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(VarDecAST ast) {
         for (DefaultAST var : ast.getChild(1)) {
-            String var_name = var.getText();
-            Symbol variable = currentSymbolTable.resolve(var_name);
-            asm.code("LDW WR, #0", "");
-            asm.code("LDW WR, -(SP)", "");
+            String varName = var.getText();
+            Symbol variable = currentSymbolTable.resolve(varName);
+            asm.comment("Put variable '" + varName + "' on the stack");
+            asm.code("LDW WR, #0", "Initialize variable '" + varName + "' with 0");
+            asm.code("LDW WR, -(SP)", "Place '" + varName + "' on the stack");
         }
         return CodeInfo.empty();
     }
@@ -129,18 +149,18 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ProcCallAST ast) {
-        // TODO: For each argument passed to the procedure call
+        String name = ast.getChild(0).getText();
+        asm.comment("Call procedure '" + name + "'");
         for (DefaultAST args : ast.getChild(1)) {
             asm.code("ADQ -2, SP", "décrémente le pointeur de pile SP");
             asm.code("STW R1, (SP)", "sauvegarde le contenu du registre R1 sur la pile");
             // Evaluate the argument value and put it on the stack (in other visit() methods)
             args.accept(this);
         }
-        String name = ast.getChild(0).getText();
         Procedure procedure = currentSymbolTable.resolve(name, Procedure.class);
         // Call the procedure using the generated procedure label (Procedure::getAsmLabel())
         String label = procedure.getAsmLabel();
-        asm.code("JSR @" + label, "appelle la fonction d'adresse outstring:");
+        asm.code("JSR @" + label, "appelle la fonction");
         int nbParams = ast.getChild(1).getChildCount();
         if (nbParams != 0) {
             asm.code("LDW WR, #" + nbParams, "WR = taille totale des paramètres");
@@ -223,17 +243,16 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(AssignmentAST ast) {
         // TODO: Finish the assignment of values (int values first)
-        asm.comment("Assignment");
         DefaultAST leftPart = ast.getChild(0);
         String identifier = leftPart.getText();
         Variable variable = currentSymbolTable.resolve(identifier, Variable.class);
+        int shift = variable.getShift();
         DefaultAST rightPart = ast.getChild(1);
-        rightPart.accept(this);
 
-        asm.code("LDW WR, BP", "");
-        asm.code(String.format("ADQ %d,WR", variable.getShift()), "");
-        asm.code("STW R1,(WR)", "");
-        leftPart.accept(this);
+        asm.comment("Assignment: " + getLineOfCode(ast));
+        rightPart.accept(this); // Puts the value on the stack
+        asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+        asm.code(String.format("STW R1, (BP)%d", shift), "Store value into '" + identifier + "'");
 
         return CodeInfo.empty();
     }
@@ -285,12 +304,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IntAST ast) {
-        // TODO: Put the int value into R1
-        String integer = ast.getText();
-        asm.comment("INT");
-        asm.code(String.format("LDW R1,#%s", integer), "");
-        asm.code("STW R1, -(SP)", "empile l'entier contenu dans R1");
-        // asm.code();
+        String value = ast.getText();
+        asm.code(String.format("LDW R1, #%s", value), String.format("Load int value %s", value));
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
@@ -334,10 +350,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.comment("Add");
         leftPart.accept(this);
         rightPart.accept(this);
-        asm.code("LDW R1, (SP)+", "Depile");
-        asm.code("LDW R2, (SP)+", "Depile");
-        asm.code("ADD R1 ,R2,R1", "fait le calcul et le stock dans R1");
-        asm.code("STW R1,-(SP)", "");
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("ADD R1, R2, R1", "Add first and second value");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
 
         return CodeInfo.empty();
     }
@@ -365,7 +381,12 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         // TODO: Find the variable with a "resolve" in the current symbol table
         // Get its shift and compute the address where the value of the variable is stored
         // (Take into account whether the variable is local or non-local)
-        // Put the value of the variable into R1
+        // Put the value of the variable on the stack
+        String name = ast.getText();
+        Variable variable = currentSymbolTable.resolve(name, Variable.class);
+        int shift = variable.getShift();
+        asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
+        asm.code("STW R1, -(SP)", "Push value of '" + name + "' on the stack");
 
         return CodeInfo.empty();
     }
