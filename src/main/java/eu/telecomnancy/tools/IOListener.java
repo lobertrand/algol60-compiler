@@ -31,6 +31,14 @@ public class IOListener {
         private String output;
         private String error;
 
+        public String getError() {
+            return error;
+        }
+
+        public String getOutput() {
+            return output;
+        }
+
         public Result ifOutput(Consumer<String> stringConsumer) {
             if (!output.isEmpty()) stringConsumer.accept(output);
             return this;

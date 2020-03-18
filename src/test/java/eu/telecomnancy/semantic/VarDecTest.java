@@ -4,6 +4,7 @@ import static eu.telecomnancy.semantic.Helper.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import eu.telecomnancy.Content;
 import eu.telecomnancy.symbols.Symbol;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.symbols.Type;

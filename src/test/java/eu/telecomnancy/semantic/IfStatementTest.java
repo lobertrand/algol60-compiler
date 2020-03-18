@@ -2,6 +2,7 @@ package eu.telecomnancy.semantic;
 
 import static eu.telecomnancy.semantic.Helper.*;
 
+import eu.telecomnancy.Content;
 import org.antlr.runtime.RecognitionException;
 import org.junit.Test;
 
