@@ -262,12 +262,21 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(ArrayDecAST ast) {
         DefaultAST boundList = ast.getChild(2);
-
+        CodeInfo firstBound = CodeInfo.empty();
+        CodeInfo lastBound = CodeInfo.empty();
         for (DefaultAST bound : boundList) {
             DefaultAST first = bound.getChild(0);
             DefaultAST last = bound.getChild(1);
-            first.accept(this);
-            last.accept(this);
+            firstBound = first.accept(this);
+            lastBound = last.accept(this);
+        }
+        int firstBoundInt = firstBound.getValue();
+        int lastBoundInt = lastBound.getValue();
+        asm.code("LDW WR, #" + (lastBoundInt - firstBoundInt), "Initialize variable  with 0");
+        asm.code("LDW WR, -(SP)", "Place on the stack");
+        for (int i = 0; i < (lastBoundInt - firstBoundInt); i++) {
+            asm.code("LDW WR, #0", "Initialize variable  with 0");
+            asm.code("LDW WR, -(SP)", "Place on the stack");
         }
         return CodeInfo.empty();
     }
@@ -327,6 +336,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String value = ast.getText();
         asm.code(String.format("LDW R1, #%s", value), String.format("Load int value %s", value));
         asm.code("STW R1, -(SP)", "Put it on the stack");
+        CodeInfo c = CodeInfo.empty();
+        c.setValue(value);
         return CodeInfo.empty();
     }
 
