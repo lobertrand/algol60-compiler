@@ -448,8 +448,13 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(NotAST ast) {
-        DefaultAST child = ast.getChild(0);
-        child.accept(this);
+        String value = ast.getText();
+        if (value.equals("true")) {
+            asm.code("LDW R1, #0", "Load int value 0 when true");
+        } else {
+            asm.code("LDW R1, #1", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
