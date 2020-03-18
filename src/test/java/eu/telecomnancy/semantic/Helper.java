@@ -80,25 +80,6 @@ public class Helper {
         return exceptions.stream().map(SemanticException::getLine).collect(Collectors.toSet());
     }
 
-    public static class Content {
-        private StringBuilder sb;
-
-        public Content() {
-            sb = new StringBuilder();
-        }
-
-        public Content line(String content) {
-            sb.append(content);
-            sb.append("\n");
-            return this;
-        }
-
-        @Override
-        public String toString() {
-            return sb.toString();
-        }
-    }
-
     public static void assertExceptionQuantity(int n, Result result) {
         if (n != result.exceptions.size()) result.printExceptions();
         assertEquals("There should be " + n + " exceptions", n, result.exceptions.size());

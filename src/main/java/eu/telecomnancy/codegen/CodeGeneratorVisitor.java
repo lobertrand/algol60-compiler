@@ -16,6 +16,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         PredefinedCode.appendOutstringCode(asm);
         PredefinedCode.appendItoaCode(asm);
         PredefinedCode.appendOutintegerCode(asm);
+        PredefinedCode.appendOutrealCode(asm);
         PredefinedCode.appendLineCode(asm);
 
         asm.newline();
@@ -283,7 +284,15 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(MultAST ast) {
-        checkArithmeticOperation(ast);
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        asm.comment("Mul");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("MUL R1, R2, R1", "Mul first and second value");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
         return CodeInfo.empty();
     }
 
@@ -323,6 +332,13 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(RealAST ast) {
+        float floatValue = Float.parseFloat(ast.getText());
+        int intValue = Math.round(floatValue);
+        String strValue = String.valueOf(intValue);
+        asm.code(
+                String.format("LDW R1, #%s", strValue),
+                String.format("Load int value %s", strValue));
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
@@ -360,7 +376,15 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(MinusAST ast) {
-        checkArithmeticOperation(ast);
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        asm.comment("Substraction");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("SUB R2, R1 , R1", "reduce first value from the second ");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
         return CodeInfo.empty();
     }
 

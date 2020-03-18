@@ -50,7 +50,14 @@ public class PredefinedCode {
 
     public static void appendOutintegerCode(Assembly asm) {
         asm.beginProcedureDeclaration();
-        asm.label("outinteger_", "fonction d'affichage (string)");
+        asm.label("outinteger_", "fonction d'affichage (integer)");
+        asm.insert(IOUtils.loadString("/code/outinteger_cisc.asm"));
+        asm.endProcedureDeclaration();
+    }
+
+    public static void appendOutrealCode(Assembly asm) {
+        asm.beginProcedureDeclaration();
+        asm.label("outreal_", "fonction d'affichage (real)");
         asm.insert(IOUtils.loadString("/code/outinteger_cisc.asm"));
         asm.endProcedureDeclaration();
     }

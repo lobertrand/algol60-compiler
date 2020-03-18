@@ -3,6 +3,7 @@ package eu.telecomnancy.semantic;
 import static eu.telecomnancy.semantic.Helper.*;
 import static org.junit.Assert.assertEquals;
 
+import eu.telecomnancy.Content;
 import org.antlr.runtime.RecognitionException;
 import org.junit.Test;
 
