@@ -274,13 +274,13 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             int firstBoundInt = firstBound.getValue();
             int lastBoundInt = lastBound.getValue();
             a = a * (lastBoundInt - firstBoundInt + 1);
+            asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+            asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
         }
 
-        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
-        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
         asm.code(
                 String.format("LDW R1, #%s", a), "Initialize variable  with the size of the array");
-        asm.code("LDW WR, -(SP)", "Place on the stack");
+        asm.code("LDW R1, -(SP)", "Place on the stack");
         for (int i = 0; i <= a; i++) {
             asm.code("LDW WR, #0", "Initialize variable  with 0");
             asm.code("LDW WR, -(SP)", "Place on the stack");
