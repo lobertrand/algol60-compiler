@@ -1,0 +1,76 @@
+Algol60> Lexical analysis successful
+Algol60> Syntactic analysis successful
+┌───────────────────────────────────────────────┐
+│ level: 0, tableNumber: 0                      │
+├───────────────────────────────────────────────┤
+│ Procedure: void outstring(integer, string)    │
+│ Procedure: void outboolean(integer, boolean)  │
+│ Procedure: void outinteger(integer, integer)  │
+│ Procedure: void outreal(integer, real)        │
+│ Procedure: void inreal(integer, real)         │
+│ Procedure: void ininteger(integer, integer)   │
+│ Procedure: integer entier(real)               │
+└───────────────────────────────────────────────┘
+    ┌───────────────────────────────────────────────┐
+    │ level: 1, tableNumber: 1                      │
+    ├───────────────────────────────────────────────┤
+    │ Procedure: integer getMessageNumber(integer)  │
+    │ Variable: string a                            │
+    └───────────────────────────────────────────────┘
+        ┌───────────────────────────────────────────────────┐
+        │ level: 2, tableNumber: 2                          │
+        ├───────────────────────────────────────────────────┤
+        │ Variable: integer grade (value param)             │
+        │ Variable: integer getMessageNumber (proc. result) │
+        └───────────────────────────────────────────────────┘
+            ┌──────────────────────────┐
+            │ level: 3, tableNumber: 3 │
+            ├──────────────────────────┤
+            │ Variable: real a         │
+            └──────────────────────────┘
+        ┌────────────────────────────────────┐
+        │ level: 2, tableNumber: 4           │
+        ├────────────────────────────────────┤
+        │ Array: string array messages[?:3]  │
+        └────────────────────────────────────┘
+
+Algol60> Missing return at line 2: Procedure 'getMessageNumber' may never return an integer
+     2 |     integer procedure getMessageNumber(grade);
+       |                       ^
+Algol60> Parameter mismatch at line 3: 'extra' is not a parameter of procedure 'getMessageNumber'
+     3 |     value grade; integer grade; integer extra;
+       |                                         ^
+Algol60> Type mismatch at line 20: Cannot assign an integer to 'a' of type string
+    20 |     a := 1;
+       |     ^
+Algol60> Symbol not declared at line 21: Procedure 'notDeclared' is not declared
+    21 |     notDeclared();
+       |     ^
+Algol60> Type mismatch at line 23: Bounds must be of type integer or real but bound start is a string
+    23 |         string array messages[a:3];
+       |                               ^
+Algol60> Index out of bounds at line 28: Array index '4' is out of bounds in 'messages' with bounds ?:3
+    28 |         messages[4] := "great";
+       |                  ^
+Algol60> Symbol not declared at line 30: Variable 'msg' is not declared
+    30 |         msg := messages[getMessageNumber(12.5)];
+       |         ^
+Algol60> Type mismatch at line 30: Parameter #1 of procedure 'getMessageNumber' expects an integer but it received a real
+    30 |         msg := messages[getMessageNumber(12.5)];
+       |                                          ^
+Algol60> Type mismatch at line 33: Cannot iterate on string type
+    33 |     for a := 1, 2, 3 do
+       |         ^
+Algol60> Type mismatch at line 33: Cannot assign an integer to 'a' of type string
+    33 |     for a := 1, 2, 3 do
+       |              ^
+Algol60> Type mismatch at line 33: Cannot assign an integer to 'a' of type string
+    33 |     for a := 1, 2, 3 do
+       |                 ^
+Algol60> Type mismatch at line 33: Cannot assign an integer to 'a' of type string
+    33 |     for a := 1, 2, 3 do
+       |                    ^
+Algol60> Unreachable statement at line 34: Cannot declare a label inside a one-line for loop
+    34 |         myLabel:;
+       |         ^
+Algol60> Terminated with 13 semantic exceptions

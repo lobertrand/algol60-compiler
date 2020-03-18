@@ -12,6 +12,9 @@ public class SymbolTable {
     private int tableNumber;
     private int level;
     private AtomicInteger numberOfTables;
+    private int currentVariableShift = 0;
+    private int currentParameterShift = 0;
+    private int localVariableSize = 0;
 
     /** This constructor is used to create the root of a SymbolTable tree */
     public SymbolTable() {
@@ -39,7 +42,21 @@ public class SymbolTable {
     }
 
     public void define(Symbol symbol) {
+        if (symbol.isParameter()) {
+            this.currentParameterShift += symbol.getSize();
+            symbol.setShift(this.currentParameterShift);
+        } else {
+            this.currentVariableShift -= symbol.getSize();
+            symbol.setShift(this.currentVariableShift);
+        }
         symbols.put(symbol.getIdentifier(), symbol);
+        if (!symbol.isParameter()) {
+            localVariableSize += symbol.getSize();
+        }
+    }
+
+    public int getLocalVariableSize() {
+        return localVariableSize;
     }
 
     public boolean isDeclaredInScope(String idf) {
@@ -52,6 +69,29 @@ public class SymbolTable {
             return result;
         } else if (parent != null) {
             return parent.resolve(identifier);
+        } else {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Symbol> T resolve(String identifier, Class<T> clazz) {
+        Symbol result = symbols.get(identifier);
+        if (result != null && result.getClass() == clazz) {
+            return (T) result;
+        } else if (parent != null) {
+            return parent.resolve(identifier, clazz);
+        } else {
+            return null;
+        }
+    }
+
+    public Symbol resolve(String identifier, Kind kind) {
+        Symbol result = symbols.get(identifier);
+        if (result != null && result.getKind() == kind) {
+            return result;
+        } else if (parent != null) {
+            return parent.resolve(identifier, kind);
         } else {
             return null;
         }
@@ -71,6 +111,12 @@ public class SymbolTable {
 
     public SymbolTable getChild(int i) {
         return i < children.size() ? children.get(i) : null;
+    }
+
+    public SymbolTable getChildWithNumber(int tableNumber) {
+        for (SymbolTable child : children) if (child.getTableNumber() == tableNumber) return child;
+        throw new RuntimeException(
+                "Child #" + tableNumber + " doesn't exist on table #" + tableNumber);
     }
 
     public int getLevel() {

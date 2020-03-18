@@ -1,0 +1,30 @@
+Algol60> Lexical analysis successful
+Algol60> Syntactic analysis successful
+┌───────────────────────────────────────────────┐
+│ level: 0, tableNumber: 0                      │
+├───────────────────────────────────────────────┤
+│ Procedure: void outstring(integer, string)    │
+│ Procedure: void outboolean(integer, boolean)  │
+│ Procedure: void outinteger(integer, integer)  │
+│ Procedure: void outreal(integer, real)        │
+│ Procedure: void inreal(integer, real)         │
+│ Procedure: void ininteger(integer, integer)   │
+│ Procedure: integer entier(real)               │
+└───────────────────────────────────────────────┘
+    ┌──────────────────────────┐
+    │ level: 1, tableNumber: 1 │
+    ├──────────────────────────┤
+    │ Variable: integer a      │
+    │ Variable: integer b      │
+    │ Label: switchEnd         │
+    └──────────────────────────┘
+        ┌────────────────────────────────┐
+        │ level: 2, tableNumber: 2       │
+        ├────────────────────────────────┤
+        │ Switch: state [first, second]  │
+        │ Variable: boolean chooseFirst  │
+        │ Label: first                   │
+        │ Label: second                  │
+        └────────────────────────────────┘
+
+Algol60> Semantic analysis successful

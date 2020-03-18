@@ -5,12 +5,14 @@ public abstract class Symbol {
     private Type type;
     private Kind kind;
     private Mode mode;
+    private int shift;
 
     public Symbol(String idf, Type type, Kind kind) {
         this.identifier = idf;
         this.type = type;
         this.kind = kind;
         this.mode = null;
+        this.shift = this.type.getSize();
     }
 
     public boolean isParameter() {
@@ -37,6 +39,10 @@ public abstract class Symbol {
         return type;
     }
 
+    public int getSize() {
+        return type.getSize();
+    }
+
     public Kind getKind() {
         return kind;
     }
@@ -44,6 +50,14 @@ public abstract class Symbol {
     protected String modeToString() {
         if (mode == null) return "";
         return mode.toString();
+    }
+
+    public int getShift() {
+        return this.shift;
+    }
+
+    public void setShift(int shift) {
+        this.shift = shift;
     }
 
     public enum Mode {

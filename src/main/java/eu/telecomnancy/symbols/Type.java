@@ -88,6 +88,19 @@ public enum Type {
         }
     }
 
+    public int getSize() {
+        switch (this) {
+            case BOOLEAN:
+                return 1;
+            case INTEGER:
+            case REAL:
+            case STRING:
+                return 2;
+            default:
+                return 0;
+        }
+    }
+
     public String withPronoun() {
         return pronoun() + " " + name().toLowerCase().replace('_', ' ');
     }

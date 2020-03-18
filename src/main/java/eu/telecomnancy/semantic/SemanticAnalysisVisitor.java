@@ -257,9 +257,9 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
 
         if (s.getKind() != Kind.PROCEDURE) {
-            if (s.getKind() == Kind.VARIABLE && ((Variable) s).isResultValue()) {
+            if (s.getKind() == Kind.VARIABLE && s.isResultValue()) {
                 // Allows recursive calls of procedure
-                s = currentSymbolTable.getParent().resolve(procCallName);
+                s = currentSymbolTable.getParent().resolve(procCallName, Kind.PROCEDURE);
             } else {
                 throw new SymbolNotDeclaredException(
                         String.format(

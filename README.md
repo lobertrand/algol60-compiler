@@ -17,10 +17,15 @@ Réalisation d'un compilateur pour le language Algol60 (avec ANTLR)
 ### Exécution du compilateur
 
 <pre>
-# En utilisant l'entrée standard
-./gradlew run --console=plain -q < <i>TESTFILE</i>
-# Ou en passant le chemin du fichier en paramètre
-./gradlew run --console=plain -q --args="<i>TESTFILE</i>"
+# En passant un chemin de fichier Algol60 en paramètre
+./gradlew run --console=plain -q --args <i>test.alg</i>
+
+# En écrivant le programme en argument(s)
+./gradlew run --console=plain -q --args """
+<i>begin
+  integer a
+end</i>
+"""
 </pre> 
 
 Permet de compiler le projet et d'exécuter le compilateur sur le fichier dont le chemin est spécifié par *TESTFILE*.
@@ -34,6 +39,20 @@ Permet de compiler le projet et d'exécuter tous les tests unitaires
 
 <pre>./gradlew jar</pre>
 Permet de créer un jar exécutable contenant tous les éléments nécessaires pour pouvoir être exécuté (ANTLR est inclu dedans). Ce fichier est généré à l'emplacement `build/libs/algol60_compiler.jar`
+
+**Exécution du jar :**
+
+<pre>
+# En passant un chemin de fichier Algol60 en paramètre
+java -jar build/libs/algol60_compiler.jar <i>test.alg</i>
+
+# En écrivant le programme en argument(s)
+java -jar build/libs/algol60_compiler.jar """
+<i>begin
+  integer a
+end</i>
+"""
+</pre> 
 
 ## Observations
 

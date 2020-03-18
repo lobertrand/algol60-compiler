@@ -8,7 +8,12 @@ begin
         else if grade < 14 then
             getMessageNumber := 2
         comment else
-            getMessageNumber := 3 ;
+            getMessageNumber := 3 ;;
+            
+        begin
+          real a;
+          a := getMessageNumber(45)
+        end
     end;
 
     string a;

@@ -5,17 +5,9 @@ import static eu.telecomnancy.tools.StringTools.*;
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.syntax.InvalidNumberException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
 import java.util.Optional;
+import java.util.Scanner;
 import org.antlr.runtime.*;
 import org.antlr.runtime.tree.DOTTreeGenerator;
 import org.antlr.runtime.tree.Tree;
@@ -102,32 +94,42 @@ public class IOUtils {
         return Math.max(colNumber, 0);
     }
 
-    public static void generateDotTree(Tree tree, String name) throws IOException {
+    public static void generateDotTree(Tree tree, String name)
+            throws IOException, InterruptedException {
         DOTTreeGenerator gen = new DOTTreeGenerator();
         StringTemplate st = gen.toDOT(tree);
         String dotTree = st.toString();
 
         // Write dot tree in a file
-        File file = new File(name + ".dot");
-        file.createNewFile();
-        FileWriter writer = new FileWriter(file);
-        writer.write(dotTree);
-        writer.flush();
-        writer.close();
+        writeStringToFile(dotTree, name + ".dot");
 
         // Create pdf from dot tree file (if dot command exists)
-        ProcessBuilder processBuilder = new ProcessBuilder();
-        processBuilder.command("dot", "-Tpdf", name + ".dot", "-o", name + ".pdf");
-        processBuilder.start();
+        ProcessBuilder pb = new ProcessBuilder("dot", "-Tpdf", name + ".dot", "-o", name + ".pdf");
+        Process p = pb.start();
+        p.waitFor();
+        p.destroy();
     }
 
-    public static String loadString(String resourcePath) throws IOException, URISyntaxException {
-        URL url = IOUtils.class.getResource(resourcePath);
-        if (url == null) {
-            throw new FileNotFoundException(resourcePath);
+    public static void writeStringToFile(String str, String fileName) {
+        File file = new File(fileName);
+        try {
+            file.createNewFile();
+            FileWriter writer = new FileWriter(file);
+            writer.write(str);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            logError(e);
         }
-        URI uri = url.toURI();
-        Path path = Paths.get(uri);
-        return new String(Files.readAllBytes(path));
+    }
+
+    public static String loadString(String resourcePath) {
+        try {
+            InputStream inputStream = IOUtils.class.getResourceAsStream(resourcePath);
+            Scanner scanner = new Scanner(inputStream, "UTF-8").useDelimiter("\\A");
+            return scanner.next();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -8,6 +8,7 @@ public class Variable extends Symbol {
 
     @Override
     public String toString() {
-        return String.format("Variable: %s %s %s", getType(), getIdentifier(), modeToString());
+        return String.format(
+                "Variable: %s %s %s  %d", getType(), getIdentifier(), modeToString(), getShift());
     }
 }
