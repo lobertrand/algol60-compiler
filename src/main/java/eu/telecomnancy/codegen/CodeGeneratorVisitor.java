@@ -360,7 +360,15 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(MinusAST ast) {
-        checkArithmeticOperation(ast);
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        asm.comment("Substraction");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("SUB R2, R1 , R1", "reduce first value from the second ");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
         return CodeInfo.empty();
     }
 
