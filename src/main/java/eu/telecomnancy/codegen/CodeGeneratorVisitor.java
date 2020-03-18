@@ -16,6 +16,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         PredefinedCode.appendOutstringCode(asm);
         PredefinedCode.appendItoaCode(asm);
         PredefinedCode.appendOutintegerCode(asm);
+        PredefinedCode.appendOutrealCode(asm);
         PredefinedCode.appendLineCode(asm);
 
         asm.newline();
@@ -331,6 +332,13 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(RealAST ast) {
+        float floatValue = Float.parseFloat(ast.getText());
+        int intValue = Math.round(floatValue);
+        String strValue = String.valueOf(intValue);
+        asm.code(
+                String.format("LDW R1, #%s", strValue),
+                String.format("Load int value %s", strValue));
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
