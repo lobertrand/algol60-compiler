@@ -283,7 +283,15 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(MultAST ast) {
-        checkArithmeticOperation(ast);
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        asm.comment("Add");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("MUL R1, R2, R1", "Add first and second value");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
         return CodeInfo.empty();
     }
 
