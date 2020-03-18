@@ -261,20 +261,27 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ArrayDecAST ast) {
+
         DefaultAST boundList = ast.getChild(2);
         CodeInfo firstBound = CodeInfo.empty();
         CodeInfo lastBound = CodeInfo.empty();
+        int a = 1;
         for (DefaultAST bound : boundList) {
             DefaultAST first = bound.getChild(0);
             DefaultAST last = bound.getChild(1);
             firstBound = first.accept(this);
             lastBound = last.accept(this);
+            int firstBoundInt = firstBound.getValue();
+            int lastBoundInt = lastBound.getValue();
+            a = a * (lastBoundInt - firstBoundInt + 1);
         }
-        int firstBoundInt = firstBound.getValue();
-        int lastBoundInt = lastBound.getValue();
-        asm.code("LDW WR, #" + (lastBoundInt - firstBoundInt), "Initialize variable  with 0");
+
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code(
+                String.format("LDW R1, #%s", a), "Initialize variable  with the size of the array");
         asm.code("LDW WR, -(SP)", "Place on the stack");
-        for (int i = 0; i < (lastBoundInt - firstBoundInt); i++) {
+        for (int i = 0; i <= a; i++) {
             asm.code("LDW WR, #0", "Initialize variable  with 0");
             asm.code("LDW WR, -(SP)", "Place on the stack");
         }
@@ -338,7 +345,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("STW R1, -(SP)", "Put it on the stack");
         CodeInfo c = CodeInfo.empty();
         c.setValue(value);
-        return CodeInfo.empty();
+        return c;
     }
 
     @Override
@@ -365,7 +372,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(StrAST ast) {
-        // TODO: register the string value into "asm" variable using the UniqueReference class
         String content = ast.getText();
         String label = UniqueReference.forString();
         asm.string(label, content);
@@ -421,16 +427,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IdentifierAST ast) {
-        // TODO: Find the variable with a "resolve" in the current symbol table
-        // Get its shift and compute the address where the value of the variable is stored
-        // (Take into account whether the variable is local or non-local)
-        // Put the value of the variable on the stack
         String name = ast.getText();
         Variable variable = currentSymbolTable.resolve(name, Variable.class);
         int shift = variable.getShift();
         asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
         asm.code("STW R1, -(SP)", "Push value of '" + name + "' on the stack");
-
         return CodeInfo.empty();
     }
 
