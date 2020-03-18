@@ -1,7 +1,7 @@
 package eu.telecomnancy.codegen;
 
 public class CodeInfo {
-    private static final CodeInfo EMPTY = new CodeInfo();
+
     private int value;
 
     private CodeInfo() {
@@ -9,7 +9,7 @@ public class CodeInfo {
     }
 
     public void setValue(String s) {
-        this.value = Integer.parseInt(s);
+        value = Integer.parseInt(s);
     }
 
     public int getValue() {
@@ -17,6 +17,6 @@ public class CodeInfo {
     }
 
     public static CodeInfo empty() {
-        return EMPTY;
+        return new CodeInfo();
     }
 }
