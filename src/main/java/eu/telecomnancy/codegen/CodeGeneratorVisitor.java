@@ -365,7 +365,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(StrAST ast) {
-        // TODO: register the string value into "asm" variable using the UniqueReference class
         String content = ast.getText();
         String label = UniqueReference.forString();
         asm.string(label, content);
@@ -421,16 +420,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IdentifierAST ast) {
-        // TODO: Find the variable with a "resolve" in the current symbol table
-        // Get its shift and compute the address where the value of the variable is stored
-        // (Take into account whether the variable is local or non-local)
-        // Put the value of the variable on the stack
         String name = ast.getText();
         Variable variable = currentSymbolTable.resolve(name, Variable.class);
         int shift = variable.getShift();
         asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
         asm.code("STW R1, -(SP)", "Push value of '" + name + "' on the stack");
-
         return CodeInfo.empty();
     }
 
