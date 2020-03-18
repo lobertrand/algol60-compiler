@@ -1,0 +1,4 @@
+	LDW R0, #DIV0
+	LDW WR, #WRITE_EXC
+    TRP WR
+    TRP #EXIT_EXC 

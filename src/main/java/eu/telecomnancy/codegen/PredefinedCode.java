@@ -32,6 +32,7 @@ public class PredefinedCode {
                 "ASCII_A",
                 "65",
                 "code ASCII de A (les autres lettres jusqu'à Z suivent dans l'ordre alphabétique)");
+        asm.string("DIV0", "ERROR: DIVISION BY 0");
     }
 
     public static void appendOutstringCode(Assembly asm) {
@@ -66,6 +67,13 @@ public class PredefinedCode {
         asm.beginProcedureDeclaration();
         asm.label("line_", "fonction de retour à la ligne");
         asm.insert(IOUtils.loadString("/code/line.asm"));
+        asm.endProcedureDeclaration();
+    }
+
+    public static void appendDiv0Code(Assembly asm) {
+        asm.beginProcedureDeclaration();
+        asm.label("div0_", "Erreur de division par 0");
+        asm.insert(IOUtils.loadString("/code/div0.asm"));
         asm.endProcedureDeclaration();
     }
 }

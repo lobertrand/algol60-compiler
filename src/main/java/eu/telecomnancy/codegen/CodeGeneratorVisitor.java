@@ -18,6 +18,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         PredefinedCode.appendOutintegerCode(asm);
         PredefinedCode.appendOutrealCode(asm);
         PredefinedCode.appendLineCode(asm);
+        PredefinedCode.appendDiv0Code(asm);
 
         asm.newline();
         asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
@@ -298,7 +299,17 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(DivAST ast) {
-        checkArithmeticOperation(ast);
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        asm.comment("Div");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("JEQ #div0_-$-2", "Jump to div0 0 if previous result equals 0");
+        asm.code("DIV R1, R2, R3", "Divide first by second value");
+        asm.code("STW R3, -(SP)", "Push resulting value on the stack");
+
         return CodeInfo.empty();
     }
 
@@ -326,7 +337,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(PowAST ast) {
-        checkArithmeticOperation(ast);
         return CodeInfo.empty();
     }
 
@@ -355,7 +365,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IntDivAST ast) {
-        checkArithmeticOperation(ast);
         return CodeInfo.empty();
     }
 
@@ -370,7 +379,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
         asm.code("ADD R1, R2, R1", "Add first and second value");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
-
         return CodeInfo.empty();
     }
 
@@ -427,52 +435,43 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     }
 
     public CodeInfo visit(AndAST ast) {
-        checkLogicalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(OrAST ast) {
-        checkLogicalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(ImplyAST ast) {
-        checkLogicalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(EquivalentAST ast) {
-        checkLogicalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(GreaterThanAST ast) {
-        checkRelationalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(LessThanAST ast) {
-        checkRelationalOperation(ast);
+
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(GreaterEqualAST ast) {
-        checkRelationalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(LessEqualAST ast) {
-        checkRelationalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(EqualAST ast) {
-        checkRelationalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(NotEqualAST ast) {
-        checkRelationalOperation(ast);
         return CodeInfo.empty();
     }
 
@@ -484,26 +483,5 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         DefaultAST index = ast.getChild(1);
         index.accept(this);
         return CodeInfo.empty();
-    }
-
-    private void checkLogicalOperation(DefaultAST ast) {
-        DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        leftPart.accept(this);
-        rightPart.accept(this);
-    }
-
-    private void checkRelationalOperation(DefaultAST ast) {
-        DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        leftPart.accept(this);
-        rightPart.accept(this);
-    }
-
-    private void checkArithmeticOperation(DefaultAST ast) {
-        DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        leftPart.accept(this);
-        rightPart.accept(this);
     }
 }
