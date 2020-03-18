@@ -320,10 +320,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.comment("Div");
         leftPart.accept(this);
         rightPart.accept(this);
-        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
-        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1"); // right
         asm.code("JEQ #div0_-$-2", "Jump to div0 0 if previous result equals 0");
-        asm.code("DIV R1, R2, R3", "Divide first by second value");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2"); // left
+        asm.code("DIV R2, R1, R3", "Divide first by second value");
         asm.code("STW R3, -(SP)", "Push resulting value on the stack");
 
         return CodeInfo.empty();

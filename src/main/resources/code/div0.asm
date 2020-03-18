@@ -1,4 +1,9 @@
+	// Print error message
 	LDW R0, #DIV0
-	LDW WR, #WRITE_EXC
-    TRP WR
-    TRP #EXIT_EXC 
+    TRP #WRITE_EXC
+    // Print newlines
+	LDW R0, #NEWLINE
+    TRP #WRITE_EXC
+    TRP #WRITE_EXC
+    // Exit program
+    TRP #EXIT_EXC
