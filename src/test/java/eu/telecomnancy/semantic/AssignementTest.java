@@ -4,6 +4,7 @@ import static eu.telecomnancy.semantic.Helper.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import eu.telecomnancy.Content;
 import java.util.Set;
 import org.antlr.runtime.RecognitionException;
 import org.junit.Test;
