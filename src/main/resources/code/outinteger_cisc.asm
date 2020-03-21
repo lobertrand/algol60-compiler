@@ -35,7 +35,7 @@
     LDW R0, (BP)-10     // charge R0 avec value
     STW R0, -(SP)       // empile contenu de R0 (paramètre i)
 
-    JSR @itoa_          // appelle fonction itoa d'adresse itoa_
+    JSR @itoa           // appelle fonction itoa d'adresse itoa
 
     ADI SP, SP, #6      // nettoie la pile des paramètres 
                         // de taille totale 6 octets

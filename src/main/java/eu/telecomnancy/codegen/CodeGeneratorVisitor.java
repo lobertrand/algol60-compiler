@@ -15,8 +15,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         PredefinedCode.appendAliases(asm);
         PredefinedCode.appendOutstringCode(asm);
         PredefinedCode.appendItoaCode(asm);
-        PredefinedCode.appendOutintegerCode(asm);
-        PredefinedCode.appendOutrealCode(asm);
+        PredefinedCode.appendOutintegerOrRealCode(asm);
         PredefinedCode.appendLineCode(asm);
         PredefinedCode.appendDiv0Code(asm);
 
@@ -321,7 +320,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         leftPart.accept(this);
         rightPart.accept(this);
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1"); // right
-        asm.code("JEQ #div0_-$-2", "Jump to div0 0 if previous result equals 0");
+        asm.code("JEQ #div0-$-2", "Jump to div0 0 if previous result equals 0");
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2"); // left
         asm.code("DIV R2, R1, R3", "Divide first by second value");
         asm.code("STW R3, -(SP)", "Push resulting value on the stack");
@@ -341,7 +340,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(IntAST ast) {
         String value = ast.getText();
-        asm.code(String.format("LDW R1, #%s", value), String.format("Load int value %s", value));
+        asm.code("LDW R1, #" + value, "Load int value " + value);
         asm.code("STW R1, -(SP)", "Put it on the stack");
         CodeInfo c = CodeInfo.empty();
         c.setValue(value);
@@ -363,9 +362,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         float floatValue = Float.parseFloat(ast.getText());
         int intValue = Math.round(floatValue);
         String strValue = String.valueOf(intValue);
-        asm.code(
-                String.format("LDW R1, #%s", strValue),
-                String.format("Load int value %s", strValue));
+        asm.code("LDW R1, #" + strValue, "Load int value " + strValue);
         asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
