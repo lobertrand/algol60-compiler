@@ -152,8 +152,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String name = ast.getChild(0).getText();
         asm.comment("Call procedure '" + name + "'");
         for (DefaultAST args : ast.getChild(1)) {
-            asm.code("ADQ -2, SP", "décrémente le pointeur de pile SP");
-            asm.code("STW R1, (SP)", "sauvegarde le contenu du registre R1 sur la pile");
             // Evaluate the argument value and put it on the stack (in other visit() methods)
             args.accept(this);
         }

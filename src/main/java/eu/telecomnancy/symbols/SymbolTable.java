@@ -13,7 +13,7 @@ public class SymbolTable {
     private int level;
     private AtomicInteger numberOfTables;
     private int currentVariableShift = 0;
-    private int currentParameterShift = 0;
+    private int currentParameterShift = 2;
     private int localVariableSize = 0;
 
     /** This constructor is used to create the root of a SymbolTable tree */

@@ -113,7 +113,7 @@ public class Main {
                 IOUtils.logError("    <Path to Algol60 file>");
                 IOUtils.logError("    <begin> <integer> <a> <;> ... <end>");
                 IOUtils.exit();
-            } else if (args.length == 1 && new File(args[0]).exists()) {
+            } else if (args.length == 1) {
                 return new ANTLRInputStream(new FileInputStream(args[0]));
             } else {
                 return new ANTLRStringStream(String.join(" ", args));
