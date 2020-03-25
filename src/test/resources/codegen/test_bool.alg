@@ -1,6 +1,6 @@
 begin
-	boolean a, b;
+	boolean a, b, c;
 	a := true;
 	b := false;
-	b := ~ false
+	c := false => false
 end

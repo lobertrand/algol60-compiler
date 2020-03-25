@@ -150,8 +150,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String name = ast.getChild(0).getText();
         asm.comment("Call procedure '" + name + "'");
         for (DefaultAST args : ast.getChild(1)) {
-             asm.code("ADQ -2, SP", "décrémente le pointeur de pile SP");
-             asm.code("STW R1, (SP)", "sauvegarde le contenu du registre R1 sur la pile");
+            asm.code("ADQ -2, SP", "décrémente le pointeur de pile SP");
+            asm.code("STW R1, (SP)", "sauvegarde le contenu du registre R1 sur la pile");
             // Evaluate the argument value and put it on the stack (in other visit() methods)
             args.accept(this);
         }
@@ -321,7 +321,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2"); // left
         asm.code("DIV R2, R1, R3", "Divide first by second value");
         asm.code("STW R3, -(SP)", "Push resulting value on the stack");
-
         return CodeInfo.empty();
     }
 
@@ -430,14 +429,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     }
 
     public CodeInfo visit(LogicalValueAST ast) {
+        // juste pour memo : 1 -> true, 0 -> false
         String value = ast.getText();
-        if (value.equals("true")) {
-            asm.code("LDW R1, #1", "Load int value 1 when true");
-        } else {
-            asm.code("LDW R1, #0", "Load int value 0 when false");
-        }
-        asm.code("STW R1, -(SP)", "Put it on the stack");
 
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
@@ -453,19 +448,62 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         return CodeInfo.empty();
     }
 
+    private Integer boolToInt(String bool) {
+        if (bool.equals("true")) {
+            return 1;
+        }
+        return 0;
+    }
+
     public CodeInfo visit(AndAST ast) {
+        int leftPart = boolToInt(ast.getChild(0).getText());
+        int rightPart = boolToInt(ast.getChild(1).getText());
+        asm.comment("And");
+        if (leftPart * rightPart == 1) {
+            asm.code("LDW R1, #1", "Load int value 1 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(OrAST ast) {
+        int leftPart = boolToInt(ast.getChild(0).getText());
+        int rightPart = boolToInt(ast.getChild(1).getText());
+        asm.comment("Or");
+        if (leftPart + rightPart > 0) {
+            asm.code("LDW R1, #1", "Load int value 1 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(ImplyAST ast) {
+        int leftPart = boolToInt(ast.getChild(0).getText());
+        int rightPart = boolToInt(ast.getChild(1).getText());
+        asm.comment("Imply");
+        if ((leftPart == 0) || (rightPart >= 0)) {
+            asm.code("LDW R1, #1", "Load int value 1 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(EquivalentAST ast) {
+        int leftPart = boolToInt(ast.getChild(0).getText());
+        int rightPart = boolToInt(ast.getChild(1).getText());
+        asm.comment("Equivalent");
+        if (leftPart == rightPart) {
+            asm.code("LDW R1, #1", "Load int value 1 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
