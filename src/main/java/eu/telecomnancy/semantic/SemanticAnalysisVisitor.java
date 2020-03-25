@@ -216,10 +216,11 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         procedure.setSymbolTable(currentSymbolTable);
         baseSymbolTable.define(procedure);
 
-        // Define fictive result variable
+        // Define result variable
         if (procType != Type.VOID) {
             Variable returnValue = new Variable(procName, procType);
             returnValue.setMode(Symbol.Mode.PROCEDURE_RESULT);
+            procedure.setReturnValue(returnValue);
             currentSymbolTable.define(returnValue);
         }
 

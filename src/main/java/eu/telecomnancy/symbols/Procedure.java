@@ -9,11 +9,24 @@ public class Procedure extends Symbol {
     private SymbolTable symbolTable;
     private List<Type> parameterTypes;
     private String asmLabel;
+    private Variable returnValue;
 
     public Procedure(String identifier, Type returnType, List<Type> parameterTypes) {
         super(identifier, returnType, Kind.PROCEDURE);
         this.parameterTypes = parameterTypes;
         this.asmLabel = UniqueReference.forLabel(identifier);
+    }
+
+    public boolean returnsAValue() {
+        return getType() != Type.VOID;
+    }
+
+    public Variable getReturnValue() {
+        return returnValue;
+    }
+
+    public void setReturnValue(Variable returnValue) {
+        this.returnValue = returnValue;
     }
 
     public void setSymbolTable(SymbolTable symbolTable) {

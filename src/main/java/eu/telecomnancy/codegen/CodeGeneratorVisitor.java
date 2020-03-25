@@ -107,7 +107,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(VarDecAST ast) {
         for (DefaultAST var : ast.getChild(1)) {
             String varName = var.getText();
-            Symbol variable = currentSymbolTable.resolve(varName);
             asm.comment("Put variable '" + varName + "' on the stack");
             asm.code("LDW WR, #0", "Initialize variable '" + varName + "' with 0");
             asm.code("LDW WR, -(SP)", "Place '" + varName + "' on the stack");
@@ -123,24 +122,32 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String procName = procHeading.getChild(0).getText();
         Procedure procedure = currentSymbolTable.resolve(procName, Procedure.class);
         String label = procedure.getAsmLabel();
-        int shift = procedure.getShift();
 
-        // TODO: Finish the declaration of procedure
         asm.label(label, "declaration de la fonction");
         asm.code("STW BP, -(SP)", "empile le contenu du registre BP");
         asm.code("LDW BP, SP", "charge contenu SP ds BP");
+
+        if (procedure.returnsAValue()) {
+            asm.comment("Put result variable '" + procName + "' on the stack");
+            asm.code("LDW WR, #0", "Initialize it with 0");
+            asm.code("LDW WR, -(SP)", "And place it on the stack");
+        }
+
         DefaultAST block = ast.findFirst(Algol60Parser.BLOCK);
+
         pushTable(); // Enter symbol table of procedure
         for (DefaultAST t : block) {
-            t.accept(this);
+            t.accept(this); // Procedure instructions
         }
-        if (procedure.getType() != Type.VOID) {
-            asm.code("STW R0, (BP)" + shift, "code du calcul de l'expression, résultat dans R0");
+        if (procedure.returnsAValue()) {
+            int shift = procedure.getReturnValue().getShift();
+            asm.comment("Store return value into R0");
+            asm.code("LDW R0, (BP)" + shift, "Load value of '" + procName + "' into R0");
         }
-        asm.code("LDW SP, BP ", "bandon infos locales");
+
+        asm.code("LDW SP, BP ", "abandon infos locales");
         asm.code("LDW BP, (SP)+ ", "charge BP avec ancien BP");
         asm.code("RTS ", "retour au programme appelant");
-
         popTable(); // Quit symbol table of procedure
 
         asm.endProcedureDeclaration();
@@ -164,10 +171,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("LDW WR, #" + nbParams, "WR = taille totale des paramètres");
             asm.code("ADD WR, SP, SP", "abandon paramètres");
         }
-        // Example :
-        // asm.code("LDW R1, #HELLO", "charge adresse de la chaîne n°0 dans R1");
-        // asm.code("STW R1, -(SP)", "empile paramètre p = STRING0 contenu dans R1 :");
-        // asm.code("JSR @outstring_", "appelle la fonction d'adresse outstring:");
+        if (procedure.getType() != Type.VOID) {
+            asm.code("STW R0, -(SP)", "save procedure result on the stack");
+        }
         return CodeInfo.empty();
     }
 
