@@ -189,13 +189,24 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IfStatementAST ast) {
+        asm.comment("////////////////////IF///////////////////");
+        int Iflocation = 1;
         DefaultAST ifDef = ast.findFirst(Algol60Parser.IF_DEF);
         DefaultAST condition = ifDef.getChild(0);
+        asm.comment("////////////////////conditon?///////////////////////");
+        asm.code("IF", "");
         condition.accept(this);
+        asm.code("LDW R2 ,#0", "");
+        asm.code("CMP R1,R2", "");
+        asm.code("JEQ #IF-$-2", "");
         DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
+        asm.comment("///////////////then////////////////");
+        asm.code("ENDIF" + Iflocation, "");
         thenDef.accept(this);
+        asm.code("JMP #ENDIF-$-2", "");
         DefaultAST elseDef = ast.findFirst(Algol60Parser.ELSE_DEF);
         if (elseDef != null) {
+            asm.comment("////////////else//////////");
             elseDef.accept(this);
         }
         return CodeInfo.empty();
