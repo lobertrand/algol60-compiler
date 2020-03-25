@@ -126,21 +126,18 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.label(label, "declaration de la fonction");
         asm.code("STW BP, -(SP)", "empile le contenu du registre BP");
         asm.code("LDW BP, SP", "charge contenu SP ds BP");
-        if (procedure.getType() != Type.VOID) {
-            asm.code("STW R0, (BP)" + shift, "code du calcul de l'expression, résultat dans R0");
-            asm.code("LDW SP, BP ", "bandon infos locales");
-            asm.code("LDW BP, (SP)+ ", "charge BP avec ancien BP");
-            asm.code("RTS ", "retour au programme appelant");
-        }
-        asm.code("LDW SP, BP ", "bandon infos locales");
-        asm.code("LDW BP, (SP)+ ", "charge BP avec ancien BP");
-        asm.code("RTS ", "retour au programme appelant");
-
         DefaultAST block = ast.findFirst(Algol60Parser.BLOCK);
         pushTable(); // Enter symbol table of procedure
         for (DefaultAST t : block) {
             t.accept(this);
         }
+        if (procedure.getType() != Type.VOID) {
+            asm.code("STW R0, (BP)" + shift, "code du calcul de l'expression, résultat dans R0");
+        }
+        asm.code("LDW SP, BP ", "bandon infos locales");
+        asm.code("LDW BP, (SP)+ ", "charge BP avec ancien BP");
+        asm.code("RTS ", "retour au programme appelant");
+
         popTable(); // Quit symbol table of procedure
 
         asm.endProcedureDeclaration();
@@ -152,8 +149,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String name = ast.getChild(0).getText();
         asm.comment("Call procedure '" + name + "'");
         for (DefaultAST args : ast.getChild(1)) {
-            asm.code("ADQ -2, SP", "décrémente le pointeur de pile SP");
-            asm.code("STW R1, (SP)", "sauvegarde le contenu du registre R1 sur la pile");
+             asm.code("ADQ -2, SP", "décrémente le pointeur de pile SP");
+             asm.code("STW R1, (SP)", "sauvegarde le contenu du registre R1 sur la pile");
             // Evaluate the argument value and put it on the stack (in other visit() methods)
             args.accept(this);
         }
