@@ -431,7 +431,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(LogicalValueAST ast) {
         // juste pour memo : 1 -> true, 0 -> false
         String value = ast.getText();
-
+        if (value.equals("true")) {
+            asm.code("LDW R1, #1", "Load int value 0 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 1 when false");
+        }
         asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
