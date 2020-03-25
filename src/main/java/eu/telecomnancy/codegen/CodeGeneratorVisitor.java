@@ -512,27 +512,74 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     }
 
     public CodeInfo visit(GreaterThanAST ast) {
+        int leftPart = Integer.parseInt(ast.getChild(0).getText());
+        int rightPart = Integer.parseInt(ast.getChild(1).getText());
+        if (leftPart > rightPart) {
+            asm.code("LDW R1, #1", "Load int value 1 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(LessThanAST ast) {
-
+        int leftPart = Integer.parseInt(ast.getChild(0).getText());
+        int rightPart = Integer.parseInt(ast.getChild(1).getText());
+        if (leftPart < rightPart) {
+            asm.code("LDW R1, #1", "Load int value 1 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(GreaterEqualAST ast) {
+        int leftPart = Integer.parseInt(ast.getChild(0).getText());
+        int rightPart = Integer.parseInt(ast.getChild(1).getText());
+        if (leftPart >= rightPart) {
+            asm.code("LDW R1, #1", "Load int value 1 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(LessEqualAST ast) {
+        int leftPart = Integer.parseInt(ast.getChild(0).getText());
+        int rightPart = Integer.parseInt(ast.getChild(1).getText());
+        if (leftPart <= rightPart) {
+            asm.code("LDW R1, #1", "Load int value 1 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(EqualAST ast) {
+        int leftPart = Integer.parseInt(ast.getChild(0).getText());
+        int rightPart = Integer.parseInt(ast.getChild(1).getText());
+        if (leftPart == rightPart) {
+            asm.code("LDW R1, #1", "Load int value 1 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(NotEqualAST ast) {
+        int leftPart = Integer.parseInt(ast.getChild(0).getText());
+        int rightPart = Integer.parseInt(ast.getChild(1).getText());
+        if (leftPart != rightPart) {
+            asm.code("LDW R1, #1", "Load int value 1 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
