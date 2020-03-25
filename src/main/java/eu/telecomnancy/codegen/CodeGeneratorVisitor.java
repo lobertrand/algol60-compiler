@@ -94,9 +94,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(BlockAST ast) {
         pushTable();
+        asm.newEnvironment();
         for (DefaultAST t : ast) {
             t.accept(this);
         }
+        asm.endEnvironment();
         popTable();
         return CodeInfo.empty();
     }
