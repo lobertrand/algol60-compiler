@@ -33,6 +33,8 @@ public class PredefinedCode {
                 "65",
                 "code ASCII de A (les autres lettres jusqu'à Z suivent dans l'ordre alphabétique)");
         asm.string("DIV0", "ERROR: DIVISION BY 0");
+        asm.equ("TRUE", "1", "true");
+        asm.equ("FALSE", "0", "false");
     }
 
     public static void appendOutstringCode(Assembly asm) {
