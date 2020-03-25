@@ -165,15 +165,17 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         Procedure procedure = currentSymbolTable.resolve(name, Procedure.class);
         // Call the procedure using the generated procedure label (Procedure::getAsmLabel())
         String label = procedure.getAsmLabel();
-        asm.code("JSR @" + label, "appelle la fonction");
+        asm.code("JSR @" + label, "Call procedure '" + name + "'");
         int nbParams = ast.getChild(1).getChildCount();
+        int paramSize = nbParams * 2;
         if (nbParams != 0) {
-            asm.code("LDW WR, #" + nbParams, "WR = taille totale des paramètres");
-            asm.code("ADD WR, SP, SP", "abandon paramètres");
+            asm.code("LDW WR, #" + paramSize, "WR = size of all parameters");
+            asm.code("ADD WR, SP, SP", "Pop parameters");
         }
         if (procedure.getType() != Type.VOID) {
-            asm.code("STW R0, -(SP)", "save procedure result on the stack");
+            asm.code("STW R0, -(SP)", "Save procedure result on the stack");
         }
+        asm.newline();
         return CodeInfo.empty();
     }
 

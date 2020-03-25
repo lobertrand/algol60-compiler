@@ -8,13 +8,13 @@ begin
   end;
   integer x, y, res;
 
-  x := 10;
-  y := 13;
-  
+  x := 2;
+  y := 4;
+
   outstring(1, "4 + 6 = ");
   res := add(4, 6);
   outinteger(1, res);
-  
-  outstring(1, "10 + 13 = ");
-  outinteger(1, add(x, y));
+
+  outstring(1, "2 + 3 + 4 = ");
+  outinteger(1, add(x, add(3, y)));
 end
