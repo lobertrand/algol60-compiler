@@ -757,6 +757,14 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                             leftType, rightType),
                     rightPart.shiftCursorLeft());
         }
+
+        if (ast.getType() == Algol60Parser.DIV || ast.getType() == Algol60Parser.INT_DIV) {
+            boolean divByZero =
+                    parseAstToInteger(rightPart).map(i -> Float.compare(0, i) == 0).orElse(false);
+            if (divByZero) {
+                throw new DivisionByZeroException("Cannot divide by zero", rightPart);
+            }
+        }
         return new PairOfTypes(leftType, rightType);
     }
 
@@ -782,6 +790,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(IntDivAST ast) {
+
         checkArithmeticOperation(ast);
         return Type.INTEGER;
     }

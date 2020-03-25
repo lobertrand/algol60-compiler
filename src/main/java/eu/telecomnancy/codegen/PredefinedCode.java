@@ -32,6 +32,7 @@ public class PredefinedCode {
                 "ASCII_A",
                 "65",
                 "code ASCII de A (les autres lettres jusqu'à Z suivent dans l'ordre alphabétique)");
+        asm.string("DIV0", "ERROR: DIVISION BY 0");
     }
 
     public static void appendOutstringCode(Assembly asm) {
@@ -43,14 +44,16 @@ public class PredefinedCode {
 
     public static void appendItoaCode(Assembly asm) {
         asm.beginProcedureDeclaration();
-        asm.label("itoa_", "fonction de conversion (int to ascii)");
+        asm.label("itoa", "fonction de conversion (int to ascii)");
         asm.insert(IOUtils.loadString("/code/itoa_cisc.asm"));
         asm.endProcedureDeclaration();
     }
 
-    public static void appendOutintegerCode(Assembly asm) {
+    public static void appendOutintegerOrRealCode(Assembly asm) {
         asm.beginProcedureDeclaration();
-        asm.label("outinteger_", "fonction d'affichage (string)");
+        asm.label("outinteger_", "print function (integer)");
+        asm.code("NOP", "No operation (continue to outreal_ code)");
+        asm.label("outreal_", "print function (real)");
         asm.insert(IOUtils.loadString("/code/outinteger_cisc.asm"));
         asm.endProcedureDeclaration();
     }
@@ -59,6 +62,13 @@ public class PredefinedCode {
         asm.beginProcedureDeclaration();
         asm.label("line_", "fonction de retour à la ligne");
         asm.insert(IOUtils.loadString("/code/line.asm"));
+        asm.endProcedureDeclaration();
+    }
+
+    public static void appendDiv0Code(Assembly asm) {
+        asm.beginProcedureDeclaration();
+        asm.label("div0", "Erreur de division par 0");
+        asm.insert(IOUtils.loadString("/code/div0.asm"));
         asm.endProcedureDeclaration();
     }
 }

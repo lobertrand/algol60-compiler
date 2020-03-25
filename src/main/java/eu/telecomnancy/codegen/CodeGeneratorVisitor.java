@@ -15,8 +15,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         PredefinedCode.appendAliases(asm);
         PredefinedCode.appendOutstringCode(asm);
         PredefinedCode.appendItoaCode(asm);
-        PredefinedCode.appendOutintegerCode(asm);
+        PredefinedCode.appendOutintegerOrRealCode(asm);
         PredefinedCode.appendLineCode(asm);
+        PredefinedCode.appendDiv0Code(asm);
 
         asm.newline();
         asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
@@ -256,13 +257,29 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ArrayDecAST ast) {
-        DefaultAST boundList = ast.getChild(2);
 
+        DefaultAST boundList = ast.getChild(2);
+        CodeInfo firstBound = CodeInfo.empty();
+        CodeInfo lastBound = CodeInfo.empty();
+        int a = 1;
         for (DefaultAST bound : boundList) {
             DefaultAST first = bound.getChild(0);
             DefaultAST last = bound.getChild(1);
-            first.accept(this);
-            last.accept(this);
+            firstBound = first.accept(this);
+            lastBound = last.accept(this);
+            int firstBoundInt = firstBound.getValue();
+            int lastBoundInt = lastBound.getValue();
+            a = a * (lastBoundInt - firstBoundInt + 1);
+            asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+            asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        }
+
+        asm.code(
+                String.format("LDW R1, #%s", a), "Initialize variable  with the size of the array");
+        asm.code("LDW R1, -(SP)", "Place on the stack");
+        for (int i = 0; i <= a; i++) {
+            asm.code("LDW WR, #0", "Initialize variable  with 0");
+            asm.code("LDW WR, -(SP)", "Place on the stack");
         }
         return CodeInfo.empty();
     }
@@ -280,13 +297,31 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(MultAST ast) {
-        checkArithmeticOperation(ast);
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        asm.comment("Mul");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("MUL R1, R2, R1", "Mul first and second value");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
         return CodeInfo.empty();
     }
 
     @Override
     public CodeInfo visit(DivAST ast) {
-        checkArithmeticOperation(ast);
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        asm.comment("Div");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1"); // right
+        asm.code("JEQ #div0-$-2", "Jump to div0 0 if previous result equals 0");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2"); // left
+        asm.code("DIV R2, R1, R3", "Divide first by second value");
+        asm.code("STW R3, -(SP)", "Push resulting value on the stack");
+
         return CodeInfo.empty();
     }
 
@@ -302,9 +337,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(IntAST ast) {
         String value = ast.getText();
-        asm.code(String.format("LDW R1, #%s", value), String.format("Load int value %s", value));
+        asm.code("LDW R1, #" + value, "Load int value " + value);
         asm.code("STW R1, -(SP)", "Put it on the stack");
-        return CodeInfo.empty();
+        CodeInfo c = CodeInfo.empty();
+        c.setValue(value);
+        return c;
     }
 
     @Override
@@ -314,18 +351,21 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(PowAST ast) {
-        checkArithmeticOperation(ast);
         return CodeInfo.empty();
     }
 
     @Override
     public CodeInfo visit(RealAST ast) {
+        float floatValue = Float.parseFloat(ast.getText());
+        int intValue = Math.round(floatValue);
+        String strValue = String.valueOf(intValue);
+        asm.code("LDW R1, #" + strValue, "Load int value " + strValue);
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
     @Override
     public CodeInfo visit(StrAST ast) {
-        // TODO: register the string value into "asm" variable using the UniqueReference class
         String content = ast.getText();
         String label = UniqueReference.forString();
         asm.string(label, content);
@@ -336,7 +376,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IntDivAST ast) {
-        checkArithmeticOperation(ast);
         return CodeInfo.empty();
     }
 
@@ -351,7 +390,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
         asm.code("ADD R1, R2, R1", "Add first and second value");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
-
         return CodeInfo.empty();
     }
 
@@ -383,77 +421,76 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IdentifierAST ast) {
-        // TODO: Find the variable with a "resolve" in the current symbol table
-        // Get its shift and compute the address where the value of the variable is stored
-        // (Take into account whether the variable is local or non-local)
-        // Put the value of the variable on the stack
         String name = ast.getText();
         Variable variable = currentSymbolTable.resolve(name, Variable.class);
         int shift = variable.getShift();
         asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
         asm.code("STW R1, -(SP)", "Push value of '" + name + "' on the stack");
-
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(LogicalValueAST ast) {
+        String value = ast.getText();
+        if (value.equals("true")) {
+            asm.code("LDW R1, #1", "Load int value 1 when true");
+        } else {
+            asm.code("LDW R1, #0", "Load int value 0 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
+
         return CodeInfo.empty();
     }
 
     @Override
     public CodeInfo visit(NotAST ast) {
-        DefaultAST child = ast.getChild(0);
-        child.accept(this);
+        String value = ast.getText();
+        if (value.equals("true")) {
+            asm.code("LDW R1, #0", "Load int value 0 when true");
+        } else {
+            asm.code("LDW R1, #1", "Load int value 1 when false");
+        }
+        asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(AndAST ast) {
-        checkLogicalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(OrAST ast) {
-        checkLogicalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(ImplyAST ast) {
-        checkLogicalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(EquivalentAST ast) {
-        checkLogicalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(GreaterThanAST ast) {
-        checkRelationalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(LessThanAST ast) {
-        checkRelationalOperation(ast);
+
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(GreaterEqualAST ast) {
-        checkRelationalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(LessEqualAST ast) {
-        checkRelationalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(EqualAST ast) {
-        checkRelationalOperation(ast);
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(NotEqualAST ast) {
-        checkRelationalOperation(ast);
         return CodeInfo.empty();
     }
 
@@ -465,26 +502,5 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         DefaultAST index = ast.getChild(1);
         index.accept(this);
         return CodeInfo.empty();
-    }
-
-    private void checkLogicalOperation(DefaultAST ast) {
-        DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        leftPart.accept(this);
-        rightPart.accept(this);
-    }
-
-    private void checkRelationalOperation(DefaultAST ast) {
-        DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        leftPart.accept(this);
-        rightPart.accept(this);
-    }
-
-    private void checkArithmeticOperation(DefaultAST ast) {
-        DefaultAST leftPart = ast.getChild(0);
-        DefaultAST rightPart = ast.getChild(1);
-        leftPart.accept(this);
-        rightPart.accept(this);
     }
 }
