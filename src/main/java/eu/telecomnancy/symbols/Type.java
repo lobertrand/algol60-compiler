@@ -91,7 +91,6 @@ public enum Type {
     public int getSize() {
         switch (this) {
             case BOOLEAN:
-                return 1;
             case INTEGER:
             case REAL:
             case STRING:

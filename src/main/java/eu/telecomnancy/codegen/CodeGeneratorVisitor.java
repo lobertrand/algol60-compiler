@@ -69,12 +69,12 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         // Beginning of the program
         asm.label("main", "Entry point");
 
-        int size = currentSymbolTable.getLocalVariableSize();
-        asm.comment("Prepare main environment");
+        // int size = currentSymbolTable.getLocalVariableSize();
+        // asm.comment("Prepare main environment");
         //        asm.code("LDW R1, #" + size, "Local variables size into R1");
-        asm.code("ADQ -2, SP", "Decrement stack pointer");
-        asm.code("STW BP, (SP)", "Save base pointer on the stack");
-        asm.code("LDW BP, SP", "Update base pointer");
+        // asm.code("ADQ -2, SP", "Decrement stack pointer");
+        // asm.code("STW BP, (SP)", "Save base pointer on the stack");
+        // asm.code("LDW BP, SP", "Update base pointer");
         //        asm.code("SUB SP, R1, SP", "Make space for local variables on the stack");
 
         // Main block instructions
@@ -270,7 +270,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.comment("Assignment: " + getLineOfCode(ast));
         rightPart.accept(this); // Puts the value on the stack
         asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-        asm.code(String.format("STW R1, (BP)%d", shift), "Store value into '" + identifier + "'");
+        asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
 
         return CodeInfo.empty();
     }
@@ -450,9 +450,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     private void stackBool(String bool) {
         if (bool.equals("true")) {
-            asm.code("LDW R1, #1", "Load int value 1 when true");
+            asm.code("LDW R1, #1", "Load value 1 (true)");
         } else {
-            asm.code("LDW R1, #0", "Load int value 0 when false");
+            asm.code("LDW R1, #0", "Load value 0 (false)");
         }
         asm.code("STW R1, -(SP)", "Put it on the stack");
     }

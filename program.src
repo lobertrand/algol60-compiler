@@ -1,0 +1,332 @@
+    EXIT_EXC     equ     64       // n° d'exceptoin de EXIT
+    READ_EXC     equ     65       // n° d'exception de READ (lit 1 ligne)
+    WRITE_EXC    equ     66       // n° d'exception de WRITE (affiche 1 ligne)
+    STACK_ADRS   equ     0x1000   // base de pile en 1000h (par exemple)
+    LOAD_ADRS    equ     0xF000   // adresse de chargement de l'exécutable
+
+    // Alias de registres
+    SP           equ     R15      // alias pour R15, pointeur de pile
+    WR           equ     R14      // Work Register (registre de travail)
+    BP           equ     R13      // frame Base Pointer (pointage environnement)
+    NUL          equ     0        // caractère NUL qui doit terminer une chaîne de caractères
+    NULL         equ     0        // pointeur nul
+    NIL          equ     0        // fin de liste chaînée
+    ITOA_I       equ     4        // offset du paramètre i
+    ITOA_P       equ     6        // offset du paramètre p
+    ITOA_B       equ     8        // offset du paramètre b
+    ASCII_MINUS  equ     45       // code ASCII de -
+    ASCII_PLUS   equ     43       // code ASCII de +
+    ASCII_SP     equ     32       // code ASCII d'espace SP
+    ASCII_0      equ     48       // code ASCII de zéro (les autres chiffres jusqu'à 9 suivent dans l'ordre)
+    ASCII_A      equ     65       // code ASCII de A (les autres lettres jusqu'à Z suivent dans l'ordre alphabétique)
+    TRUE         equ     1        // true
+    FALSE        equ     0        // false
+
+    ORG          LOAD_ADRS        // adresse de chargement
+    START        main             // adresse de démarrage
+
+
+    // Définitions de constantes
+    DIV0         string  "ERROR: DIVISION BY 0"
+    NEWLINE      byte    10      
+
+
+main // Entry point
+
+    // Prepare main environment
+    ADQ -2, SP          // Decrement stack pointer
+    STW BP, (SP)        // Save base pointer on the stack
+    LDW BP, SP          // Update base pointer
+    STW BP, -(SP)       // empiler le chaînage dynamique(en fait l'ancien BP correspond au nouveau chaînage dyn
+    LDW BP, (SP)        // changer la base à notre nouvelle base
+
+
+    // Call procedure 'outreal'
+    LDW R1, #1          // Load int value 1
+    STW R1, -(SP)       // Put it on the stack
+
+    // Call procedure 'compute'
+
+    // Call procedure 'compute'
+    LDW R1, #5          // Load int value 5
+    STW R1, -(SP)       // Put it on the stack
+    JSR @compute_       // Call procedure 'compute'
+    LDW WR, #2          // WR = size of all parameters
+    ADD WR, SP, SP      // Pop parameters
+    STW R0, -(SP)       // Save procedure result on the stack
+
+    JSR @compute_       // Call procedure 'compute'
+    LDW WR, #2          // WR = size of all parameters
+    ADD WR, SP, SP      // Pop parameters
+    STW R0, -(SP)       // Save procedure result on the stack
+
+    JSR @outreal_       // Call procedure 'outreal'
+    LDW WR, #4          // WR = size of all parameters
+    ADD WR, SP, SP      // Pop parameters
+
+    LDW SP, BP          // on retourne à notre ancienne base (en charge le pointeur courant avec l'ancienne base)
+    LDW BP, (SP)+       // Depile l'ancien BP (SP) dans BP
+    RTS                 // retourne au working working registory
+
+    // White space at the end
+    LDW R0, #NEWLINE    // Put newline byte in R0
+    TRP #WRITE_EXC      // Print newline
+    TRP #WRITE_EXC      // Print newline
+
+    // Exit
+    TRP #EXIT_EXC       // Exit program
+
+
+outstring_ // fonction d'affichage (string)
+    // Prepare procedure environment
+    STW BP, -(SP)       // Save base pointer on the stack
+    LDW BP, SP          // Load stack pointer into base pointer
+
+    LDW R0, (BP)4       // Load string parameter of shift 4 into R0
+    TRP #WRITE_EXC      // Prints the string value from R0
+
+    // End of procedure
+    LDW SP, BP          // charge SP avec contenu de BP: abandon infos locales
+    LDW BP, (SP)+       // charge BP avec ancien BP
+    RTS                 // retour au programme appelant
+
+
+itoa // fonction de conversion (int to ascii)
+    STW BP, -(SP)
+    LDW BP, SP
+
+    // récupération des paramètres depuis pile vers registres
+    LDW R0, (BP)ITOA_I  // R0 = i    
+    LDW R1, (BP)ITOA_B  // R1 = b
+
+    // gère le signe: normalement itoa gère des int c'est à dire des entiers signés, 
+    // mais en fait seulement pour b=10;
+    // dans ce cas calcule le signe dans R3 et charge R0 avec la valeur absolue de i
+    LDQ ASCII_SP, R3    // code ASCII de eSPace (SPace) -> R3
+    LDQ 10, WR          // 10 -> WR
+    CMP R1, WR          // charge les indicateurs de b - 10
+    BNE nosign-$-2      // si non égal (donc si b != 10) saute en nosign, sinon calcule signe
+    LDQ ASCII_PLUS, R3  // charge le code ASCII du signe plus + dans R3
+    TST R0              // charge les indicateurs de R0 et donc de i
+    BGE posit-$-2       // saute en posit si i >= 0
+    NEG R0, R0          // change le signe de R0
+    LDQ ASCII_MINUS, R3 // charge le code ASCII du signe moins - dans R3
+posit
+    NOP                 // R3 = code ASCII de signe: SP pour aucun, - ou +
+
+
+    // convertit l'entier i en chiffres et les empile de droite à gauche
+nosign
+    LDW R2, R0          // R2 <- R0
+cnvloop
+    LDW R0, R2          // R0 <- R2
+   
+    // effectue "créativement" la DIVision par b supposé pair (car l'instruction DIV est hélas signée ...)
+    // d=2*d' , D = d * q + r  , D = 2*D'+r" , D' = d' * q + r' => r = 2*r'+r"
+    // un bug apparaît avec SRL R0, R0 avec R0 = 2 : met CF à 1 !!
+    SRL R1, R1          // R1 = b/2
+    ANI R0, R4, #1      // ANd Immédiate entre R0 et 00...01 vers R4:
+                        // bit n°0 de R0 -> R4; R4 = reste" de R0/2
+    SRL R0, R0          // R0 / 2 -> R0
+    DIV R0, R1, R2      // quotient = R0 / R1 -> R2, reste' = R0 % R1 -> R0
+    SHL R0, R0          // R0 = 2 * reste'
+    ADD R0, R4, R0      // R0 = reste = 2 * reste' + reste" => R0 = chiffre
+    SHL R1, R1          // R1 = b
+
+    ADQ -10, R0         // chiffre - 10 -> R0 
+    BGE letter-$-2      // saute en letter si chiffre >= 10
+    ADQ 10+ASCII_0, R0  // ajoute 10 => R0 = chiffre, ajoute code ASCII de 0 
+                        // => R0 = code ASCII de chiffre
+    BMP stkchr-$-2      // saute en stkchr 
+
+letter
+    ADQ ASCII_A, R0     // R0 = ASCII(A) pour chiffre = 10, ASCII(B) pour 11 ...
+                        // ajoute code ASCII de A => r = code ASCII de chiffre
+stkchr
+    STW R0, -(SP)       // empile code ASCII du chiffre 
+                        // (sur un mot complet pour pas désaligner pile)
+    TST R2              // charge les indicateurs en fonction du quotient ds R2)
+    BNE cnvloop-$-2     // boucle si quotient non nul; sinon sort
+
+    // les caractères sont maintenant empilés : gauche en haut et droit en bas
+
+    // recopie les caractères dans le tampon dans le bon ordre: de gauche à droite
+    LDW R1, (BP)ITOA_P  // R1 pointe sur le début du tampon déjà alloué 
+    STB R3, (R1)+       // copie le signe dans le tampon
+cpyloop
+    LDW R0, (SP)+       // dépile code du chiffre gauche (sur un mot) dans R0
+    STB R0, (R1)+       // copie code du chiffre dans un Byte du tampon de gauche à droite
+    CMP SP, BP          // compare SP et sa valeur avant empilement des caractères qui était BP
+    BNE cpyloop-$-2     // boucle s'il reste au moins un chiffre sur la pile
+    LDQ NUL, R0         // charge le code du caractère NUL dans R0
+    STB R0, (R1)+       // sauve code NUL pour terminer la chaîne de caractères
+
+    // termine
+    LDW R0, (BP)ITOA_P  // retourne le pointeur sur la chaîne de caractères
+
+    // UNLINK: fermeture de l'environnement de la fonction itoa
+    LDW SP, BP          // SP <- BP : abandonne infos locales; SP pointe sur ancinne valeur de BP
+    LDW BP, (SP)+       // dépile ancienne valeur de BP dans BP; SP pointe sur adresse de retour
+
+    RTS                 // retourne au programme appelant
+
+
+outinteger_ // print function (integer)
+    NOP                 // No operation (continue to outreal_ code)
+
+outreal_ // print function (real)
+    // Prepare procedure environment
+    STW BP, -(SP)
+    LDW BP, SP
+
+    // char toto[7];
+    // réserve 7+1 = 8 caractères en pile
+    // (entier pair supérieur à 7 demandé pour pas désaligner pile)
+    ADI SP, SP, #-8     // réserve place pour text sur pile (8 octets);
+                        // déplacement du début du tableau est -8
+
+    // int value;
+    ADI SP, SP, #-2     // réserve place pour variable value;
+                        // déplacement de value est -10
+
+    // value = -23; 
+    // LDW R0, (R0)
+    // LDW R0, #-23        // charge R0 avec -23 = C2(23) = FFE9
+    LDW R0, (BP)4       // Load string parameter of shift 4 into R0
+
+    STW R0, (BP)-10     // sauve R0 à l'adresse BP-10
+
+
+    LDW R0, BP          // R0 = BP
+    ADQ 4, R0           // R0 pointe sur p
+    LDW R0, (R0)-10     // R0 = p = adresse du début du texte à afficher
+
+    // itoa(value, text, 10); // appelle itoa avec i = value, p = text, b = 10
+
+    LDW R0, #10         // charge 10 (pour base décimale) dans R0
+    STW R0, -(SP)       // empile contenu de R0 (paramètre b)
+
+    ADI BP, R0, #-8     // R0 = BP - 8 = adresse du tableau text
+    STW R0, -(SP)       // empile contenu de R0 (paramètre p)
+
+    LDW R0, (BP)-10     // charge R0 avec value
+    STW R0, -(SP)       // empile contenu de R0 (paramètre i)
+
+    JSR @itoa           // appelle fonction itoa d'adresse itoa
+
+    ADI SP, SP, #6      // nettoie la pile des paramètres 
+                        // de taille totale 6 octets
+
+    // print(text);
+
+    ADI BP, R0, #-8     // R0 = BP - 8 = adresse du tableau text
+    STW R0, -(SP)       // empile contenu de R0 (paramètre p)
+    
+    JSR @outstring_     // appelle fonction print d'adresse print_
+
+    ADI SP, SP, #2      // nettoie la pile des paramètres
+                        // de taille totale 2 octets
+
+    // } // fermeture du bloc englobant de main
+    LDW SP, BP          // abandonne variables locales de main
+    LDW BP, (SP)+       // dépile ancien BP dans BP
+
+
+line_ // fonction de retour à la ligne
+    // prépare l'environnement de la fonction appelée (prologue) :
+    LDQ 0, R1           // R1 = taille données locales (ici 0) de fonction appelée
+    ADQ -2, SP          // décrémente le pointeur de pile SP
+    STW BP, (SP)        // sauvegarde le contenu du registre BP sur la pile
+    LDW BP, SP          // charge contenu SP ds BP qui pointe sur sa sauvegarde
+    SUB SP, R1, SP      // réserve R1 octets sur la pile pour la variable locale z
+
+    // affiche texte pointé par R0
+    LDW R0, #NEWLINE        // R0 = p = adresse du début du texte à afficher
+    LDW WR, #WRITE_EXC  // on suppose que symbole WRITE_EXC déjà défini
+    TRP WR              // lance trappe dont n° dans WR
+
+    // fin de la fonction (épilogue) :
+    // UNLINK
+    LDW SP, BP          // charge SP avec contenu de BP: abandon infos locales
+    LDW BP, (SP)        // charge BP avec ancien BP
+    ADQ 2, SP           // ancien BP supprimé de la pile
+    // RTS              // retour au programme appelant:
+    LDW WR, (SP)        // charge WR avec l'adresse de retour
+    ADQ 2, SP           // incrémente le pointeur de pile SP
+    JEA (WR)            // saute à l'instruction d'adresse absolue dans WR
+
+
+div0 // Erreur de division par 0
+    // Print error message
+    LDW R0, #DIV0
+    TRP #WRITE_EXC
+    // Print newlines
+    LDW R0, #NEWLINE
+    TRP #WRITE_EXC
+    TRP #WRITE_EXC
+    // Exit program
+    TRP #EXIT_EXC
+
+
+aux_ // declaration de la fonction
+    STW BP, -(SP)       // empile le contenu du registre BP
+    LDW BP, SP          // charge contenu SP ds BP
+
+    // Put result variable 'aux' on the stack
+    LDW WR, #0          // Initialize it with 0
+    LDW WR, -(SP)       // And place it on the stack
+
+    // Assignment: aux := a * 2;
+
+    // Mul
+    LDW R1, (BP)4       // Load value of 'a' into R1
+    STW R1, -(SP)       // Push value of 'a' on the stack
+    LDW R1, #2          // Load int value 2
+    STW R1, -(SP)       // Put it on the stack
+    LDW R1, (SP)+       // Pop first value from the stack into R1
+    LDW R2, (SP)+       // Pop second value from the stack into R2
+    MUL R1, R2, R1      // Mul first and second value
+    STW R1, -(SP)       // Push resulting value on the stack
+    LDW R1, (SP)+       // Pop value off the stack into R1
+    STW R1, (BP)-2      // Store value into 'aux'
+
+    // Store return value into R0
+    LDW R0, (BP)-2      // Load value of 'aux' into R0
+    LDW SP, BP          // abandon infos locales
+    LDW BP, (SP)+       // charge BP avec ancien BP
+    RTS                 // retour au programme appelant
+
+
+compute_ // declaration de la fonction
+    STW BP, -(SP)       // empile le contenu du registre BP
+    LDW BP, SP          // charge contenu SP ds BP
+
+    // Put result variable 'compute' on the stack
+    LDW WR, #0          // Initialize it with 0
+    LDW WR, -(SP)       // And place it on the stack
+
+    // Assignment: compute := aux(a) + 3;
+
+    // Add
+
+    // Call procedure 'aux'
+    LDW R1, (BP)4       // Load value of 'a' into R1
+    STW R1, -(SP)       // Push value of 'a' on the stack
+    JSR @aux_           // Call procedure 'aux'
+    LDW WR, #2          // WR = size of all parameters
+    ADD WR, SP, SP      // Pop parameters
+    STW R0, -(SP)       // Save procedure result on the stack
+    LDW R1, #3          // Load int value 3
+    STW R1, -(SP)       // Put it on the stack
+    LDW R1, (SP)+       // Pop first value from the stack into R1
+    LDW R2, (SP)+       // Pop second value from the stack into R2
+    ADD R1, R2, R1      // Add first and second value
+    STW R1, -(SP)       // Push resulting value on the stack
+    LDW R1, (SP)+       // Pop value off the stack into R1
+    STW R1, (BP)-2      // Store value into 'compute'
+
+    // Store return value into R0
+    LDW R0, (BP)-2      // Load value of 'compute' into R0
+    LDW SP, BP          // abandon infos locales
+    LDW BP, (SP)+       // charge BP avec ancien BP
+    RTS                 // retour au programme appelant
