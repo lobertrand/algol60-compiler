@@ -1,6 +1,6 @@
 begin
 	boolean a, b, c;
-	a := true;
+	a := false;
 	outboolean(1, a);
 	b := ~a;
 	outboolean(1, b);

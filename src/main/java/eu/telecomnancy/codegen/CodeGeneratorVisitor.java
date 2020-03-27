@@ -18,6 +18,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         PredefinedCode.appendOutintegerOrRealCode(asm);
         PredefinedCode.appendLineCode(asm);
         PredefinedCode.appendDiv0Code(asm);
+        PredefinedCode.appendOutbooleanCode(asm);
 
         asm.newline();
         asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
@@ -336,7 +337,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         leftPart.accept(this);
         rightPart.accept(this);
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1"); // right
-        asm.code("JEQ #div0-$-2", "Jump to div0 0 if previous result equals 0");
+        asm.code("JEQ #div0_-$-2", "Jump to div0 0 if previous result equals 0");
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2"); // left
         asm.code("DIV R2, R1, R3", "Divide first by second value");
         asm.code("STW R3, -(SP)", "Push resulting value on the stack");
@@ -449,9 +450,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     private void stackBool(String bool) {
         if (bool.equals("true")) {
-            asm.code("LDW R1, #1", "Load int value 0 when true");
+            asm.code("LDW R1, #1", "Load int value 1 when true");
         } else {
-            asm.code("LDW R1, #0", "Load int value 1 when false");
+            asm.code("LDW R1, #0", "Load int value 0 when false");
         }
         asm.code("STW R1, -(SP)", "Put it on the stack");
     }
@@ -471,9 +472,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String nottrue = UniqueReference.forLabel("nottrue");
         asm.comment("Not");
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
-        asm.code("JEQ #" + notfalse + "-$-2", "Jump to notfalse when last results equals 0");
+        asm.code("JEQ #" + notfalse + "-$-2", "Jump to notfalse when last result equals 0");
         asm.code("LDW R1, #0", "Loaded false");
-        asm.code("JEQ #" + nottrue + "-$-2", "Jump to" + nottrue + "when last results equals 0");
+        asm.code("JEQ #" + nottrue + "-$-2", "Jump to" + nottrue + "when last result equals 0");
         asm.label(notfalse, "Label for notfalse");
         asm.code("LDW R1, #1", "Loaded true");
         asm.label(nottrue, "Label for not when done");
@@ -483,11 +484,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     }
 
     public CodeInfo visit(AndAST ast) {
-        DefaultAST leftPart = ast.getChild(0);
+        /* DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String label0 = UniqueReference.forLabel("and0");
-        String label1 = UniqueReference.forLabel("and1");
-        String label2 = UniqueReference.forLabel("and2");
+        String and0 = UniqueReference.forLabel("and");
+        String and1 = UniqueReference.forLabel("and");
         asm.comment("And");
         leftPart.accept(this);
         rightPart.accept(this);
@@ -496,18 +496,16 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("MUL R1, R2, R1", "Mul first and second value");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
-
-        asm.code("JEQ #" + label0 + "-$-2", "Jump to false when last results equals 0");
-        asm.label(label0, "Label for and when false");
-        asm.code("LDW R1, #0", "Loaded false");
-        asm.code("JEQ #" + label2 + "-$-2", "Jump to" + label2 + "when last results equals 0");
-
-        asm.code("JNE #" + label1 + "-$-2", "Jump to true when last results equals 1");
-        asm.label(label1, "Label for and when true");
+        asm.code("JEQ #" + and0 + "-$-2", "Jump to" + and0 + "when last result equals 0");
         asm.code("LDW R1, #1", "Loaded true");
+        asm.code("JNE #" + and1 + "-$-2", "Jump to" + and1 + "when last result equals 1");
+        asm.label(and0, "Label for and (false)");
+        asm.code("LDW R1, #0", "Loaded false");
 
-        asm.label(label2, "Label for and when done");
-        asm.code("STW R1, -(SP)", "Put it on the stack");
+        asm.label(and1, "Label for and (done)");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
+
+        asm.newline();*/
 
         return CodeInfo.empty();
     }
@@ -515,30 +513,30 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(OrAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String label0 = UniqueReference.forLabel("or0");
-        String label1 = UniqueReference.forLabel("or1");
-        asm.comment("or");
+        String or0 = UniqueReference.forLabel("or");
+        String or1 = UniqueReference.forLabel("or");
+        asm.comment("Or");
         leftPart.accept(this);
         rightPart.accept(this);
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
-        asm.code("ADD R1, R2, R1", "Mul first and second value");
+        asm.code("ADD R1, R2, R1", "Add first and second value");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
 
-        asm.code("JEQ #" + label0 + "-$-2", "Jump to nottrue when last results equals 1");
-        asm.label(label0, "Label for not false");
-        asm.code("LDW R1, #0", "Loaded false");
-
-        asm.code("JNE #" + label1 + "-$-2", "Jump to notfalse when last results equals 0");
-        asm.label(label1, "Label for not true");
+        asm.code("JEQ #" + or0 + "-$-2", "Jump to " + or0 + " when last result equals 0");
         asm.code("LDW R1, #1", "Loaded true");
-
+        asm.code("JNE #" + or1 + "-$-2", "Jump to " + or1 + " when last result equals 1");
+        asm.label(or0, "Label for or when false");
+        asm.code("LDW R1, #0", "Loaded false");
+        asm.label(or1, "Label for and or done");
         asm.code("STW R1, -(SP)", "Put it on the stack");
+        asm.newline();
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(ImplyAST ast) {
+
         return CodeInfo.empty();
     }
 
