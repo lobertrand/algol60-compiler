@@ -4,6 +4,7 @@ import eu.telecomnancy.ast.ASTAdaptor;
 import eu.telecomnancy.ast.DefaultAST;
 import eu.telecomnancy.codegen.Assembly;
 import eu.telecomnancy.codegen.CodeGeneratorVisitor;
+import eu.telecomnancy.codegen.Optimizer;
 import eu.telecomnancy.semantic.SemanticAnalysisVisitor;
 import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.symbols.PredefinedSymbols;
@@ -17,6 +18,7 @@ import projetIUP.Lanceur;
 public class Main {
 
     public static void main(String[] args) {
+        boolean optimizeCode = false;
         CharStream input = parseArguments(args);
 
         // Lexical and syntactic analysis
@@ -46,12 +48,21 @@ public class Main {
         reportSemanticExceptions(semanticAnalysisVisitor, input);
         if (semanticAnalysisVisitor.hasExceptions()) IOUtils.exit();
 
-        // Assembly asm = Assembly.exampleWrite("HELLO  ");
         Assembly asm = new Assembly();
         CodeGeneratorVisitor codeGenerator = new CodeGeneratorVisitor(symbolTable, asm);
         codeGenerator.setInput(String.valueOf(input));
         ast.accept(codeGenerator);
-        assembleAndExecute(asm.toString());
+        IOUtils.log("Generated assembly code");
+
+        String code;
+        if (optimizeCode) {
+            Optimizer optimizer = new Optimizer();
+            code = optimizer.optimize(asm.toString());
+            IOUtils.log("Applied code optimizations");
+        } else {
+            code = asm.toString();
+        }
+        assembleAndExecute(code);
     }
 
     private static void assembleAndExecute(String asm) {

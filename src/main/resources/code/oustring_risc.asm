@@ -6,6 +6,6 @@
     TRP #WRITE_EXC      // Prints the string value from R0
 
     // End of procedure
-    LDW SP, BP          // charge SP avec contenu de BP: abandon infos locales
-    LDW BP, (SP)+       // charge BP avec ancien BP
-    RTS                 // retour au programme appelant
+    LDW SP, BP          // Point to saved base pointer
+    LDW BP, (SP)+       // Pop saved base pointer into the current one
+    RTS                 // Return to caller

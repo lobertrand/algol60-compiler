@@ -125,8 +125,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String label = procedure.getAsmLabel();
 
         asm.label(label, "declaration de la fonction");
-        asm.code("STW BP, -(SP)", "empile le contenu du registre BP");
-        asm.code("LDW BP, SP", "charge contenu SP ds BP");
+        asm.newEnvironment();
 
         if (procedure.returnsAValue()) {
             asm.comment("Put result variable '" + procName + "' on the stack");
@@ -146,8 +145,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("LDW R0, (BP)" + shift, "Load value of '" + procName + "' into R0");
         }
 
-        asm.code("LDW SP, BP ", "abandon infos locales");
-        asm.code("LDW BP, (SP)+ ", "charge BP avec ancien BP");
+        asm.endEnvironment();
         asm.code("RTS ", "retour au programme appelant");
         popTable(); // Quit symbol table of procedure
 
@@ -158,25 +156,25 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(ProcCallAST ast) {
         String name = ast.getChild(0).getText();
+        DefaultAST parameters = ast.getChild(1);
         asm.comment("Call procedure '" + name + "'");
-        for (DefaultAST args : ast.getChild(1)) {
+        for (DefaultAST param : parameters) {
             // Evaluate the argument value and put it on the stack (in other visit() methods)
-            args.accept(this);
+            param.accept(this);
         }
         Procedure procedure = currentSymbolTable.resolve(name, Procedure.class);
         // Call the procedure using the generated procedure label (Procedure::getAsmLabel())
         String label = procedure.getAsmLabel();
         asm.code("JSR @" + label, "Call procedure '" + name + "'");
-        int nbParams = ast.getChild(1).getChildCount();
+        int nbParams = parameters.getChildCount();
         int paramSize = nbParams * 2;
         if (nbParams != 0) {
-            asm.code("LDW WR, #" + paramSize, "WR = size of all parameters");
+            asm.code("LDW WR, #" + paramSize, "WR = size of '" + name + "' parameters");
             asm.code("ADD WR, SP, SP", "Pop parameters");
         }
         if (procedure.getType() != Type.VOID) {
             asm.code("STW R0, -(SP)", "Save procedure result on the stack");
         }
-        asm.newline();
         return CodeInfo.empty();
     }
 
@@ -319,7 +317,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(MultAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        asm.comment("Mul");
+        asm.comment("Multiplication");
         leftPart.accept(this);
         rightPart.accept(this);
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
@@ -333,14 +331,14 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(DivAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        asm.comment("Div");
+        asm.comment("Division");
         leftPart.accept(this);
         rightPart.accept(this);
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1"); // right
         asm.code("JEQ #div0_-$-2", "Jump to div0 0 if previous result equals 0");
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2"); // left
-        asm.code("DIV R2, R1, R3", "Divide first by second value");
-        asm.code("STW R3, -(SP)", "Push resulting value on the stack");
+        asm.code("DIV R2, R1, R1", "Divide first by second value");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
         return CodeInfo.empty();
     }
 
@@ -402,7 +400,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(AddAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        asm.comment("Add");
+        asm.comment("Addition");
         leftPart.accept(this);
         rightPart.accept(this);
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
@@ -416,12 +414,12 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(MinusAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        asm.comment("Substraction");
+        asm.comment("Subtraction");
         leftPart.accept(this);
         rightPart.accept(this);
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
-        asm.code("SUB R2, R1 , R1", "reduce first value from the second ");
+        asm.code("SUB R2, R1, R1", "reduce first value from the second ");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
         return CodeInfo.empty();
     }
