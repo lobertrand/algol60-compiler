@@ -484,10 +484,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     }
 
     public CodeInfo visit(AndAST ast) {
-        /* DefaultAST leftPart = ast.getChild(0);
+        DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String and0 = UniqueReference.forLabel("and");
-        String and1 = UniqueReference.forLabel("and");
         asm.comment("And");
         leftPart.accept(this);
         rightPart.accept(this);
@@ -495,17 +493,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
         asm.code("MUL R1, R2, R1", "Mul first and second value");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
-        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
-        asm.code("JEQ #" + and0 + "-$-2", "Jump to" + and0 + "when last result equals 0");
-        asm.code("LDW R1, #1", "Loaded true");
-        asm.code("JNE #" + and1 + "-$-2", "Jump to" + and1 + "when last result equals 1");
-        asm.label(and0, "Label for and (false)");
-        asm.code("LDW R1, #0", "Loaded false");
 
-        asm.label(and1, "Label for and (done)");
-        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
-
-        asm.newline();*/
+        asm.newline();
 
         return CodeInfo.empty();
     }
@@ -536,83 +525,190 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     }
 
     public CodeInfo visit(ImplyAST ast) {
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        String imply0 = UniqueReference.forLabel("imply");
+        String imply1 = UniqueReference.forLabel("imply");
+        asm.comment("Imply");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("JEQ #" + imply0 + "-$-2", "Jumps to " + imply0 + " when last results equals 0");
+        asm.code("LDW R2, #0", "Loaded false");
+        asm.code("JEQ #" + imply1 + "-$-2", "Jumps to " + imply1 + " when last results equals 0");
+        asm.label(imply0, "Label for imply");
+        asm.code("LDW R2, #1", "Loaded true");
 
+        asm.label(imply1, "Label for imply");
+        asm.code("ADD R1, R2, R1", "Add first and second value");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
+        asm.newline();
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(EquivalentAST ast) {
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        String equi0 = UniqueReference.forLabel("equi");
+        String equi1 = UniqueReference.forLabel("equi");
+        asm.comment("Equivalent");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("SUB R2, R1 , R1", "reduce first value from the second ");
+        asm.code("JEQ #" + equi0 + "-$-2", "Jumps to " + equi0 + " when last results equals 0");
+        asm.code("LDW R1, #0", "Loaded false");
+        asm.code("JEQ #" + equi1 + "-$-2", "Jumps to " + equi1 + " when last results equals 0");
+
+        asm.label(equi0, "Label for equivalent");
+        asm.code("LDW R1, #1", "Loaded true");
+        asm.label(equi1, "Label for equivalent");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
+        asm.newline();
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(GreaterThanAST ast) {
-        int leftPart = Integer.parseInt(ast.getChild(0).getText());
-        int rightPart = Integer.parseInt(ast.getChild(1).getText());
-        if (leftPart > rightPart) {
-            asm.code("LDW R1, #1", "Load int value 1 when true");
-        } else {
-            asm.code("LDW R1, #0", "Load int value 1 when false");
-        }
-        asm.code("STW R1, -(SP)", "Put it on the stack");
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        String gt0 = UniqueReference.forLabel("gt");
+        String gt1 = UniqueReference.forLabel("gt");
+        asm.comment("Greater than");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("SUB R2, R1 , R1", "reduce first value from the second ");
+        asm.code("JGT #" + gt0 + "-$-2", "Jumps to " + gt0 + " when last results is gter than 0");
+        asm.code("LDW R1, #0", "Loaded false");
+        asm.code("JEQ #" + gt1 + "-$-2", "Jumps to " + gt1 + " when last results equals 0");
+
+        asm.label(gt0, "Label for greater than");
+        asm.code("LDW R1, #1", "Loaded true");
+        asm.label(gt1, "Label for greater than");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
+        asm.newline();
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(LessThanAST ast) {
-        int leftPart = Integer.parseInt(ast.getChild(0).getText());
-        int rightPart = Integer.parseInt(ast.getChild(1).getText());
-        if (leftPart < rightPart) {
-            asm.code("LDW R1, #1", "Load int value 1 when true");
-        } else {
-            asm.code("LDW R1, #0", "Load int value 1 when false");
-        }
-        asm.code("STW R1, -(SP)", "Put it on the stack");
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        String lt0 = UniqueReference.forLabel("lt");
+        String lt1 = UniqueReference.forLabel("lt");
+        asm.comment("Less than");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("SUB R2, R1 , R1", "reduce first value from the second ");
+        asm.code("JLT #" + lt0 + "-$-2", "Jumps to " + lt0 + " when last results is less than 0");
+        asm.code("LDW R1, #0", "Loaded false");
+        asm.code("JEQ #" + lt1 + "-$-2", "Jumps to " + lt1 + " when last results equals 0");
+
+        asm.label(lt0, "Label for less than");
+        asm.code("LDW R1, #1", "Loaded true");
+        asm.label(lt1, "Label for less than");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
+        asm.newline();
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(GreaterEqualAST ast) {
-        int leftPart = Integer.parseInt(ast.getChild(0).getText());
-        int rightPart = Integer.parseInt(ast.getChild(1).getText());
-        if (leftPart >= rightPart) {
-            asm.code("LDW R1, #1", "Load int value 1 when true");
-        } else {
-            asm.code("LDW R1, #0", "Load int value 1 when false");
-        }
-        asm.code("STW R1, -(SP)", "Put it on the stack");
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        String ge0 = UniqueReference.forLabel("ge");
+        String ge1 = UniqueReference.forLabel("ge");
+        asm.comment("Greater or equal");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("SUB R2, R1 , R1", "reduce first value from the second ");
+        asm.code(
+                "JGE #" + ge0 + "-$-2",
+                "Jumps to " + ge0 + " when last results is gter or equal 0");
+        asm.code("LDW R1, #0", "Loaded false");
+        asm.code("JEQ #" + ge1 + "-$-2", "Jumps to " + ge1 + " when last results equals 0");
+
+        asm.label(ge0, "Label for greater or equal");
+        asm.code("LDW R1, #1", "Loaded true");
+        asm.label(ge1, "Label for greater or equal");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
+        asm.newline();
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(LessEqualAST ast) {
-        int leftPart = Integer.parseInt(ast.getChild(0).getText());
-        int rightPart = Integer.parseInt(ast.getChild(1).getText());
-        if (leftPart <= rightPart) {
-            asm.code("LDW R1, #1", "Load int value 1 when true");
-        } else {
-            asm.code("LDW R1, #0", "Load int value 1 when false");
-        }
-        asm.code("STW R1, -(SP)", "Put it on the stack");
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        String le0 = UniqueReference.forLabel("le");
+        String le1 = UniqueReference.forLabel("le");
+        asm.comment("Less or equal");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("SUB R2, R1 , R1", "reduce first value from the second ");
+        asm.code(
+                "JLE #" + le0 + "-$-2",
+                "Jumps to " + le0 + " when last results is less or equal 0");
+        asm.code("LDW R1, #0", "Loaded false");
+        asm.code("JEQ #" + le1 + "-$-2", "Jumps to " + le1 + " when last results equals 0");
+
+        asm.label(le0, "Label for less or equal");
+        asm.code("LDW R1, #1", "Loaded true");
+        asm.label(le1, "Label for less or equal");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
+        asm.newline();
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(EqualAST ast) {
-        int leftPart = Integer.parseInt(ast.getChild(0).getText());
-        int rightPart = Integer.parseInt(ast.getChild(1).getText());
-        if (leftPart == rightPart) {
-            asm.code("LDW R1, #1", "Load int value 1 when true");
-        } else {
-            asm.code("LDW R1, #0", "Load int value 1 when false");
-        }
-        asm.code("STW R1, -(SP)", "Put it on the stack");
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        String eq0 = UniqueReference.forLabel("eq");
+        String eq1 = UniqueReference.forLabel("eq");
+        asm.comment("Equal");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("SUB R2, R1 , R1", "reduce first value from the second ");
+        asm.code("JEQ #" + eq0 + "-$-2", "Jumps to " + eq0 + " when last results equals 0");
+        asm.code("LDW R1, #0", "Loaded false");
+        asm.code("JEQ #" + eq1 + "-$-2", "Jumps to " + eq1 + " when last results equals 0");
+
+        asm.label(eq0, "Label for equal");
+        asm.code("LDW R1, #1", "Loaded true");
+        asm.label(eq1, "Label for equal");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
+        asm.newline();
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(NotEqualAST ast) {
-        int leftPart = Integer.parseInt(ast.getChild(0).getText());
-        int rightPart = Integer.parseInt(ast.getChild(1).getText());
-        if (leftPart != rightPart) {
-            asm.code("LDW R1, #1", "Load int value 1 when true");
-        } else {
-            asm.code("LDW R1, #0", "Load int value 1 when false");
-        }
-        asm.code("STW R1, -(SP)", "Put it on the stack");
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        String neq0 = UniqueReference.forLabel("neq");
+        String neq1 = UniqueReference.forLabel("neq");
+        asm.comment("Not equal");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
+        asm.code("SUB R2, R1 , R1", "reduce first value from the second ");
+        asm.code("JNE #" + neq0 + "-$-2", "Jumps to " + neq0 + " when last results is not equal 0");
+        asm.code("LDW R1, #0", "Loaded false");
+        asm.code("JEQ #" + neq1 + "-$-2", "Jumps to " + neq1 + " when last results equals 0");
+
+        asm.label(neq0, "Label for not equal");
+        asm.code("LDW R1, #1", "Loaded true");
+        asm.label(neq1, "Label for not equal");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
+        asm.newline();
         return CodeInfo.empty();
     }
 
