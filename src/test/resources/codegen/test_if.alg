@@ -1,8 +1,8 @@
 begin
-	integer n;	
+	integer n;
+	integer a;	
 	n := 4 ;
-	if n = 4 then 
-	n:= 3;	
-	outstring(1,"\n")
+	if  then 
+	a := n ;
 end
 

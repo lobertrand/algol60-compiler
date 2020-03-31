@@ -206,9 +206,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("JEQ #IF-$-2", "");
         DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
         asm.comment("///////////////then////////////////");
-        asm.code("ENDIF" + Iflocation, "");
+        asm.code("ENDIF", "");
         thenDef.accept(this);
-        asm.code("JMP #ENDIF-$-2", "");
+        // asm.code("JMP #ENDIF-$-2", "");
         DefaultAST elseDef = ast.findFirst(Algol60Parser.ELSE_DEF);
         if (elseDef != null) {
             asm.comment("////////////else//////////");

@@ -117,17 +117,19 @@ public class Assembly {
     }
 
     public void newEnvironment() {
-        this.comment("Prepare environment");
+
         this.code(
                 "STW BP, -(SP)",
-                "Save old base pointer on the stack"); // The old BP acts as dynamic chaining
-        this.code("LDW BP, SP", "Set base pointer to the current stack pointer");
+                "empiler le chaînage dynamique(en fait l'ancien BP correspond au nouveau chaînage dyn");
+        this.code("LDW BP, (SP)", "changer la base à notre nouvelle base");
     }
 
     public void endEnvironment() {
-        this.comment("End environment");
-        this.code("LDW SP, BP", "Point to saved base pointer");
-        this.code("LDW BP, (SP)+", "Pop saved base pointer into the current one");
+        this.code(
+                "LDW SP, BP",
+                "on retourne à notre ancienne base (en charge le pointeur courant avec l'ancienne base)");
+        this.code("LDW BP, (SP)+", "Depile l'ancien BP (SP) dans BP");
+        this.code("RTS", "retourne au working working registory");
     }
 
     @Override
