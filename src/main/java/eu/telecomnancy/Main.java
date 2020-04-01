@@ -9,6 +9,7 @@ import eu.telecomnancy.semantic.SemanticAnalysisVisitor;
 import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.symbols.PredefinedSymbols;
 import eu.telecomnancy.symbols.SymbolTable;
+import eu.telecomnancy.tools.ASTTools;
 import eu.telecomnancy.tools.IOListener;
 import eu.telecomnancy.tools.IOUtils;
 import java.io.*;
@@ -17,7 +18,7 @@ import projetIUP.Lanceur;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, InterruptedException {
         boolean optimizeCode = true;
         CharStream input = parseArguments(args);
 
@@ -34,12 +35,14 @@ public class Main {
             e.printStackTrace();
             IOUtils.exit();
         }
+        DefaultAST ast = pr.getTree();
+        ASTTools.print(ast);
+        IOUtils.generateDotTree(ast, "ast");
         reportLexicalExceptions(lexer, input);
         reportSyntacticExceptions(parser, input);
         if (lexer.hasExceptions() || parser.hasExceptions()) IOUtils.exit();
 
         // Semantic analysis
-        DefaultAST ast = pr.getTree();
         SymbolTable symbolTable = new SymbolTable();
         PredefinedSymbols.get().forEach(symbolTable::define);
         SemanticAnalysisVisitor semanticAnalysisVisitor = new SemanticAnalysisVisitor(symbolTable);

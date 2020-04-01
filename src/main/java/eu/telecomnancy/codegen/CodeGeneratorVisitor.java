@@ -12,6 +12,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     private String[] input;
 
     public CodeGeneratorVisitor(SymbolTable symbolTable, Assembly asm) {
+        UniqueReference.reset();
+
         PredefinedCode.appendAliases(asm);
         PredefinedCode.appendOutstringCode(asm);
         PredefinedCode.appendItoaCode(asm);
@@ -302,7 +304,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("JNE #" + startfor0 + "-$-2", "Loops back when results is not equal to 0");
             asm.newline();
         }
-
         return CodeInfo.empty();
     }
 

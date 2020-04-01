@@ -23,4 +23,9 @@ public final class UniqueReference {
     public static String forString() {
         return "STR_" + (stringNumber++);
     }
+
+    public static void reset() {
+        usedLabelNames = new HashMap<>();
+        stringNumber = 0;
+    }
 }
