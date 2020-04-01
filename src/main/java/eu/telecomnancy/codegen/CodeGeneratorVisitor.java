@@ -449,13 +449,16 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(LabelDecAST ast) {
+        String labelName = ast.getChild(0).getText();
+        asm.label(labelName, "create label " + labelName);
 
         return CodeInfo.empty();
     }
 
     @Override
     public CodeInfo visit(GoToAST ast) {
-
+        String labelName = ast.getChild(0).getText();
+        asm.code("JMP #" + labelName + "-$-2 ", "jump to the " + labelName + " Label");
         return CodeInfo.empty();
     }
 
