@@ -228,42 +228,81 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(ForClauseAST ast) {
         asm.comment("ForClause");
-        String startfor = UniqueReference.forLabel("startfor");
-        String endfor = UniqueReference.forLabel("endfor");
+        String startfor0 = UniqueReference.forLabel("startfor0");
+        String startfor1 = UniqueReference.forLabel("startfor1");
+        DefaultAST whileClause = ast.findFirst(Algol60Parser.WHILE);
+        DefaultAST action = ast.findFirst(Algol60Parser.DO).getChild(0);
         DefaultAST init = ast.findFirst(Algol60Parser.INIT);
-
-        // traitement de la variable de boucle
-        String identifeir = init.getChild(0).getText();
-
-        init.accept(this);
-        /*DefaultAST whileClause = ast.findFirst(Algol60Parser.WHILE);
-        asm.code("ADQ -2,SP", "");
-        if (whileClause != null) {
-            whileClause.getChild(0).accept(this);
-        }*/
+        DefaultAST until = ast.findFirst(Algol60Parser.UNTIL);
         DefaultAST step = ast.findFirst(Algol60Parser.STEP);
+
+        // traitement de la variable de boucle à faire
+        String identifier = init.getChild(0).getText();
+        Variable variable = currentSymbolTable.resolve(identifier, Variable.class);
+        int shift = variable.getShift();
+
+        int nbChildren = init.getChildCount();
+        if (nbChildren > 2) {
+            DefaultAST leftPart = init.getChild(0);
+            leftPart.accept(this);
+            for (int i = 1; i < nbChildren; i++) {
+                init.getChild(i).accept(this);
+                asm.label("enum" + (i - 1), "Enumerate label");
+                asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
+                action.accept(this);
+                if (i != nbChildren - 1) {
+                    asm.code("LDW R1, #1", "Loads 1 in R1");
+                    asm.code("JEQ #" + i + "-$-2", "Jump to next step");
+                }
+            }
+        } else {
+            init.accept(this);
+            asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
+        }
+
+        if (whileClause != null) {
+            // String identifier1 = whileClause.getChild(0).getText();
+            // Variable variable1 = currentSymbolTable.resolve(identifier1, Variable.class);
+            // int shift1 = variable1.getShift();
+            whileClause.getChild(0).accept(this);
+            // asm.code("STW R1, (BP)" + shift1, "Store value into '" + identifier1 + "'");
+            asm.label(startfor1, "Start of loop");
+            action.accept(this);
+            // chargement des valeurs de boucle
+            asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+            asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
+            // calcul des valeurs de boucles
+            asm.code("STW R2, -(SP)", "Push R2 value on the stack");
+            asm.code("STW R1, -(SP)", "Push R1 value on the stack");
+            // asm.code("STW R1, (BP)" + shift1, "Store value into '" + identifier1 + "'");
+            asm.code("JEQ #" + startfor1 + "-$-2", "Loops back when last result equals 0");
+            asm.newline();
+        }
+
         if (step != null) {
             step.getChild(0).accept(this);
         }
-        DefaultAST until = ast.findFirst(Algol60Parser.UNTIL);
+
         if (until != null) {
             until.getChild(0).accept(this);
+
+            asm.label(startfor0, "Start of loop");
+            action.accept(this);
+            // chargement des valeurs de boucle
+            asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+            asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
+            asm.code("LDW R3, (SP)+", "Pop value off the stack into R3");
+            // calcul des valeurs de boucles
+            asm.code("ADD R2, R3, R3", "Add R2 and R3 in R3");
+            asm.code("STW R3, -(SP)", "Push resulting value on the stack");
+            asm.code("STW R2, -(SP)", "Push R2 value on the stack");
+            asm.code("STW R3, (BP)" + shift, "Store value into '" + identifier + "'");
+            asm.code("STW R1, -(SP)", "Push R1 value on the stack");
+            asm.code("SUB R1, R3, R1", "Substract R1 by R2 in R1");
+            asm.code("JNE #" + startfor0 + "-$-2", "Loops back when results is not equal to 0");
+            asm.newline();
         }
-        asm.label(startfor, "Start of loop");
-        DefaultAST action = ast.findFirst(Algol60Parser.DO).getChild(0);
-        action.accept(this);
-        // chargement des valeurs de boucle
-        asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-        asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
-        asm.code("LDW R3, (SP)+", "Pop value off the stack into R3");
-        // calcul des valeurs de boucles
-        asm.code("ADD R2, R3, R3", "Add R2 and R3 in R3");
-        asm.code("STW R3, -(SP)", "Push resulting value on the stack");
-        asm.code("STW R2, -(SP)", "Push R2 value on the stack");
-        asm.code("STW R1, -(SP)", "Push R1 value on the stack");
-        asm.code("SUB R1, R3, R1", "Substract R1 by R2 in R1");
-        asm.code("JNE #" + startfor + "-$-2", "Loops back when results is not equal to 0");
-        asm.newline();
+
         return CodeInfo.empty();
     }
 
