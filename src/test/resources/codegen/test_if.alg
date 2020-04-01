@@ -2,7 +2,9 @@ begin
 	integer n;
 	integer a;	
 	n := 4 ;
-	if  then 
-	a := n ;
+	a := 2;
+	if n>a then 
+	a := n+2 ;
+	outinteger(1,a)
 end
 

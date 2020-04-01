@@ -117,7 +117,6 @@ public class Assembly {
     }
 
     public void newEnvironment() {
-
         this.code(
                 "STW BP, -(SP)",
                 "empiler le chaînage dynamique(en fait l'ancien BP correspond au nouveau chaînage dyn");

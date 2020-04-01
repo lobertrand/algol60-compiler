@@ -194,26 +194,24 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IfStatementAST ast) {
-        asm.comment("////////////////////IF///////////////////");
+        asm.comment("IFstatement");
         int Iflocation = 1;
         DefaultAST ifDef = ast.findFirst(Algol60Parser.IF_DEF);
         DefaultAST condition = ifDef.getChild(0);
-        asm.comment("////////////////////conditon?///////////////////////");
-        asm.code("IF", "");
         condition.accept(this);
         asm.code("LDW R2 ,#0", "");
         asm.code("CMP R1,R2", "");
         asm.code("JEQ #IF-$-2", "");
         DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
-        asm.comment("///////////////then////////////////");
-        asm.code("ENDIF", "");
         thenDef.accept(this);
-        // asm.code("JMP #ENDIF-$-2", "");
+        asm.code("JMP #ENDIF-$-2", "");
+        asm.code("IF", "");
+
         DefaultAST elseDef = ast.findFirst(Algol60Parser.ELSE_DEF);
         if (elseDef != null) {
-            asm.comment("////////////else//////////");
             elseDef.accept(this);
         }
+        asm.code("ENDIF", "");
         return CodeInfo.empty();
     }
 
@@ -223,6 +221,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         init.accept(this);
 
         DefaultAST whileClause = ast.findFirst(Algol60Parser.WHILE);
+        asm.code("ADQ -2,SP", "");
         if (whileClause != null) {
             whileClause.getChild(0).accept(this);
         }
@@ -231,16 +230,25 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         if (step != null) {
             step.getChild(0).accept(this);
         }
-
+        asm.code("STW R1 ,(SP)", "");
+        asm.code("ADQ -2,SP", "");
         DefaultAST until = ast.findFirst(Algol60Parser.UNTIL);
         if (until != null) {
             until.getChild(0).accept(this);
         }
-
+        asm.code("FOR", "");
+        asm.code("LDW R1 ,(BP)-4", "");
+        asm.code("LDW R2 ,(BP)-6", "");
+        asm.code("SUB R1,R2,R2", "");
+        asm.code("JGT #FINFOR-$-2", "");
         DefaultAST action = ast.findFirst(Algol60Parser.DO).getChild(0);
 
         action.accept(this);
-
+        asm.code("LDW R1,(BP)-4", "");
+        asm.code("ADQ 1,R1", "");
+        asm.code("STW R1,(BP)-4", "");
+        asm.code(" JSR @FOR", "");
+        asm.code("FINFOR", "");
         return CodeInfo.empty();
     }
 
