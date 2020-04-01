@@ -302,88 +302,45 @@ arithmetic_expression
     ;
 
 equivalence
-    :   implication! equivalence_end[$implication.tree]
-    ;
-
-equivalence_end[DefaultAST t2]
-    :   '<=>' equivalence -> ^(EQUIVALENT {$t2} equivalence?)
-    |   -> {$t2}
+    :   implication (EQUIVALENT^ implication)*
     ;
 
 implication
-    :   or_expr! implication_end[$or_expr.tree]
-    ;
-
-implication_end[DefaultAST t2]
-    :   '=>' implication -> ^(IMPLY {$t2} implication?)
-    |   -> {$t2}
+    :   or_expr (IMPLY^ or_expr)*
     ;
 
 or_expr
-    :   and_expr! or_expr_end[$and_expr.tree]
-    ;
-
-or_expr_end[DefaultAST t2]
-    :   '\\/' or_expr -> ^(OR {$t2} or_expr?)
-    |   -> {$t2}
+    :   and_expr (OR^ and_expr)*
     ;
 
 and_expr
-    :   not_expr! and_expr_end[$not_expr.tree]
-    ;
-
-and_expr_end[DefaultAST t2]
-    :   '/\\' and_expr -> ^(AND {$t2} and_expr?)
-    |   -> {$t2}
+    :   not_expr (AND^ not_expr)*
     ;
 
 not_expr
-    :   '~' not_expr -> ^(NOT not_expr?)
-    |   comparison
+    :   comparison
+    |   NOT not_expr -> ^(NOT not_expr)
     ;
 
 comparison
-    :   add_expr! comparison_end[$add_expr.tree]
-    ;
-
-comparison_end[DefaultAST t2]
-    :   '<' comparison -> ^(LESS_THAN {$t2} comparison?)
-    |   '<=' comparison -> ^(LESS_EQUAL {$t2} comparison?)
-    |   '=' comparison -> ^(EQUAL {$t2} comparison?)
-    |   '>=' comparison -> ^(GREATER_EQUAL {$t2} comparison?)
-    |   '>' comparison -> ^(GREATER_THAN {$t2} comparison?)
-    |   '<>' comparison -> ^(NOT_EQUAL {$t2} comparison?)
-    |   -> {$t2}
+    :   add_expr (( LESS_THAN | LESS_EQUAL 
+                  | EQUAL | GREATER_EQUAL 
+                  | GREATER_THAN | NOT_EQUAL )^ add_expr)*
     ;
 
 add_expr
-    :   mult_expr! add_expr_end[$mult_expr.tree]
+    :   mult_expr (( ADD | MINUS )^ mult_expr)*
     ;
 
-add_expr_end[DefaultAST t2]
-    :   '+' add_expr -> ^(ADD {$t2} add_expr?)
-    |   '-' add_expr -> ^(MINUS {$t2} add_expr?)
-    |   -> {$t2}
-    ;
-    
 mult_expr
-    :   pow_expr! mult_expr_end[$pow_expr.tree]
-    ;
-
-mult_expr_end[DefaultAST t2]
-    :   '*' mult_expr -> ^(MULT {$t2} mult_expr?)
-    |   '/' mult_expr -> ^(DIV {$t2} mult_expr?)
-    |   '//' mult_expr -> ^(INT_DIV {$t2} mult_expr?)
-    |   -> {$t2}
+    :   pow_expr (( MULT | DIV | INT_DIV )^ pow_expr)*
     ;
 
 pow_expr
-    :   group_expr! pow_expr_end[$group_expr.tree]
-    ;
-
-pow_expr_end[DefaultAST t2]
-    :   '**' pow_expr -> ^(POW {$t2} pow_expr?)
-    |   -> {$t2}
+    :   a=group_expr
+        (   POW b=group_expr    -> ^(POW $a $b)
+        |                       -> $a
+        )
     ;
 
 group_expr
@@ -456,16 +413,16 @@ for_do[DefaultAST ass]
 // Intermediate parser rules
 
 number
-    :   d1=DASH?
+    :   d1=MINUS?
         (   i1=INT  { if ($d1 != null) $i1.setText("-" + $i1.text); }
-            (   '#' d2=DASH? i2=INT
+            (   '#' d2=MINUS? i2=INT
                 { if ($d2 != null) $i2.setText("-" + $i2.text); }
                 -> ^(POW_10 INT INT)
             |                   
                 -> INT  
             )
         |   REAL    { if ($d1 != null) $REAL.setText("-" + $REAL.text); }
-            (   '#' d3=DASH? i3=INT
+            (   '#' d3=MINUS? i3=INT
                 { if ($d3 != null) $i3.setText("-" + $i3.text); }
                 -> ^(POW_10 REAL INT)
             |   
@@ -483,6 +440,26 @@ identifier
     ;
 
 // LEXER RULES
+
+MINUS   : '-'  ;
+ADD     : '+'  ;
+DIV     : '/'  ;
+INT_DIV : '//' ;
+MULT    : '*'  ;
+POW     : '**' ;
+
+EQUIVALENT : '<=>' ;
+IMPLY      : '=>'  ;
+OR         : '\\/' ;
+AND        : '/\\' ;
+NOT        :  '~'  ;
+
+LESS_THAN     : '<'  ;
+LESS_EQUAL    : '<=' ;
+EQUAL         : '='  ;
+GREATER_EQUAL : '>=' ;
+GREATER_THAN  : '>'  ;
+NOT_EQUAL     : '<>' ;
 
 ARRAY
     :   'array'
@@ -525,11 +502,7 @@ INT
     |   '0'
     ;
 
-DASH:   '-'
-    ;
-
-REAL 
-    :   ('0'..'9')*'.'('0'..'9')*
+REAL:   ('0'..'9')*'.'('0'..'9')*
     {
         float i = 0;
         try {
