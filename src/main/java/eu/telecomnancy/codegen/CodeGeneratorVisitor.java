@@ -610,7 +610,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2");
         asm.code("SUB R2, R1 , R1", "reduce first value from the second ");
-        asm.code("JLT #" + lt0 + "-$-2", "Jumps to " + lt0 + " when last results is less than 0");
+        asm.code("JLW #" + lt0 + "-$-2", "Jumps to " + lt0 + " when last results is less than 0");
         asm.code("LDW R1, #0", "Loaded false");
         asm.code("JEQ #" + lt1 + "-$-2", "Jumps to " + lt1 + " when last results equals 0");
 
