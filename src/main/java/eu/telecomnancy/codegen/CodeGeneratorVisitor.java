@@ -194,24 +194,34 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IfStatementAST ast) {
-        asm.comment("IFstatement");
-        int Iflocation = 1;
+        String endLabel = UniqueReference.forLabel("endif");
+        String elseLabel = UniqueReference.forLabel("else");
+
         DefaultAST ifDef = ast.findFirst(Algol60Parser.IF_DEF);
         DefaultAST condition = ifDef.getChild(0);
-        condition.accept(this);
-        asm.code("LDW R2 ,#0", "");
-        asm.code("CMP R1,R2", "");
-        asm.code("JEQ #IF-$-2", "");
         DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
-        thenDef.accept(this);
-        asm.code("JMP #ENDIF-$-2", "");
-        asm.code("IF", "");
-
         DefaultAST elseDef = ast.findFirst(Algol60Parser.ELSE_DEF);
+
+        String falseCondition = elseDef != null ? elseLabel : endLabel;
+
+        asm.comment("If statement");
+        condition.accept(this); // Push 'boolean' value on the stack
+        asm.popValueIntoRegister("R1");
+        asm.code(
+                "JEQ #" + falseCondition + "-$-2",
+                "If condition is false, jump to end of if statement");
+
+        asm.comment("Then");
+        thenDef.accept(this);
+
         if (elseDef != null) {
+            asm.code("JMP #" + endLabel + "-$-2", "Jump to end of if statement");
+            asm.label(elseLabel, "Else");
             elseDef.accept(this);
         }
-        asm.code("ENDIF", "");
+
+        asm.label(endLabel, "End of if statement");
+        asm.code("NOP", "No operation");
         return CodeInfo.empty();
     }
 

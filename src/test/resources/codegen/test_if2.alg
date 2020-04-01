@@ -3,14 +3,10 @@ begin
 	integer b;
 	a := 2;
 	b := 5;
-	if 2 > 1 then
+	if a > b then
 		begin
-			comment by experiment find min and max integer;
 			integer n;
-			n := a+b;
-			outinteger( 1,n)
+            n := 3;
+            outinteger(1, n);
 		end
-
-	
-
 end

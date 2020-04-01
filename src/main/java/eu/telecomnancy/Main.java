@@ -18,7 +18,7 @@ import projetIUP.Lanceur;
 public class Main {
 
     public static void main(String[] args) {
-        boolean optimizeCode = false;
+        boolean optimizeCode = true;
         CharStream input = parseArguments(args);
 
         // Lexical and syntactic analysis
