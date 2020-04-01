@@ -121,10 +121,11 @@ public class Assembly {
         this.code(
                 "STW BP, -(SP)",
                 "Save old base pointer on the stack"); // The old BP acts as dynamic chaining
-        this.code("LDW BP, (SP)", "changer la base à notre nouvelle base");
+        this.code("LDW BP, SP", "changer la base à notre nouvelle base");
     }
 
     public void endEnvironment() {
+        this.comment("End environment");
         this.code(
                 "LDW SP, BP",
                 "on retourne à notre ancienne base (en charge le pointeur courant avec l'ancienne base)");
