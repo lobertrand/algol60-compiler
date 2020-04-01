@@ -217,38 +217,43 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ForClauseAST ast) {
+        asm.comment("ForClause");
+        String startfor = UniqueReference.forLabel("startfor");
+        String endfor = UniqueReference.forLabel("endfor");
         DefaultAST init = ast.findFirst(Algol60Parser.INIT);
-        init.accept(this);
 
-        DefaultAST whileClause = ast.findFirst(Algol60Parser.WHILE);
+        // traitement de la variable de boucle
+        String identifeir = init.getChild(0).getText();
+
+        init.accept(this);
+        /*DefaultAST whileClause = ast.findFirst(Algol60Parser.WHILE);
         asm.code("ADQ -2,SP", "");
         if (whileClause != null) {
             whileClause.getChild(0).accept(this);
-        }
-
+        }*/
         DefaultAST step = ast.findFirst(Algol60Parser.STEP);
         if (step != null) {
             step.getChild(0).accept(this);
         }
-        asm.code("STW R1 ,(SP)", "");
-        asm.code("ADQ -2,SP", "");
         DefaultAST until = ast.findFirst(Algol60Parser.UNTIL);
         if (until != null) {
             until.getChild(0).accept(this);
         }
-        asm.code("FOR", "");
-        asm.code("LDW R1 ,(BP)-4", "");
-        asm.code("LDW R2 ,(BP)-6", "");
-        asm.code("SUB R1,R2,R2", "");
-        asm.code("JGT #FINFOR-$-2", "");
+        asm.label(startfor, "Start of loop");
         DefaultAST action = ast.findFirst(Algol60Parser.DO).getChild(0);
-
         action.accept(this);
-        asm.code("LDW R1,(BP)-4", "");
-        asm.code("ADQ 1,R1", "");
-        asm.code("STW R1,(BP)-4", "");
-        asm.code(" JSR @FOR", "");
-        asm.code("FINFOR", "");
+        // chargement des valeurs de boucle
+        asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+        asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
+        asm.code("LDW R3, (SP)+", "Pop value off the stack into R3");
+        // calcul des valeurs de boucles
+        asm.code("ADD R2, R3, R3", "Add R2 and R3 in R3");
+        asm.code("STW R3, -(SP)", "Push resulting value on the stack");
+        asm.code("STW R2, -(SP)", "Push R2 value on the stack");
+        asm.code("STW R1, -(SP)", "Push R1 value on the stack");
+        asm.code("SUB R1, R3, R1", "Substract R1 by R2 in R1");
+        asm.code("JNE #" + startfor + "-$-2", "Loops back when results is not equal to 0");
+        asm.newline();
         return CodeInfo.empty();
     }
 
