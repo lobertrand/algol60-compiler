@@ -1,6 +1,11 @@
 begin
-	integer i;
-	for i:=1, 2, 4, 5, 9 do outinteger(1,i);
-	outinteger(1,i)
+	integer i, n;
+	outstring(1,"for-while\n");
+	n := 0;
+	for i:=1 while n<=10 do 
+	begin
+		outinteger(1,n);
+		n := n+1;
+	end;
 end
 

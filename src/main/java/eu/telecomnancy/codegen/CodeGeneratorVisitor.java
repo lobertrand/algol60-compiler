@@ -232,6 +232,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.comment("ForClause");
         String startfor0 = UniqueReference.forLabel("startfor0");
         String startfor1 = UniqueReference.forLabel("startfor1");
+        String endfor1 = UniqueReference.forLabel("endfor1");
         DefaultAST whileClause = ast.findFirst(Algol60Parser.WHILE);
         DefaultAST action = ast.findFirst(Algol60Parser.DO).getChild(0);
         DefaultAST init = ast.findFirst(Algol60Parser.INIT);
@@ -263,21 +264,22 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         }
 
         if (whileClause != null) {
-            // String identifier1 = whileClause.getChild(0).getText();
-            // Variable variable1 = currentSymbolTable.resolve(identifier1, Variable.class);
-            // int shift1 = variable1.getShift();
-            whileClause.getChild(0).accept(this);
-            // asm.code("STW R1, (BP)" + shift1, "Store value into '" + identifier1 + "'");
+            String identifier1 = whileClause.getChild(0).getChild(0).getText();
+            Variable variable1 = currentSymbolTable.resolve(identifier1, Variable.class);
+            int shift1 = variable1.getShift();
+            whileClause.accept(this);
+            asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+            asm.code("JEQ #" + endfor1 + "-$-2", "Loops out when last result equals 0");
+            asm.code("JNE #" + startfor1 + "-$-2", "Loops back when last result equals 1");
+
             asm.label(startfor1, "Start of loop");
             action.accept(this);
-            // chargement des valeurs de boucle
+            asm.code("STW R1, (BP)" + shift1, "Store value into '" + identifier1 + "'");
+            whileClause.accept(this);
             asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-            asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
-            // calcul des valeurs de boucles
-            asm.code("STW R2, -(SP)", "Push R2 value on the stack");
-            asm.code("STW R1, -(SP)", "Push R1 value on the stack");
-            // asm.code("STW R1, (BP)" + shift1, "Store value into '" + identifier1 + "'");
-            asm.code("JEQ #" + startfor1 + "-$-2", "Loops back when last result equals 0");
+            asm.code("JNE #" + startfor1 + "-$-2", "Loops back when last result equals 1");
+
+            asm.label(endfor1, "End of loop");
             asm.newline();
         }
 
@@ -512,19 +514,15 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         return CodeInfo.empty();
     }
 
-    private void stackBool(String bool) {
-        if (bool.equals("true")) {
+    public CodeInfo visit(LogicalValueAST ast) {
+        // juste pour memo : 1 -> true, 0 -> false
+        String name = ast.getText();
+        if (name.equals("true")) {
             asm.code("LDW R1, #1", "Load value 1 (true)");
         } else {
             asm.code("LDW R1, #0", "Load value 0 (false)");
         }
         asm.code("STW R1, -(SP)", "Put it on the stack");
-    }
-
-    public CodeInfo visit(LogicalValueAST ast) {
-        // juste pour memo : 1 -> true, 0 -> false
-        String name = ast.getText();
-        stackBool(name);
         return CodeInfo.empty();
     }
 
