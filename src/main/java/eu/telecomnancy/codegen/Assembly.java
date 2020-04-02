@@ -21,12 +21,20 @@ public class Assembly {
         mode = Mode.NORMAL;
     }
 
-    public void pushRegisterValue(String register) {
-        this.code("STW " + register + ", -(SP)", "Push value of " + register + " on the stack");
+    public void push(String srcReg, String comment) {
+        this.code("STW " + srcReg + ", -(SP)", comment);
     }
 
-    public void popValueIntoRegister(String register) {
-        this.code("LDW " + register + ", (SP)+", "Pop stack value into " + register);
+    public void push(String srcReg) {
+        push("STW " + srcReg + ", -(SP)", "Push value of " + srcReg + " on stack");
+    }
+
+    public void pop(String dstReg, String comment) {
+        this.code("LDW " + dstReg + ", (SP)+", "Pop stack value into " + dstReg);
+    }
+
+    public void pop(String dstReg) {
+        pop(dstReg, "Pop stack value into " + dstReg);
     }
 
     public void beginProcedureDeclaration() {

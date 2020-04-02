@@ -125,7 +125,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         if (procedure.returnsAValue()) {
             asm.comment("Put result variable '" + procName + "' on the stack");
             asm.code("LDW WR, #0", "Initialize it with 0");
-            asm.code("LDW WR, -(SP)", "And place it on the stack");
+            asm.code("STW WR, -(SP)", "And place it on the stack");
         }
 
         DefaultAST block = ast.findFirst(Algol60Parser.BLOCK);
@@ -136,8 +136,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         }
         if (procedure.returnsAValue()) {
             int shift = procedure.getReturnValue().getShift();
-            asm.comment("Store return value into R0");
-            asm.code("LDW R0, (BP)" + shift, "Load value of '" + procName + "' into R0");
+            asm.comment("Store return value into R1");
+            asm.code("LDW R1, (BP)" + shift, "Load value of '" + procName + "' into R1");
         }
 
         asm.endEnvironment();
@@ -167,8 +167,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("LDW WR, #" + paramSize, "WR = size of '" + name + "' parameters");
             asm.code("ADD WR, SP, SP", "Pop parameters");
         }
-        if (procedure.getType() != Type.VOID) {
-            asm.code("STW R0, -(SP)", "Save procedure result on the stack");
+        boolean resultIsAssigned = ast.getParent().getType() != Algol60Parser.BLOCK;
+        if (procedure.returnsAValue() && resultIsAssigned) {
+            asm.code("STW R1, -(SP)", "Save procedure result on the stack");
         }
         return CodeInfo.empty();
     }
@@ -201,7 +202,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         asm.comment("If statement");
         condition.accept(this); // Push 'boolean' value on the stack
-        asm.popValueIntoRegister("R1");
+        asm.pop("R1");
         asm.code(
                 "JEQ #" + falseCondition + "-$-2",
                 "If condition is false, jump to end of if statement");
@@ -503,7 +504,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         Variable variable = currentSymbolTable.resolve(name, Variable.class);
         int shift = variable.getShift();
         asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
-        asm.code("STW R1, -(SP)", "Push value of '" + name + "' on the stack");
+        asm.push("R1", "Push value of '" + name + "' on stack");
         return CodeInfo.empty();
     }
 

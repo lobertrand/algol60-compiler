@@ -42,17 +42,17 @@ public class SymbolTable {
     }
 
     public void define(Symbol symbol) {
-        if (symbol.isParameter()) {
-            this.currentParameterShift += symbol.getSize();
-            symbol.setShift(this.currentParameterShift);
-        } else {
-            this.currentVariableShift -= symbol.getSize();
-            symbol.setShift(this.currentVariableShift);
+        if (symbol.getKind() == Kind.VARIABLE || symbol.getKind() == Kind.ARRAY) {
+            if (symbol.isParameter()) {
+                this.currentParameterShift += symbol.getSize();
+                symbol.setShift(this.currentParameterShift);
+            } else {
+                this.currentVariableShift -= symbol.getSize();
+                symbol.setShift(this.currentVariableShift);
+                localVariableSize += symbol.getSize();
+            }
         }
         symbols.put(symbol.getIdentifier(), symbol);
-        if (!symbol.isParameter()) {
-            localVariableSize += symbol.getSize();
-        }
     }
 
     public int getLocalVariableSize() {

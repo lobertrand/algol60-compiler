@@ -70,7 +70,6 @@ public class ArrayCallTest {
         c.line("  integer array myArray[1:10,5:25];");
         c.line("  a := myArray[b,15]");
         c.line("end");
-        ;
 
         Result result = checkSemantics(c);
         assertExceptionAtLine(5, TypeMismatchException.class, result);
