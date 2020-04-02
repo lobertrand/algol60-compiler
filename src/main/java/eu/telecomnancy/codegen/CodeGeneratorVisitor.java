@@ -12,8 +12,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     private String[] input;
 
     public CodeGeneratorVisitor(SymbolTable symbolTable, Assembly asm) {
-        UniqueReference.reset();
-
         PredefinedCode.appendAliases(asm);
         PredefinedCode.appendOutstringCode(asm);
         PredefinedCode.appendItoaCode(asm);

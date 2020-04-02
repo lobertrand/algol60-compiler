@@ -319,7 +319,7 @@ and_expr
 
 not_expr
     :   comparison
-    |   NOT not_expr -> ^(NOT not_expr)
+    |   NOT^ not_expr
     ;
 
 comparison
@@ -337,10 +337,7 @@ mult_expr
     ;
 
 pow_expr
-    :   a=group_expr
-        (   POW b=group_expr    -> ^(POW $a $b)
-        |                       -> $a
-        )
+    :   group_expr (POW^ group_expr)*
     ;
 
 group_expr
@@ -436,7 +433,7 @@ string
     ;
 
 identifier
-    :   IDENTIFIER //-> ^(ID IDENTIFIER)
+    :   IDENTIFIER
     ;
 
 // LEXER RULES

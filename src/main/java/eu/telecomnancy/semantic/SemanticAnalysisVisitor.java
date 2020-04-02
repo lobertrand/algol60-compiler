@@ -2,6 +2,7 @@ package eu.telecomnancy.semantic;
 
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.*;
+import eu.telecomnancy.codegen.UniqueReference;
 import eu.telecomnancy.symbols.*;
 import eu.telecomnancy.symbols.Label;
 import eu.telecomnancy.symbols.OrphanGoto;
@@ -20,6 +21,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     private List<OrphanSwitch> orphanSwitches;
 
     public SemanticAnalysisVisitor(SymbolTable symbolTable) {
+        UniqueReference.reset();
         if (symbolTable == null) {
             throw new IllegalArgumentException("Symbol table cannot be null");
         }

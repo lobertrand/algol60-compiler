@@ -98,7 +98,7 @@ public class IOUtils {
             throws IOException, InterruptedException {
         DOTTreeGenerator gen = new DOTTreeGenerator();
         StringTemplate st = gen.toDOT(tree);
-        String dotTree = st.toString();
+        String dotTree = st.toString().replaceAll("\\\\", "\\\\\\\\");
 
         // Write dot tree in a file
         writeStringToFile(dotTree, name + ".dot");

@@ -8,15 +8,19 @@ import eu.telecomnancy.semantic.SemanticAnalysisVisitor;
 import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.symbols.PredefinedSymbols;
 import eu.telecomnancy.symbols.SymbolTable;
-import eu.telecomnancy.tools.IOListener;
 import eu.telecomnancy.tools.IOUtils;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
-import projetIUP.Lanceur;
 
 public class Helper {
+
+    public static final String TEMP_PROGRAM_NAME = "build/tmp/test_program";
 
     public static class Result {
         public String output;
@@ -62,22 +66,62 @@ public class Helper {
         codeGenerator.setInput(String.valueOf(input));
         ast.accept(codeGenerator);
 
-        IOUtils.writeStringToFile(asm.toString(), "build/tmp/test_program.asm");
+        IOUtils.writeStringToFile(asm.toString(), TEMP_PROGRAM_NAME + ".asm");
+        String[] compileCmd = {
+            "java", "-jar", "lib/microPIUPK.jar", "-ass", TEMP_PROGRAM_NAME + ".asm"
+        };
+        CommandResult compileRes = exec(compileCmd);
+        if (compileRes.hadError) {
+            System.err.println(compileRes.output);
+            System.err.println(compileRes.error);
+            throw new IllegalStateException();
+        }
 
-        String[] compileArgs = {"-ass", "build/tmp/test_program.asm"};
-        IOListener.listen(() -> Lanceur.main(compileArgs))
-                .ifError(IOUtils::logError)
-                .ifError(IOUtils::exit);
-
-        String[] execArgs = {"-batch", "build/tmp/test_program.iup"};
-        String output = IOListener.listen(() -> Lanceur.main(execArgs)).getOutput();
+        String[] execCmd = {
+            "java", "-jar", "lib/microPIUPK.jar", "-batch", TEMP_PROGRAM_NAME + ".iup"
+        };
+        CommandResult execRes = exec(execCmd);
+        if (execRes.hadError) {
+            System.err.println(execRes.output);
+            System.err.println(execRes.error);
+            throw new IllegalStateException();
+        }
 
         Result result = new Result();
-        result.output = trimOutput(output);
+        result.output = trimOutput(execRes.output);
         return result;
     }
 
     private static String trimOutput(String output) {
         return output.replaceFirst("(?s)Simulation terminée --.*", "").trim();
+    }
+
+    private static CommandResult exec(String... cmd) {
+        CommandResult res = new CommandResult();
+        try {
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            final Process p = pb.start();
+            p.waitFor();
+            res.output = inputStreamToString(p.getInputStream());
+            res.error = inputStreamToString(p.getErrorStream());
+            res.hadError = p.exitValue() != 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    private static String inputStreamToString(InputStream inputStream) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        StringBuilder sb = new StringBuilder();
+        while ((line = br.readLine()) != null) sb.append(line).append("\n");
+        return sb.toString();
+    }
+
+    private static class CommandResult {
+        String output;
+        String error;
+        boolean hadError;
     }
 }
