@@ -6,6 +6,7 @@ import eu.telecomnancy.Algol60Lexer;
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.ASTAdaptor;
 import eu.telecomnancy.ast.DefaultAST;
+import eu.telecomnancy.codegen.UniqueReference;
 import eu.telecomnancy.symbols.PredefinedSymbols;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.tools.IOUtils;
@@ -57,8 +58,9 @@ public class Helper {
         }
 
         SymbolTable symbolTable = new SymbolTable();
-        PredefinedSymbols.get().forEach(symbolTable::define);
-        SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor(symbolTable);
+        UniqueReference uniqueReference = new UniqueReference();
+        PredefinedSymbols.create(uniqueReference).forEach(symbolTable::define);
+        SemanticAnalysisVisitor visitor = new SemanticAnalysisVisitor(symbolTable, uniqueReference);
         ast.accept(visitor);
         Result result = new Result();
         result.symbolTable = symbolTable;

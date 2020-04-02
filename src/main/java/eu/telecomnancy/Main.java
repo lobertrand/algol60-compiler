@@ -5,6 +5,7 @@ import eu.telecomnancy.ast.DefaultAST;
 import eu.telecomnancy.codegen.Assembly;
 import eu.telecomnancy.codegen.CodeGeneratorVisitor;
 import eu.telecomnancy.codegen.Optimizer;
+import eu.telecomnancy.codegen.UniqueReference;
 import eu.telecomnancy.semantic.SemanticAnalysisVisitor;
 import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.symbols.PredefinedSymbols;
@@ -44,15 +45,18 @@ public class Main {
 
         // Semantic analysis
         SymbolTable symbolTable = new SymbolTable();
-        PredefinedSymbols.get().forEach(symbolTable::define);
-        SemanticAnalysisVisitor semanticAnalysisVisitor = new SemanticAnalysisVisitor(symbolTable);
+        UniqueReference uniqueReference = new UniqueReference();
+        PredefinedSymbols.create(uniqueReference).forEach(symbolTable::define);
+        SemanticAnalysisVisitor semanticAnalysisVisitor =
+                new SemanticAnalysisVisitor(symbolTable, uniqueReference);
         ast.accept(semanticAnalysisVisitor);
         IOUtils.print(symbolTable);
         reportSemanticExceptions(semanticAnalysisVisitor, input);
         if (semanticAnalysisVisitor.hasExceptions()) IOUtils.exit();
 
         Assembly asm = new Assembly();
-        CodeGeneratorVisitor codeGenerator = new CodeGeneratorVisitor(symbolTable, asm);
+        CodeGeneratorVisitor codeGenerator =
+                new CodeGeneratorVisitor(symbolTable, asm, uniqueReference);
         codeGenerator.setInput(String.valueOf(input));
         ast.accept(codeGenerator);
         IOUtils.log("Generated assembly code");

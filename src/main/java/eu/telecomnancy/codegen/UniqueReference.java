@@ -5,9 +5,9 @@ import java.util.Map;
 
 public final class UniqueReference {
 
-    private static Map<String, Integer> usedLabelNames = new HashMap<>();
+    private Map<String, Integer> usedLabelNames = new HashMap<>();
 
-    public static String forLabel(String symbolName) {
+    public String forLabel(String symbolName) {
         if (usedLabelNames.containsKey(symbolName)) {
             int n = usedLabelNames.get(symbolName);
             usedLabelNames.put(symbolName, n + 1);
@@ -18,14 +18,7 @@ public final class UniqueReference {
         }
     }
 
-    private static int stringNumber = 0;
-
-    public static String forString() {
-        return "STR_" + (stringNumber++);
-    }
-
-    public static void reset() {
-        usedLabelNames = new HashMap<>();
-        stringNumber = 0;
+    public String forString() {
+        return forLabel("STR");
     }
 }

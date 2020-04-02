@@ -51,8 +51,10 @@ public class Helper {
         // Semantic analysis
         DefaultAST ast = pr.getTree();
         SymbolTable symbolTable = new SymbolTable();
-        PredefinedSymbols.get().forEach(symbolTable::define);
-        SemanticAnalysisVisitor semanticAnalysisVisitor = new SemanticAnalysisVisitor(symbolTable);
+        UniqueReference uniqueReference = new UniqueReference();
+        PredefinedSymbols.create(uniqueReference).forEach(symbolTable::define);
+        SemanticAnalysisVisitor semanticAnalysisVisitor =
+                new SemanticAnalysisVisitor(symbolTable, uniqueReference);
         ast.accept(semanticAnalysisVisitor);
 
         if (semanticAnalysisVisitor.hasExceptions()) {
@@ -62,7 +64,8 @@ public class Helper {
         }
 
         Assembly asm = new Assembly();
-        CodeGeneratorVisitor codeGenerator = new CodeGeneratorVisitor(symbolTable, asm);
+        CodeGeneratorVisitor codeGenerator =
+                new CodeGeneratorVisitor(symbolTable, asm, uniqueReference);
         codeGenerator.setInput(String.valueOf(input));
         ast.accept(codeGenerator);
 

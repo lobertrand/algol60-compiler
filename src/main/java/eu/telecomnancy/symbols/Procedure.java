@@ -14,7 +14,6 @@ public class Procedure extends Symbol {
     public Procedure(String identifier, Type returnType, List<Type> parameterTypes) {
         super(identifier, returnType, Kind.PROCEDURE);
         this.parameterTypes = parameterTypes;
-        this.asmLabel = UniqueReference.forLabel(identifier);
     }
 
     public boolean returnsAValue() {
@@ -43,6 +42,11 @@ public class Procedure extends Symbol {
 
     public String getAsmLabel() {
         return asmLabel;
+    }
+
+    public Procedure withAsmLabel(UniqueReference uniqueReference) {
+        this.asmLabel = uniqueReference.forLabel(getIdentifier());
+        return this;
     }
 
     @Override

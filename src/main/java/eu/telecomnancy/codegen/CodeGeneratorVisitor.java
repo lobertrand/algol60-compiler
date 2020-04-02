@@ -10,8 +10,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     private int currentTableNumber;
     private Assembly asm;
     private String[] input;
+    private UniqueReference uniqueReference;
 
-    public CodeGeneratorVisitor(SymbolTable symbolTable, Assembly asm) {
+    public CodeGeneratorVisitor(
+            SymbolTable symbolTable, Assembly asm, UniqueReference uniqueReference) {
         PredefinedCode.appendAliases(asm);
         PredefinedCode.appendOutstringCode(asm);
         PredefinedCode.appendItoaCode(asm);
@@ -33,6 +35,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         this.currentSymbolTable = symbolTable;
         this.currentTableNumber = 0;
         this.asm = asm;
+        this.uniqueReference = uniqueReference;
     }
 
     public void setInput(String inputCode) {
@@ -68,14 +71,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(RootAST ast) {
         // Beginning of the program
         asm.label("main", "Entry point");
-
-        // int size = currentSymbolTable.getLocalVariableSize();
-        // asm.comment("Prepare main environment");
-        //        asm.code("LDW R1, #" + size, "Local variables size into R1");
-        // asm.code("ADQ -2, SP", "Decrement stack pointer");
-        // asm.code("STW BP, (SP)", "Save base pointer on the stack");
-        // asm.code("LDW BP, SP", "Update base pointer");
-        //        asm.code("SUB SP, R1, SP", "Make space for local variables on the stack");
 
         // Main block instructions
         ast.getChild(0).accept(this);
@@ -194,8 +189,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IfStatementAST ast) {
-        String endLabel = UniqueReference.forLabel("endif");
-        String elseLabel = UniqueReference.forLabel("else");
+        String endLabel = uniqueReference.forLabel("endif");
+        String elseLabel = uniqueReference.forLabel("else");
 
         DefaultAST ifDef = ast.findFirst(Algol60Parser.IF_DEF);
         DefaultAST condition = ifDef.getChild(0);
@@ -228,9 +223,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(ForClauseAST ast) {
         asm.comment("ForClause");
-        String startfor0 = UniqueReference.forLabel("startfor0");
-        String startfor1 = UniqueReference.forLabel("startfor1");
-        String endfor1 = UniqueReference.forLabel("endfor1");
+        String startfor0 = uniqueReference.forLabel("startfor0");
+        String startfor1 = uniqueReference.forLabel("startfor1");
+        String endfor1 = uniqueReference.forLabel("endfor1");
         DefaultAST whileClause = ast.findFirst(Algol60Parser.WHILE);
         DefaultAST action = ast.findFirst(Algol60Parser.DO).getChild(0);
         DefaultAST init = ast.findFirst(Algol60Parser.INIT);
@@ -447,7 +442,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(StrAST ast) {
         String content = ast.getText();
-        String label = UniqueReference.forString();
+        String label = uniqueReference.forString();
         asm.string(label, content);
         asm.code("LDW R1, #" + label, "charge adresse de la chaîne dans R1");
         asm.code("STW R1, -(SP)", "empile le string");
@@ -528,8 +523,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(NotAST ast) {
         DefaultAST child = ast.getChild(0);
         child.accept(this);
-        String notfalse = UniqueReference.forLabel("notfalse");
-        String nottrue = UniqueReference.forLabel("nottrue");
+        String notfalse = uniqueReference.forLabel("notfalse");
+        String nottrue = uniqueReference.forLabel("nottrue");
         asm.comment("Not");
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
         asm.code("JEQ #" + notfalse + "-$-2", "Jump to notfalse when last result equals 0");
@@ -562,8 +557,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(OrAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String or0 = UniqueReference.forLabel("or");
-        String or1 = UniqueReference.forLabel("or");
+        String or0 = uniqueReference.forLabel("or");
+        String or1 = uniqueReference.forLabel("or");
         asm.comment("Or");
         leftPart.accept(this);
         rightPart.accept(this);
@@ -587,8 +582,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(ImplyAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String imply0 = UniqueReference.forLabel("imply");
-        String imply1 = UniqueReference.forLabel("imply");
+        String imply0 = uniqueReference.forLabel("imply");
+        String imply1 = uniqueReference.forLabel("imply");
         asm.comment("Imply");
         leftPart.accept(this);
         rightPart.accept(this);
@@ -610,8 +605,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(EquivalentAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String equi0 = UniqueReference.forLabel("equi");
-        String equi1 = UniqueReference.forLabel("equi");
+        String equi0 = uniqueReference.forLabel("equi");
+        String equi1 = uniqueReference.forLabel("equi");
         asm.comment("Equivalent");
         leftPart.accept(this);
         rightPart.accept(this);
@@ -633,8 +628,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(GreaterThanAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String gt0 = UniqueReference.forLabel("gt");
-        String gt1 = UniqueReference.forLabel("gt");
+        String gt0 = uniqueReference.forLabel("gt");
+        String gt1 = uniqueReference.forLabel("gt");
         asm.comment("Greater than");
         leftPart.accept(this);
         rightPart.accept(this);
@@ -656,8 +651,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(LessThanAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String lt0 = UniqueReference.forLabel("lt");
-        String lt1 = UniqueReference.forLabel("lt");
+        String lt0 = uniqueReference.forLabel("lt");
+        String lt1 = uniqueReference.forLabel("lt");
         asm.comment("Less than");
         leftPart.accept(this);
         rightPart.accept(this);
@@ -679,8 +674,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(GreaterEqualAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String ge0 = UniqueReference.forLabel("ge");
-        String ge1 = UniqueReference.forLabel("ge");
+        String ge0 = uniqueReference.forLabel("ge");
+        String ge1 = uniqueReference.forLabel("ge");
         asm.comment("Greater or equal");
         leftPart.accept(this);
         rightPart.accept(this);
@@ -704,8 +699,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(LessEqualAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String le0 = UniqueReference.forLabel("le");
-        String le1 = UniqueReference.forLabel("le");
+        String le0 = uniqueReference.forLabel("le");
+        String le1 = uniqueReference.forLabel("le");
         asm.comment("Less or equal");
         leftPart.accept(this);
         rightPart.accept(this);
@@ -729,8 +724,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(EqualAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String eq0 = UniqueReference.forLabel("eq");
-        String eq1 = UniqueReference.forLabel("eq");
+        String eq0 = uniqueReference.forLabel("eq");
+        String eq1 = uniqueReference.forLabel("eq");
         asm.comment("Equal");
         leftPart.accept(this);
         rightPart.accept(this);
@@ -752,8 +747,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(NotEqualAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        String neq0 = UniqueReference.forLabel("neq");
-        String neq1 = UniqueReference.forLabel("neq");
+        String neq0 = uniqueReference.forLabel("neq");
+        String neq1 = uniqueReference.forLabel("neq");
         asm.comment("Not equal");
         leftPart.accept(this);
         rightPart.accept(this);

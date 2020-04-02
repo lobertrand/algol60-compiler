@@ -19,13 +19,14 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
     private SymbolTable currentSymbolTable;
     private List<OrphanGoto> orphanGotos;
     private List<OrphanSwitch> orphanSwitches;
+    private UniqueReference uniqueReference;
 
-    public SemanticAnalysisVisitor(SymbolTable symbolTable) {
-        UniqueReference.reset();
+    public SemanticAnalysisVisitor(SymbolTable symbolTable, UniqueReference uniqueReference) {
         if (symbolTable == null) {
             throw new IllegalArgumentException("Symbol table cannot be null");
         }
         this.currentSymbolTable = symbolTable;
+        this.uniqueReference = uniqueReference;
         this.exceptions = new ArrayList<>();
         this.orphanGotos = new ArrayList<>();
         this.orphanSwitches = new ArrayList<>();
@@ -214,7 +215,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         }
 
         // Define procedure
-        Procedure procedure = new Procedure(procName, procType, orderedTypes);
+        Procedure procedure =
+                new Procedure(procName, procType, orderedTypes).withAsmLabel(uniqueReference);
         procedure.setSymbolTable(currentSymbolTable);
         baseSymbolTable.define(procedure);
 
