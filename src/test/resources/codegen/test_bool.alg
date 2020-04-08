@@ -11,7 +11,8 @@ begin
 	outboolean(1, d);
 	e := 5 > 5;
 	outboolean(1, e);
-	f := 5 <= 5;
+	f := 4 <= 5;
+
 	outboolean(1, f);
 	g := 5 < 5;
 	outboolean(1, g);

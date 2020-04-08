@@ -839,12 +839,33 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     }
 
     public CodeInfo visit(SwitchDecAST ast) {
+        DefaultAST switchName = ast.getChild(0);
+        String switchString = switchName.getText();
+        // System.out.println(switchString);
+        DefaultAST IDList = ast.getChild(1);
+        asm.comment("");
+        asm.code(
+                "JMP #END" + switchString + "-$-2 ",
+                "jump to the end of the label declaration of the switch " + switchString);
+        asm.label("BEGIN" + switchString, "The beginning of the switch declaration ");
+        for (DefaultAST label : IDList) {
+            String labelName = label.getText();
+            asm.code("JMP #" + labelName + "-$-2 ", "jump to the " + labelName + " Label");
+        }
+        asm.label("END" + switchString, "The end of the switch declaration ");
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(SwitchCallAST ast) {
+        DefaultAST switchName = ast.getChild(0);
+        String switchString = switchName.getText();
         DefaultAST index = ast.getChild(1);
-        index.accept(this);
+        int indexInt = 4 * Integer.parseInt(index.getText()) - 4;
+        System.out.println(indexInt);
+        /* ICI Il Faut recuperer la valeur de index mais je sais pas comment faire ...*/
+        asm.code(
+                "JMP #BEGIN" + switchString + "-$-2+" + indexInt,
+                "jump to the " + indexInt + "element of the " + switchString + " switch");
         return CodeInfo.empty();
     }
 }

@@ -38,7 +38,7 @@ public class Main {
         }
         DefaultAST ast = pr.getTree();
         ASTTools.print(ast);
-        IOUtils.generateDotTree(ast, "ast");
+        //      IOUtils.generateDotTree(ast, "ast");
         reportLexicalExceptions(lexer, input);
         reportSyntacticExceptions(parser, input);
         if (lexer.hasExceptions() || parser.hasExceptions()) IOUtils.exit();
