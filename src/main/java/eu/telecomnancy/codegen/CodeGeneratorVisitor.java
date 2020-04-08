@@ -349,7 +349,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         rightPart.accept(this); // Puts the value on the stack
 
         if (currentSymbolTable.isDeclaredInScope(identifier)) {
-            asm.code("LDW R1, (BP)" + shift, "Load value of '" + identifier + "' into R1");
+            asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+            asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
         } else {
             int diff =
                     currentSymbolTable.getLevel()
@@ -360,7 +361,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
                 asm.code("LDW R1, (R1)", "Go up by one environment");
             }
             asm.code("ADQ " + shift + "R1", "Add" + shift + "to address");
-            asm.code("LDW R1, (R1)" + shift, "Load value of '" + identifier + "' into R1");
+            asm.code("LDW R2, (SP)+", "Pop value off the stack into R1");
+            asm.code("STW R1, R2", "Store value into R1");
         }
 
         return CodeInfo.empty();
