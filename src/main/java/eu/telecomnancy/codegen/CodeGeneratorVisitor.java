@@ -340,17 +340,28 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(AssignmentAST ast) {
-        // TODO: Finish the assignment of values (int values first)
         DefaultAST leftPart = ast.getChild(0);
         String identifier = leftPart.getText();
         Variable variable = currentSymbolTable.resolve(identifier, Variable.class);
         int shift = variable.getShift();
         DefaultAST rightPart = ast.getChild(1);
-
         asm.comment("Assignment: " + getLineOfCode(ast));
         rightPart.accept(this); // Puts the value on the stack
-        asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-        asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
+
+        if (currentSymbolTable.isDeclaredInScope(identifier)) {
+            asm.code("LDW R1, (BP)" + shift, "Load value of '" + identifier + "' into R1");
+        } else {
+            int diff =
+                    currentSymbolTable.getLevel()
+                            - currentSymbolTable.whereIsDeclared(identifier).getLevel();
+            asm.code("LDW R1, BP", "Make a copy of current BP into R1");
+            for (int i = 0; i < diff; i++) {
+                asm.code("ADQ -2, R1", "Make R1 point to current SC (static ch.)");
+                asm.code("LDW R1, (R1)", "Go up by one environment");
+            }
+            asm.code("ADQ " + shift + "R1", "Add" + shift + "to address");
+            asm.code("LDW R1, (R1)" + shift, "Load value of '" + identifier + "' into R1");
+        }
 
         return CodeInfo.empty();
     }

@@ -1,4 +1,9 @@
 begin
-	integer i;
-	for i:=1, 2, 4, 5, 9 do outinteger(1,i)
+  integer x;
+  begin
+    for x := 3 step 1 until 9 do
+    begin
+        outinteger(1, x);
+    end
+  end
 end
