@@ -545,7 +545,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(LabelDecAST ast) {
         String labelName = ast.getChild(0).getText();
-        asm.label(labelName, "create label " + labelName);
+        Label label = currentSymbolTable.resolve(labelName, Label.class);
+        String uniqueLabelName = label.getAsmLabel();
+        asm.label(uniqueLabelName, "create label " + uniqueLabelName);
 
         return CodeInfo.empty();
     }
@@ -553,7 +555,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(GoToAST ast) {
         String labelName = ast.getChild(0).getText();
-        asm.code("JMP #" + labelName + "-$-2 ", "jump to the " + labelName + " Label");
+        Label l = currentSymbolTable.resolve(labelName, Label.class);
+        String uniqueLabelName = l.getAsmLabel();
+        asm.code("JMP #" + uniqueLabelName + "-$-2 ", "jump to the " + uniqueLabelName + " Label");
         return CodeInfo.empty();
     }
 

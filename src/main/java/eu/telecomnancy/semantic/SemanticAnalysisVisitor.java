@@ -827,7 +827,9 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             throw new SymbolRedeclarationException(
                     String.format("Label '%s' already declared in scope", name), ast);
         }
-        currentSymbolTable.define(new Label(name));
+        Label l = new Label(name);
+        l.withAsmLabel(uniqueReference);
+        currentSymbolTable.define(l);
         return Type.VOID;
     }
 
