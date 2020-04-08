@@ -126,9 +126,10 @@ public class Assembly {
 
     public void newEnvironment() {
         this.comment("Prepare environment");
-        this.code("STW BP, -(SP)", "Save old base pointer on stack (dynamic chaining)");
+        this.code("LDW R1, BP", "Save a copy of old base pointer in R1");
+        this.code("STW BP, -(SP)", "Push old base pointer on stack (dynamic chaining)");
         this.code("LDW BP, SP", "New base pointer is the current stack pointer");
-        this.code("STW BP, -(SP)", "Save old base pointer on stack (static chaining)");
+        this.code("STW R1, -(SP)", "Push old base pointer on stack (static chaining)");
     }
 
     public void endEnvironment() {

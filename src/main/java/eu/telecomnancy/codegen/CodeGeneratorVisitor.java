@@ -563,17 +563,18 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         Variable variable = currentSymbolTable.resolve(name, Variable.class);
         int shift = variable.getShift();
 
-        if (!currentSymbolTable.isDeclaredInScope(name)) {
+        if (currentSymbolTable.isDeclaredInScope(name)) {
+            asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
+        } else {
             int diff =
                     currentSymbolTable.getLevel()
                             - currentSymbolTable.whereIsDeclared(name).getLevel();
-            asm.code("LDW R1, (BP)-2", "R1 initialized with current CS");
+            asm.code("LDW R1, BP", "Make a copy of current BP into R1");
             for (int i = 0; i < diff; i++) {
-                asm.code("LDW R1, (R1)-2", "R1 replaced by the value in R1-2");
+                asm.code("ADQ -2, R1", "Make R1 point to current SC (static ch.)");
+                asm.code("LDW R1, (R1)", "Go up by one environment");
             }
             asm.code("LDW R1, (R1)" + shift, "Load value of '" + name + "' into R1");
-        } else {
-            asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
         }
 
         asm.push("R1", "Push value of '" + name + "' on stack");
