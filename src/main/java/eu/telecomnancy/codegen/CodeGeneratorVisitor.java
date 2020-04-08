@@ -439,6 +439,17 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(PowAST ast) {
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        int power = Integer.parseInt(rightPart.getText());
+        asm.comment("POWER");
+        leftPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R2, R1", "");
+        for (int i = 1; i < power; i++) {
+            asm.code("MUL R1, R2, R1", "Mul first and second value");
+        }
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
 
         return CodeInfo.empty();
     }
