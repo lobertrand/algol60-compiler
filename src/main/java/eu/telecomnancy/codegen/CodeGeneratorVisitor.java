@@ -286,7 +286,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             int shift1 = variable1.getShift();
             whileClause.accept(this);
             asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-            asm.code("JEQ #" + endfor1 + "-$-2", "Loops out when last result equals 0");
+            asm.code("JLE #" + endfor1 + "-$-2", "Loops out when last result equals 0");
             asm.code("JNE #" + startfor1 + "-$-2", "Loops back when last result equals 1");
 
             asm.label(startfor1, "Start of loop");
@@ -319,8 +319,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("STW R2, -(SP)", "Push R2 value on the stack");
             asm.code("STW R3, (BP)" + shift, "Store value into '" + identifier + "'");
             asm.code("STW R1, -(SP)", "Push R1 value on the stack");
-            asm.code("SUB R1, R3, R1", "Substract R1 by R2 in R1");
-            asm.code("JNE #" + startfor0 + "-$-2", "Loops back when results is not equal to 0");
+            asm.code("SUB R1, R3, R1", "Substract R1 by R3 in R1");
+            asm.code("JGE #" + startfor0 + "-$-2", "Loops back when results is not equal to 0");
             asm.newline();
         }
         return CodeInfo.empty();
