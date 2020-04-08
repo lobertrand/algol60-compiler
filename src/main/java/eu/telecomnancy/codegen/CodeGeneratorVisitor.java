@@ -177,14 +177,37 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(IfExpressionAST ast) {
 
+        String endLabel = uniqueReference.forLabel("endif");
+        String elseLabel = uniqueReference.forLabel("else");
+
         DefaultAST ifDef = ast.findFirst(Algol60Parser.IF_DEF);
         DefaultAST condition = ifDef.getChild(0);
-        condition.accept(this);
         DefaultAST thenDef = ast.findFirst(Algol60Parser.THEN_DEF);
-        thenDef.getChild(0).accept(this);
-
         DefaultAST elseDef = ast.findFirst(Algol60Parser.ELSE_DEF);
-        elseDef.getChild(0).accept(this);
+
+        String falseCondition = elseDef != null ? elseLabel : endLabel;
+
+        asm.comment("If expression");
+        condition.accept(this); // Push 'boolean' value on the stack
+        asm.pop("R1");
+        asm.code(
+                "JEQ #" + falseCondition + "-$-2",
+                "If condition is false, jump to end of if statement");
+
+        asm.comment("Then");
+        thenDef.accept(this);
+        asm.code("LDW R1,-(SP)", "");
+        asm.pop("R1");
+        if (elseDef != null) {
+            asm.code("JMP #" + endLabel + "-$-2", "Jump to end of if statement");
+            asm.label(elseLabel, "Else");
+            elseDef.accept(this);
+            asm.code("LDW R1,-(SP)", "");
+            asm.pop("R1");
+        }
+
+        asm.label(endLabel, "End of if statement");
+        asm.code("NOP", "No operation");
         return CodeInfo.empty();
     }
 
