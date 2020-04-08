@@ -27,4 +27,10 @@ public class VarAccessTest {
                 parse(IOUtils.loadString("/codegen/unit_tests/non_local_value_nested_proc.alg"));
         assertEquals("+14", result.output.replaceAll("\n", ""));
     }
+
+    @Test
+    public void testNonLocalValueStore() throws Exception {
+        Result result = parse(IOUtils.loadString("/codegen/unit_tests/non_local_value_store.alg"));
+        assertEquals("+11+22", result.output.replaceAll("\n", ""));
+    }
 }

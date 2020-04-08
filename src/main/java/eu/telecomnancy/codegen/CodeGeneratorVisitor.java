@@ -329,12 +329,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(InitAST ast) {
         DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
         leftPart.accept(this);
-        int nbChildren = ast.getChildCount();
-        for (int i = 1; i < nbChildren; i++) {
-            DefaultAST rightPart = ast.getChild(i);
-            rightPart.accept(this);
-        }
+        rightPart.accept(this);
         return CodeInfo.empty();
     }
 
@@ -352,17 +349,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
             asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
         } else {
-            int diff =
-                    currentSymbolTable.getLevel()
-                            - currentSymbolTable.whereIsDeclared(identifier).getLevel();
-            asm.code("LDW R1, BP", "Make a copy of current BP into R1");
-            for (int i = 0; i < diff; i++) {
-                asm.code("ADQ -2, R1", "Make R1 point to current SC (static ch.)");
-                asm.code("LDW R1, (R1)", "Go up by one environment");
-            }
-            asm.code("ADQ " + shift + "R1", "Add" + shift + "to address");
-            asm.code("LDW R2, (SP)+", "Pop value off the stack into R1");
-            asm.code("STW R1, R2", "Store value into R1");
+            asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
+            putBasePointerOfNonLocalVarIntoR1(identifier);
+            asm.code("STW R2, (R1)" + shift, "Store value into '" + identifier + "'");
         }
 
         return CodeInfo.empty();
@@ -583,19 +572,22 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         if (currentSymbolTable.isDeclaredInScope(name)) {
             asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
         } else {
-            int diff =
-                    currentSymbolTable.getLevel()
-                            - currentSymbolTable.whereIsDeclared(name).getLevel();
-            asm.code("LDW R1, BP", "Make a copy of current BP into R1");
-            for (int i = 0; i < diff; i++) {
-                asm.code("ADQ -2, R1", "Make R1 point to current SC (static ch.)");
-                asm.code("LDW R1, (R1)", "Go up by one environment");
-            }
+            putBasePointerOfNonLocalVarIntoR1(name);
             asm.code("LDW R1, (R1)" + shift, "Load value of '" + name + "' into R1");
         }
 
         asm.push("R1", "Push value of '" + name + "' on stack");
         return CodeInfo.empty();
+    }
+
+    private void putBasePointerOfNonLocalVarIntoR1(String name) {
+        int diff =
+                currentSymbolTable.getLevel() - currentSymbolTable.whereIsDeclared(name).getLevel();
+        asm.code("LDW R1, BP", "Make a copy of current BP into R1");
+        for (int i = 0; i < diff; i++) {
+            asm.code("ADQ -2, R1", "Make R1 point to current SC (static ch.)");
+            asm.code("LDW R1, (R1)", "Go up by one environment");
+        }
     }
 
     public CodeInfo visit(LogicalValueAST ast) {
