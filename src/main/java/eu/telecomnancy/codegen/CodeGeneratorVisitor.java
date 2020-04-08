@@ -468,10 +468,12 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.comment("POWER");
         leftPart.accept(this);
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
-        asm.code("LDW R2, R1", "");
-        for (int i = 1; i < power; i++) {
-            asm.code("MUL R1, R2, R1", "Mul first and second value");
+        asm.code("MUL R1, R1, R2", "Mul first and second value");
+
+        for (int i = 1; i < power - 1; i++) {
+            asm.code("MUL R1, R2, R2", "Mul first and second value");
         }
+        asm.code("LDW R1,R2", "");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
 
         return CodeInfo.empty();

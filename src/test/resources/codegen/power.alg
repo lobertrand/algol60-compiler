@@ -1,6 +1,6 @@
 begin 
 	integer a;
-	a := 9**3;
+	a := 2**2;
 	outinteger(1,a)
 
 
