@@ -94,20 +94,24 @@ public class IOUtils {
         return Math.max(colNumber, 0);
     }
 
-    public static void generateDotTree(Tree tree, String name)
-            throws IOException, InterruptedException {
-        DOTTreeGenerator gen = new DOTTreeGenerator();
-        StringTemplate st = gen.toDOT(tree);
-        String dotTree = st.toString().replaceAll("\\\\", "\\\\\\\\");
+    public static void generateDotTree(Tree tree, String name) {
+        try {
+            DOTTreeGenerator gen = new DOTTreeGenerator();
+            StringTemplate st = gen.toDOT(tree);
+            String dotTree = st.toString().replaceAll("\\\\", "\\\\\\\\");
 
-        // Write dot tree in a file
-        writeStringToFile(dotTree, name + ".dot");
+            // Write dot tree in a file
+            writeStringToFile(dotTree, name + ".dot");
 
-        // Create pdf from dot tree file (if dot command exists)
-        ProcessBuilder pb = new ProcessBuilder("dot", "-Tpdf", name + ".dot", "-o", name + ".pdf");
-        Process p = pb.start();
-        p.waitFor();
-        p.destroy();
+            // Create pdf from dot tree file (if dot command exists)
+            ProcessBuilder pb =
+                    new ProcessBuilder("dot", "-Tpdf", name + ".dot", "-o", name + ".pdf");
+            Process p = pb.start();
+            p.waitFor();
+            p.destroy();
+        } catch (Exception e) {
+            IOUtils.logError(e.getClass().getSimpleName() + " : " + e.getMessage());
+        }
     }
 
     public static void writeStringToFile(String str, String fileName) {
