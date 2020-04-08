@@ -12,7 +12,7 @@ public class SymbolTable {
     private int tableNumber;
     private int level;
     private AtomicInteger numberOfTables;
-    private int currentVariableShift = 0;
+    private int currentVariableShift = -2;
     private int currentParameterShift = 2;
     private int localVariableSize = 0;
 

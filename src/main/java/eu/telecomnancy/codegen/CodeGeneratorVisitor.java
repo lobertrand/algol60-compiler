@@ -558,6 +558,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(IdentifierAST ast) {
         String name = ast.getText();
+        Variable variable = currentSymbolTable.resolve(name, Variable.class);
+        int shift = variable.getShift();
+
         if (!currentSymbolTable.isDeclaredInScope(name)) {
             int diff =
                     currentSymbolTable.getLevel()
@@ -566,11 +569,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             for (int i = 0; i < diff; i++) {
                 asm.code("LDW R1, (R1)-2", "R1 replaced by the value in R1-2");
             }
+            asm.code("LDW R1, (R1)" + shift, "Load value of '" + name + "' into R1");
+        } else {
+            asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
         }
 
-        Variable variable = currentSymbolTable.resolve(name, Variable.class);
-        int shift = variable.getShift();
-        asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
         asm.push("R1", "Push value of '" + name + "' on stack");
         return CodeInfo.empty();
     }
