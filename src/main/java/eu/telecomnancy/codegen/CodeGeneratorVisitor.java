@@ -422,11 +422,24 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(Pow10AST ast) {
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        int power = Integer.parseInt(rightPart.toString());
+        asm.comment("POWER_10");
+        leftPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDQ 10, R2", "");
+        for (int i = 1; i <= power; i++) {
+            asm.code("MUL R1, R2, R1", "Mul first and second value");
+        }
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
+
         return CodeInfo.empty();
     }
 
     @Override
     public CodeInfo visit(PowAST ast) {
+
         return CodeInfo.empty();
     }
 
@@ -452,6 +465,16 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IntDivAST ast) {
+        DefaultAST leftPart = ast.getChild(0);
+        DefaultAST rightPart = ast.getChild(1);
+        asm.comment("Division");
+        leftPart.accept(this);
+        rightPart.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1"); // right
+        asm.code("JEQ #div0_-$-2", "Jump to div0 0 if previous result equals 0");
+        asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2"); // left
+        asm.code("DIV R2, R1, R1", "Divide first by second value");
+        asm.code("STW R1, -(SP)", "Push resulting value on the stack");
         return CodeInfo.empty();
     }
 
