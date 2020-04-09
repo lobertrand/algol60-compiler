@@ -258,8 +258,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         // traitement de la variable de boucle à faire
         String identifier = init.getChild(0).getText();
-        Variable variable = currentSymbolTable.resolve(identifier, Variable.class);
-        int shift = variable.getShift();
 
         int nbChildren = init.getChildCount();
         if (nbChildren > 2) {
@@ -267,14 +265,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             leftPart.accept(this);
             for (int i = 1; i < nbChildren; i++) {
                 init.getChild(i).accept(this);
-                if (currentSymbolTable.isDeclaredInScope(identifier)) {
-                    asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-                    asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
-                } else {
-                    asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
-                    putBasePointerOfNonLocalVarIntoR1(identifier);
-                    asm.code("STW R2, (R1)" + shift, "Store value into '" + identifier + "'");
-                }
+                asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+                storeValueOfRegIntoVariableUsingTempReg("R1", identifier, "R2");
                 asm.label("enum" + (i - 1), "Enumerate label");
                 action.accept(this);
                 if (i != nbChildren - 1) {
@@ -313,13 +305,13 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             // chargement des valeurs de boucle
             asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
             asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
-            asm.code("LDW R3, (SP)+", "Pop value off the stack into R3");
+            loadValueOfVariableIntoReg(identifier, "R3");
             // calcul des valeurs de boucles
             asm.code("ADD R2, R3, R3", "Add R2 and R3 in R3");
-            asm.code("STW R3, -(SP)", "Push resulting value on the stack");
+            storeValueOfRegIntoVariableUsingTempReg("R3", identifier, "R4");
             asm.code("STW R2, -(SP)", "Push R2 value on the stack");
             asm.code("STW R1, -(SP)", "Push R1 value on the stack");
-            asm.code("SUB R1, R3, R1", "Substract R1 by R3 in R1");
+            asm.code("SUB R1, R3, R1", "Subtract R1 by R3 in R1");
             asm.code("JGE #" + startfor0 + "-$-2", "Loops back when results is not equal to 0");
             asm.newline();
         }
@@ -341,7 +333,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
         } else {
             asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
-            putBasePointerOfNonLocalVarIntoR1(identifier);
+            putBasePointerOfNonLocalVariableIntoReg(identifier, "R1");
             asm.code("STW R2, (R1)" + shift, "Store value into '" + identifier + "'");
         }
 
@@ -352,22 +344,23 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(AssignmentAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         String identifier = leftPart.getText();
-        Variable variable = currentSymbolTable.resolve(identifier, Variable.class);
-        int shift = variable.getShift();
         DefaultAST rightPart = ast.getChild(1);
         asm.comment("Assignment" + getLineOfCode(ast));
         rightPart.accept(this); // Puts the value on the stack
-
-        if (currentSymbolTable.isDeclaredInScope(identifier)) {
-            asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-            asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
-        } else {
-            asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
-            putBasePointerOfNonLocalVarIntoR1(identifier);
-            asm.code("STW R2, (R1)" + shift, "Store value into '" + identifier + "'");
-        }
-
+        asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+        storeValueOfRegIntoVariableUsingTempReg("R1", identifier, "R2");
         return CodeInfo.empty();
+    }
+
+    private void storeValueOfRegIntoVariableUsingTempReg(String reg, String idf, String tmpReg) {
+        Variable variable = currentSymbolTable.resolve(idf, Variable.class);
+        int shift = variable.getShift();
+        if (currentSymbolTable.isDeclaredInScope(idf)) {
+            asm.code("STW " + reg + ", (BP)" + shift, "Store value into '" + idf + "'");
+        } else {
+            putBasePointerOfNonLocalVariableIntoReg(idf, tmpReg);
+            asm.code("STW " + reg + ", (" + tmpReg + ")" + shift, "Store value into '" + idf + "'");
+        }
     }
 
     @Override
@@ -579,27 +572,31 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(IdentifierAST ast) {
         String name = ast.getText();
-        Variable variable = currentSymbolTable.resolve(name, Variable.class);
-        int shift = variable.getShift();
-
-        if (currentSymbolTable.isDeclaredInScope(name)) {
-            asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
-        } else {
-            putBasePointerOfNonLocalVarIntoR1(name);
-            asm.code("LDW R1, (R1)" + shift, "Load value of '" + name + "' into R1");
-        }
-
+        loadValueOfVariableIntoReg(name, "R1");
         asm.push("R1", "Push value of '" + name + "' on stack");
         return CodeInfo.empty();
     }
 
-    private void putBasePointerOfNonLocalVarIntoR1(String name) {
+    private void loadValueOfVariableIntoReg(String name, String reg) {
+        Variable variable = currentSymbolTable.resolve(name, Variable.class);
+        int shift = variable.getShift();
+        if (currentSymbolTable.isDeclaredInScope(name)) {
+            asm.code("LDW " + reg + ", (BP)" + shift, "Load value of '" + name + "' into " + reg);
+        } else {
+            putBasePointerOfNonLocalVariableIntoReg(name, reg);
+            asm.code(
+                    "LDW " + reg + ", (" + reg + ")" + shift,
+                    "Load value of '" + name + "' into " + reg);
+        }
+    }
+
+    private void putBasePointerOfNonLocalVariableIntoReg(String idf, String reg) {
         int diff =
-                currentSymbolTable.getLevel() - currentSymbolTable.whereIsDeclared(name).getLevel();
-        asm.code("LDW R1, BP", "Make a copy of current BP into R1");
+                currentSymbolTable.getLevel() - currentSymbolTable.whereIsDeclared(idf).getLevel();
+        asm.code("LDW " + reg + ", BP", "Make a copy of current BP into " + reg);
         for (int i = 0; i < diff; i++) {
-            asm.code("ADQ -2, R1", "Make R1 point to current SC (static ch.)");
-            asm.code("LDW R1, (R1)", "Go up by one environment");
+            asm.code("ADQ -2, " + reg, "Make " + reg + " point to current SC (static ch.)");
+            asm.code("LDW " + reg + ", (" + reg + ")", "Go up by one environment");
         }
     }
 

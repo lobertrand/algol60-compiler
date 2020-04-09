@@ -4,6 +4,7 @@ import static eu.telecomnancy.codegen.Helper.Result;
 import static eu.telecomnancy.codegen.Helper.parse;
 import static org.junit.Assert.assertEquals;
 
+import eu.telecomnancy.tools.IOUtils;
 import org.junit.Test;
 
 public class ForTest {
@@ -17,6 +18,12 @@ public class ForTest {
         }
         s = s + "+20";
         assertEquals(s, result.output);
+    }
+
+    @Test
+    public void testForUntilNested() throws Exception {
+        Result result = parse(IOUtils.loadString("/codegen/unit_tests/for_until_nested.alg"));
+        assertEquals("+3+5+7+9", result.output.replaceAll("\n", ""));
     }
 
     @Test
