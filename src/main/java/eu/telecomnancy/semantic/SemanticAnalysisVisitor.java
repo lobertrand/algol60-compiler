@@ -953,6 +953,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         String idf = leftPart.getText();
         DefaultAST idList = ast.getChild(1);
         Switch s = new Switch(idf);
+        s.withAsmLabel(uniqueReference);
         if (currentSymbolTable.isDeclaredInScope(idf)) {
             throw new SymbolRedeclarationException(
                     String.format("Switch '%s' is already declared in scope", idf), ast);
@@ -961,6 +962,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         for (DefaultAST t : idList) {
             String name = t.getText();
             s.addLabelName(name, t);
+            Label label = currentSymbolTable.resolve(name, Label.class);
+            s.addLabel(label);
         }
         orphanSwitches.add(new OrphanSwitch(s, currentSymbolTable, ast));
 

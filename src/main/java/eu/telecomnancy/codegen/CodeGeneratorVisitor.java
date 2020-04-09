@@ -866,31 +866,55 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(SwitchDecAST ast) {
         DefaultAST switchName = ast.getChild(0);
         String switchString = switchName.getText();
+        Switch s = currentSymbolTable.resolve(switchString, Switch.class);
+        String uniqueSwitchString = s.getAsmLabel();
         // System.out.println(switchString);
         DefaultAST IDList = ast.getChild(1);
         asm.comment("");
         asm.code(
-                "JMP #END" + switchString + "-$-2 ",
-                "jump to the end of the label declaration of the switch " + switchString);
-        asm.label("BEGIN" + switchString, "The beginning of the switch declaration ");
+                "JMP #END" + uniqueSwitchString + "-$-2 ",
+                "jump to the end of the label declaration of the switch " + uniqueSwitchString);
+        asm.label("BEGIN" + uniqueSwitchString, "The beginning of the switch declaration ");
         for (DefaultAST label : IDList) {
             String labelName = label.getText();
-            asm.code("JMP #" + labelName + "-$-2 ", "jump to the " + labelName + " Label");
+            Label l = currentSymbolTable.resolve(labelName, Label.class);
+            String uniqueLabelName = l.getAsmLabel();
+            asm.code(
+                    "JMP #" + uniqueLabelName + "-$-2 ",
+                    "jump to the " + uniqueLabelName + " Label");
         }
-        asm.label("END" + switchString, "The end of the switch declaration ");
+        asm.label("END" + uniqueSwitchString, "The end of the switch declaration ");
         return CodeInfo.empty();
     }
 
     public CodeInfo visit(SwitchCallAST ast) {
         DefaultAST switchName = ast.getChild(0);
         String switchString = switchName.getText();
+        Switch s = currentSymbolTable.resolve(switchString, Switch.class);
+        String uniqueSwitchString = s.getAsmLabel();
         DefaultAST index = ast.getChild(1);
-        int indexInt = 4 * Integer.parseInt(index.getText()) - 4;
-        System.out.println(indexInt);
+        index.accept(this);
+
+        /*
+        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("LDW R3, #4 ", "Pop first value from the stack into R3");
+        asm.code("MUL R1, R3, R1", "R1 becomes 4*R1 so the index is ok");
+        asm.code("ADI R1, R1, #-4", "R1 becomes R1-4 so the index is perfect");
+
+        // int indexInt = 4 * Integer.parseInt(index.getText()) - 4;
+        // System.out.println(indexInt);
+        */
+
         /* ICI Il Faut recuperer la valeur de index mais je sais pas comment faire ...*/
-        asm.code(
-                "JMP #BEGIN" + switchString + "-$-2+" + indexInt,
-                "jump to the " + indexInt + "element of the " + switchString + " switch");
+        /*
+        asm.code("LDW R2,@BEGIN" + uniqueSwitchString, "stockage of the BEGIN address");
+        asm.code("ADI R2, R2, #-2", "R2 becomes R2-2 so the index is perfect");
+        asm.code("MPC R4", "load $ in R4");
+        asm.code("SUB R2,R4,R2", "R2 contains R2 - $");
+        asm.code("ADD R2,R1,R1", "R1 now contain the address of the index we want to jump at");
+        asm.code("JEA (R1)", "jump to the R1 element of the " + uniqueSwitchString + " switch");
+        */
+        asm.code("JMP #R1", "jump to the first label of the switch basically");
         return CodeInfo.empty();
     }
 }
