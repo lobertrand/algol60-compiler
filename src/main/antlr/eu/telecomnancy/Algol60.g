@@ -302,19 +302,19 @@ arithmetic_expression
     ;
 
 equivalence
-    :   implication (EQUIVALENT^ implication)*
+    :   implication (options{greedy=true;}: EQUIVALENT^ implication)*
     ;
 
 implication
-    :   or_expr (IMPLY^ or_expr)*
+    :   or_expr (options{greedy=true;}: IMPLY^ or_expr)*
     ;
 
 or_expr
-    :   and_expr (OR^ and_expr)*
+    :   and_expr (options{greedy=true;}: OR^ and_expr)*
     ;
 
 and_expr
-    :   not_expr (AND^ not_expr)*
+    :   not_expr (options{greedy=true;}: AND^ not_expr)*
     ;
 
 not_expr
@@ -323,21 +323,22 @@ not_expr
     ;
 
 comparison
-    :   add_expr (( LESS_THAN | LESS_EQUAL 
+    :   add_expr (options{greedy=true;}: 
+                  ( LESS_THAN | LESS_EQUAL 
                   | EQUAL | GREATER_EQUAL 
                   | GREATER_THAN | NOT_EQUAL )^ add_expr)*
     ;
 
 add_expr
-    :   mult_expr (( ADD | MINUS )^ mult_expr)*
+    :   mult_expr (options{greedy=true;}: ( ADD | MINUS )^ mult_expr)*
     ;
 
 mult_expr
-    :   pow_expr (( MULT | DIV | INT_DIV )^ pow_expr)*
+    :   pow_expr (options{greedy=true;}: ( MULT | DIV | INT_DIV )^ pow_expr)*
     ;
 
 pow_expr
-    :   group_expr (POW^ group_expr)*
+    :   group_expr (options{greedy=true;}: POW^ group_expr)*
     ;
 
 group_expr
@@ -348,7 +349,9 @@ group_expr
 // If expression
 
 if_expression
-    :   'if' a=arithmetic_expression 'then' b=arithmetic_expression (options{greedy=true;}:'else' c=expression)
+    :   'if'    a=arithmetic_expression 
+        'then'  b=arithmetic_expression 
+        (options{greedy=true;}: 'else' c=arithmetic_expression)
         -> ^(IF_EXPRESSION
                 ^(IF_DEF $a)
                 ^(THEN_DEF $b)
