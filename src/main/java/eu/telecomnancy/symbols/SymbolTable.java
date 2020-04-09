@@ -124,10 +124,10 @@ public class SymbolTable {
         return i < children.size() ? children.get(i) : null;
     }
 
-    public SymbolTable getChildWithNumber(int tableNumber) {
-        for (SymbolTable child : children) if (child.getTableNumber() == tableNumber) return child;
+    public SymbolTable getChildWithNumber(int n) {
+        for (SymbolTable child : children) if (child.getTableNumber() == n) return child;
         throw new RuntimeException(
-                "Child #" + tableNumber + " doesn't exist on table #" + tableNumber);
+                "Symbol table #" + n + " is not a child of table #" + tableNumber);
     }
 
     public int getLevel() {
