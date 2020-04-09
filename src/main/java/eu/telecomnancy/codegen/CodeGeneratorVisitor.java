@@ -353,6 +353,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     }
 
     private void storeValueOfRegIntoVariableUsingTempReg(String reg, String idf, String tmpReg) {
+        if (reg.equals(tmpReg))
+            throw new IllegalArgumentException("reg and tmpReg must be two different registers!");
         Variable variable = currentSymbolTable.resolve(idf, Variable.class);
         int shift = variable.getShift();
         if (currentSymbolTable.isDeclaredInScope(idf)) {
