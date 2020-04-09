@@ -267,8 +267,15 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             leftPart.accept(this);
             for (int i = 1; i < nbChildren; i++) {
                 init.getChild(i).accept(this);
+                if (currentSymbolTable.isDeclaredInScope(identifier)) {
+                    asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+                    asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
+                } else {
+                    asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
+                    putBasePointerOfNonLocalVarIntoR1(identifier);
+                    asm.code("STW R2, (R1)" + shift, "Store value into '" + identifier + "'");
+                }
                 asm.label("enum" + (i - 1), "Enumerate label");
-                asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
                 action.accept(this);
                 if (i != nbChildren - 1) {
                     asm.code("LDW R1, #1", "Loads 1 in R1");
@@ -277,13 +284,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             }
         } else {
             init.accept(this);
-            asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
         }
 
         if (whileClause != null) {
-            String identifier1 = whileClause.getChild(0).getChild(0).getText();
-            Variable variable1 = currentSymbolTable.resolve(identifier1, Variable.class);
-            int shift1 = variable1.getShift();
             whileClause.accept(this);
             asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
             asm.code("JLE #" + endfor1 + "-$-2", "Loops out when last result equals 0");
@@ -291,7 +294,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
             asm.label(startfor1, "Start of loop");
             action.accept(this);
-            asm.code("STW R1, (BP)" + shift1, "Store value into '" + identifier1 + "'");
             whileClause.accept(this);
             asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
             asm.code("JNE #" + startfor1 + "-$-2", "Loops back when last result equals 1");
@@ -306,7 +308,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         if (until != null) {
             until.getChild(0).accept(this);
-
             asm.label(startfor0, "Start of loop");
             action.accept(this);
             // chargement des valeurs de boucle
@@ -317,7 +318,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("ADD R2, R3, R3", "Add R2 and R3 in R3");
             asm.code("STW R3, -(SP)", "Push resulting value on the stack");
             asm.code("STW R2, -(SP)", "Push R2 value on the stack");
-            asm.code("STW R3, (BP)" + shift, "Store value into '" + identifier + "'");
             asm.code("STW R1, -(SP)", "Push R1 value on the stack");
             asm.code("SUB R1, R3, R1", "Substract R1 by R3 in R1");
             asm.code("JGE #" + startfor0 + "-$-2", "Loops back when results is not equal to 0");
@@ -329,9 +329,22 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(InitAST ast) {
         DefaultAST leftPart = ast.getChild(0);
+        String identifier = leftPart.getText();
+        Variable variable = currentSymbolTable.resolve(identifier, Variable.class);
+        int shift = variable.getShift();
         DefaultAST rightPart = ast.getChild(1);
-        leftPart.accept(this);
-        rightPart.accept(this);
+        asm.comment("Init" + getLineOfCode(ast));
+        rightPart.accept(this); // Puts the value on the stack
+
+        if (currentSymbolTable.isDeclaredInScope(identifier)) {
+            asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+            asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
+        } else {
+            asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
+            putBasePointerOfNonLocalVarIntoR1(identifier);
+            asm.code("STW R2, (R1)" + shift, "Store value into '" + identifier + "'");
+        }
+
         return CodeInfo.empty();
     }
 
@@ -342,7 +355,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         Variable variable = currentSymbolTable.resolve(identifier, Variable.class);
         int shift = variable.getShift();
         DefaultAST rightPart = ast.getChild(1);
-        asm.comment("Assignment: " + getLineOfCode(ast));
+        asm.comment("Assignment" + getLineOfCode(ast));
         rightPart.accept(this); // Puts the value on the stack
 
         if (currentSymbolTable.isDeclaredInScope(identifier)) {

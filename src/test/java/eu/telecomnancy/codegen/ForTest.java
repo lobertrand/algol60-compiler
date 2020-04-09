@@ -26,9 +26,7 @@ public class ForTest {
         assertEquals(s, result.output);
     }
 
-    // Infinite loop on this test
-    // Bug must be corrected before removing this comment
-    // @Test
+    @Test
     public void testForWhile() throws Exception {
         Result result =
                 parse(
