@@ -2,9 +2,9 @@ package eu.telecomnancy.codegen;
 
 import static eu.telecomnancy.codegen.Helper.Result;
 import static eu.telecomnancy.codegen.Helper.parse;
+import static eu.telecomnancy.tools.IOUtils.*;
 import static org.junit.Assert.assertEquals;
 
-import eu.telecomnancy.tools.IOUtils;
 import org.junit.Test;
 
 public class ForTest {
@@ -22,7 +22,7 @@ public class ForTest {
 
     @Test
     public void testForUntilNested() throws Exception {
-        Result result = parse(IOUtils.loadString("/codegen/unit_tests/for_until_nested.alg"));
+        Result result = parse(loadString("/codegen/unit_tests/for_until_nested.alg"));
         assertEquals("+3+5+7+9", result.output.replaceAll("\n", ""));
     }
 
@@ -31,6 +31,26 @@ public class ForTest {
         Result result = parse("begin integer i; for i:=1, 2, 4, 5, 9 do outinteger(1,i) end");
         String s = "+1\n+2\n+4\n+5\n+9";
         assertEquals(s, result.output);
+    }
+
+    @Test
+    public void testForEnumBlock() throws Exception {
+        Result result =
+                parse(
+                        "begin "
+                                + "integer i, a; "
+                                + "for i := 1, 2, 4, 5, 9 do "
+                                + "  begin outinteger(1,i) end "
+                                + "end");
+        String s = "+1+2+4+5+9";
+        assertEquals(s, result.output.replaceAll("\n", ""));
+    }
+
+    @Test
+    public void testForEnumNested() throws Exception {
+        Result result = parse(loadString("/codegen/unit_tests/for_enum_nested.alg"));
+        String s = "+2+5+3+9";
+        assertEquals(s, result.output.replaceAll("\n", ""));
     }
 
     @Test

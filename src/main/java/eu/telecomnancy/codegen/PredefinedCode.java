@@ -69,7 +69,7 @@ public class PredefinedCode {
 
     public static void appendDiv0Code(Assembly asm) {
         asm.beginProcedureDeclaration();
-        asm.label("div0_", "Erreur de division par 0");
+        asm.label("div0", "Erreur de division par 0");
         asm.insert(IOUtils.loadString("/code/div0.asm"));
         asm.endProcedureDeclaration();
     }

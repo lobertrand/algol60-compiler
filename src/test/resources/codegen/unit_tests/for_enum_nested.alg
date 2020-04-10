@@ -1,10 +1,8 @@
 begin
   integer a, i, b;
-  a := 2;
-  b := 3;
   begin
     begin
-      for i := 3 step 2 until 9 do
+      for i := 3, 4, 5 do
       begin
         outinteger(1, i);
       end

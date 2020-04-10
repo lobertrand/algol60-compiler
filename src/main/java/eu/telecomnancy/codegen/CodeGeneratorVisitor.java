@@ -429,7 +429,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         leftPart.accept(this);
         rightPart.accept(this);
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1"); // right
-        asm.code("JEQ #div0_-$-2", "Jump to div0 0 if previous result equals 0");
+        asm.code("JEQ #div0-$-2", "Jump to div0 0 if previous result equals 0");
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2"); // left
         asm.code("DIV R2, R1, R1", "Divide first by second value");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
@@ -506,8 +506,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String content = ast.getText();
         String label = uniqueReference.forString();
         asm.string(label, content);
-        asm.code("LDW R1, #" + label, "charge adresse de la chaîne dans R1");
-        asm.code("STW R1, -(SP)", "empile le string");
+        asm.code("LDW R1, #" + label, "Load address of string into R1");
+        asm.code("STW R1, -(SP)", "Stack string pointer");
         return CodeInfo.empty();
     }
 
@@ -519,7 +519,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         leftPart.accept(this);
         rightPart.accept(this);
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1"); // right
-        asm.code("JEQ #div0_-$-2", "Jump to div0 0 if previous result equals 0");
+        asm.code("JEQ #div0-$-2", "Jump to div0 0 if previous result equals 0");
         asm.code("LDW R2, (SP)+", "Pop second value from the stack into R2"); // left
         asm.code("DIV R2, R1, R1", "Divide first by second value");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
@@ -601,8 +601,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
                 currentSymbolTable.getLevel() - currentSymbolTable.whereIsDeclared(idf).getLevel();
         asm.code("LDW " + reg + ", BP", "Make a copy of current BP into " + reg);
         for (int i = 0; i < diff; i++) {
-            asm.code("ADQ -2, " + reg, "Make " + reg + " point to current SC (static ch.)");
-            asm.code("LDW " + reg + ", (" + reg + ")", "Go up by one environment");
+            asm.code(
+                    format("ADQ -2, %s", reg), "Make " + reg + " point to current SC (static ch.)");
+            asm.code(format("LDW %s, (%s)", reg, reg), "Go up by one environment");
         }
     }
 
@@ -870,14 +871,13 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         DefaultAST switchName = ast.getChild(0);
         String switchString = switchName.getText();
         Switch s = currentSymbolTable.resolve(switchString, Switch.class);
-        String uniqueSwitchString = s.getAsmLabel();
-        // System.out.println(switchString);
+
         DefaultAST IDList = ast.getChild(1);
-        asm.comment("");
+        asm.comment("Switch '" + switchName + "' declaration");
         asm.code(
-                "JMP #END" + uniqueSwitchString + "-$-2 ",
-                "jump to the end of the label declaration of the switch " + uniqueSwitchString);
-        asm.label("BEGIN" + uniqueSwitchString, "The beginning of the switch declaration ");
+                "JMP #" + s.getEndAsmLabel() + "-$-2 ",
+                "jump to the end of the label declaration of the switch '" + switchName + "'");
+        asm.label(s.getBeginAsmLabel(), "The beginning of the switch declaration ");
         for (DefaultAST label : IDList) {
             String labelName = label.getText();
             Label l = currentSymbolTable.resolve(labelName, Label.class);
@@ -886,7 +886,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
                     "JMP #" + uniqueLabelName + "-$-2 ",
                     "jump to the " + uniqueLabelName + " Label");
         }
-        asm.label("END" + uniqueSwitchString, "The end of the switch declaration ");
+        asm.label(s.getEndAsmLabel(), "The end of the switch declaration ");
         return CodeInfo.empty();
     }
 
@@ -894,19 +894,19 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         DefaultAST switchName = ast.getChild(0);
         String switchString = switchName.getText();
         Switch s = currentSymbolTable.resolve(switchString, Switch.class);
-        String uniqueSwitchString = s.getAsmLabel();
         DefaultAST index = ast.getChild(1);
         index.accept(this);
 
+        asm.comment(getLineOfCode(ast));
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
-        asm.code("LDW R3, #4 ", "Put int value 4 into R3");
-        asm.code("MUL R1, R3, R1", "R1 becomes 4*R1 so the index is ok");
-        asm.code("ADI R1, R1, #-4", "R1 becomes R1-4 so the index is perfect");
+        asm.code("LDW R2, #4 ", "Put int value 4 into R2");
+        asm.code("MUL R1, R2, R1", "R1 becomes 4*R1 so the index is ok");
+        asm.code("ADQ -4, R1", "R1 becomes R1-4 so the index is perfect");
 
-        asm.code("LDW R2, #BEGIN" + uniqueSwitchString, "stockage of the BEGIN address");
+        asm.code("LDW R2, #" + s.getBeginAsmLabel(), "stockage of the BEGIN address");
 
         asm.code("ADD R2, R1, R1", "Put address of correct jump into R1");
-        asm.code("JEA (R1)", "jump to the R1 element of the " + uniqueSwitchString + " switch");
+        asm.code("JEA (R1)", "jump to the R1 element of the '" + switchName + "' switch");
 
         return CodeInfo.empty();
     }

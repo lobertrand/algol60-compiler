@@ -8,7 +8,8 @@ import java.util.List;
 public class Switch extends Symbol {
     private List<String> names;
     private List<DefaultAST> labelTrees;
-    private String asmLabel;
+    private String beginAsmLabel;
+    private String endAsmLabel;
     private List<Label> labels;
 
     public Switch(String idf) {
@@ -18,12 +19,17 @@ public class Switch extends Symbol {
         this.labels = new ArrayList<>();
     }
 
-    public String getAsmLabel() {
-        return asmLabel;
+    public String getBeginAsmLabel() {
+        return beginAsmLabel;
+    }
+
+    public String getEndAsmLabel() {
+        return endAsmLabel;
     }
 
     public Switch withAsmLabel(UniqueReference uniqueReference) {
-        this.asmLabel = uniqueReference.forLabel(getIdentifier());
+        this.beginAsmLabel = uniqueReference.forLabel("BEGIN_" + getIdentifier());
+        this.endAsmLabel = uniqueReference.forLabel("END_" + getIdentifier());
         return this;
     }
 
