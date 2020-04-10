@@ -1,5 +1,7 @@
 package eu.telecomnancy.codegen;
 
+import static java.lang.String.*;
+
 import eu.telecomnancy.Algol60Parser;
 import eu.telecomnancy.ast.*;
 import eu.telecomnancy.symbols.*;
@@ -358,10 +360,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         Variable variable = currentSymbolTable.resolve(idf, Variable.class);
         int shift = variable.getShift();
         if (currentSymbolTable.isDeclaredInScope(idf)) {
-            asm.code("STW " + reg + ", (BP)" + shift, "Store value into '" + idf + "'");
+            asm.code(format("STW %s, (BP)%d", reg, shift), "Store value into '" + idf + "'");
         } else {
             putBasePointerOfNonLocalVariableIntoReg(idf, tmpReg);
-            asm.code("STW " + reg + ", (" + tmpReg + ")" + shift, "Store value into '" + idf + "'");
+            asm.code(
+                    format("STW %s, (%s)%d", reg, tmpReg, shift), "Store value into '" + idf + "'");
         }
     }
 
@@ -384,8 +387,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
         }
 
-        asm.code(
-                String.format("LDW R1, #%s", a), "Initialize variable  with the size of the array");
+        asm.code(format("LDW R1, #%s", a), "Initialize variable  with the size of the array");
         asm.code("LDW R1, -(SP)", "Place on the stack");
         for (int i = 0; i <= a; i++) {
             asm.code("LDW WR, #0", "Initialize variable  with 0");
@@ -493,7 +495,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(RealAST ast) {
         float floatValue = Float.parseFloat(ast.getText());
         int intValue = Math.round(floatValue);
-        String strValue = String.valueOf(intValue);
+        String strValue = valueOf(intValue);
         asm.code("LDW R1, #" + strValue, "Load int value " + strValue);
         asm.code("STW R1, -(SP)", "Put it on the stack");
         return CodeInfo.empty();
@@ -583,11 +585,13 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         Variable variable = currentSymbolTable.resolve(name, Variable.class);
         int shift = variable.getShift();
         if (currentSymbolTable.isDeclaredInScope(name)) {
-            asm.code("LDW " + reg + ", (BP)" + shift, "Load value of '" + name + "' into " + reg);
+            asm.code(
+                    format("LDW %s, (BP)%d", reg, shift),
+                    "Load value of '" + name + "' into " + reg);
         } else {
             putBasePointerOfNonLocalVariableIntoReg(name, reg);
             asm.code(
-                    "LDW " + reg + ", (" + reg + ")" + shift,
+                    format("LDW %s, (%s)%d", reg, reg, shift),
                     "Load value of '" + name + "' into " + reg);
         }
     }
@@ -894,26 +898,16 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         DefaultAST index = ast.getChild(1);
         index.accept(this);
 
-        /*
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
-        asm.code("LDW R3, #4 ", "Pop first value from the stack into R3");
+        asm.code("LDW R3, #4 ", "Put int value 4 into R3");
         asm.code("MUL R1, R3, R1", "R1 becomes 4*R1 so the index is ok");
         asm.code("ADI R1, R1, #-4", "R1 becomes R1-4 so the index is perfect");
 
-        // int indexInt = 4 * Integer.parseInt(index.getText()) - 4;
-        // System.out.println(indexInt);
-        */
+        asm.code("LDW R2, #BEGIN" + uniqueSwitchString, "stockage of the BEGIN address");
 
-        /* ICI Il Faut recuperer la valeur de index mais je sais pas comment faire ...*/
-        /*
-        asm.code("LDW R2,@BEGIN" + uniqueSwitchString, "stockage of the BEGIN address");
-        asm.code("ADI R2, R2, #-2", "R2 becomes R2-2 so the index is perfect");
-        asm.code("MPC R4", "load $ in R4");
-        asm.code("SUB R2,R4,R2", "R2 contains R2 - $");
-        asm.code("ADD R2,R1,R1", "R1 now contain the address of the index we want to jump at");
+        asm.code("ADD R2, R1, R1", "Put address of correct jump into R1");
         asm.code("JEA (R1)", "jump to the R1 element of the " + uniqueSwitchString + " switch");
-        */
-        asm.code("JMP #R1", "jump to the first label of the switch basically");
+
         return CodeInfo.empty();
     }
 }
