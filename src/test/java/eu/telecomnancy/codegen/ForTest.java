@@ -65,4 +65,11 @@ public class ForTest {
         s = s + "+10";
         assertEquals(s, result.output);
     }
+
+    @Test
+    public void testForWhileNested() throws Exception {
+        Result result = parse(loadString("/codegen/unit_tests/for_while_nested.alg"));
+        String s = "+1+2+3+4+5+6";
+        assertEquals(s, result.output.replaceAll("\n", ""));
+    }
 }
