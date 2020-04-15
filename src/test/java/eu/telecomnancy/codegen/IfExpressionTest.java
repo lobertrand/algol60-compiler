@@ -18,6 +18,6 @@ public class IfExpressionTest {
     @Test
     public void testIfExpression2() throws Exception {
         Result result = parse(IOUtils.loadString("/codegen/unit_tests/if_expression2.alg"));
-        assertEquals("START+8\n+20000\nEND", result.output);
+        assertEquals("START+4\n+20000\nEND", result.output);
     }
 }
