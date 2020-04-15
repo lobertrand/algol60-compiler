@@ -263,18 +263,28 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         int nbChildren = init.getChildCount();
         if (nbChildren > 2) {
+            asm.comment("iteration " + 1 + " of enum");
             DefaultAST leftPart = init.getChild(0);
             leftPart.accept(this);
-            for (int i = 1; i < nbChildren; i++) {
+            init.getChild(1).accept(this);
+            asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+            storeValueOfRegIntoVariableUsingTempReg("R1", identifier, "R2");
+            asm.code("LDW R12, #0", "Preparation for looping");
+            String do_smth = uniqueReference.forLabel("action");
+            String start_enum = uniqueReference.forLabel("enum_loop");
+            asm.label(do_smth, "Action for enum");
+            action.accept(this);
+            asm.code("LDW R12, R12", "Checks R12 content");
+            asm.code("JEQ #" + start_enum + "-$-2", "Jumps to start of enum");
+            asm.code("RTS", "back to doing whatever");
+            asm.label(start_enum, "Beginning of for enum");
+            asm.code("LDW R12, #1", "Loads 1 in R12");
+            for (int i = 2; i < nbChildren; i++) {
+                asm.comment("iteration " + i + " of enum");
                 init.getChild(i).accept(this);
                 asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
                 storeValueOfRegIntoVariableUsingTempReg("R1", identifier, "R2");
-                asm.label("enum" + (i - 1), "Enumerate label");
-                action.accept(this);
-                if (i != nbChildren - 1) {
-                    asm.code("LDW R1, #1", "Loads 1 in R1");
-                    asm.code("JEQ #" + i + "-$-2", "Jump to next step");
-                }
+                asm.code("JSR @" + do_smth, "Next step of loop");
             }
         } else {
             init.accept(this);
