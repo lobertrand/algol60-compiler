@@ -167,7 +167,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("LDW R1, BP", "Put current BP into R1");
         SymbolTable defTable = currentSymbolTable.whereIsDeclared(name, Procedure.class);
         int n = currentSymbolTable.getLevel() - defTable.getLevel();
-        System.out.println("n = " + n);
         for (int i = 0; i < n; i++) {
             asm.code("ADQ -2, R1", "Point to static chaining");
             asm.code("LDW R1, (R1)", "Go up by one environment");
@@ -612,8 +611,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String labelName = ast.getChild(0).getText();
         Label l = currentSymbolTable.resolve(labelName, Label.class);
         String uniqueLabelName = l.getAsmLabel();
-        asm.code("LDW SP,BP", "");
-        asm.code("LDW BP,(SP)+", "");
+        SymbolTable labelTable = currentSymbolTable.whereIsDeclared(labelName, Label.class);
+        int n = currentSymbolTable.getLevel() - labelTable.getLevel();
+        for (int i = 0; i < n; i++) {
+            asm.endEnvironment();
+        }
         asm.code("JMP #" + uniqueLabelName + "-$-2 ", "jump to the " + uniqueLabelName + " Label");
         return CodeInfo.empty();
     }

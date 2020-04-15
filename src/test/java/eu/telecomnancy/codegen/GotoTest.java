@@ -26,4 +26,12 @@ public class GotoTest {
         Result result = parse(IOUtils.loadString("/codegen/unit_tests/goto_imbrique.alg"));
         assertEquals("start boucle boucle boucle boucle boucle endlabel", result.output);
     }
+
+    @Test
+    public void testGoto_imbrique2() throws Exception {
+        Result result = parse(IOUtils.loadString("/codegen/unit_tests/goto_imbrique2.alg"));
+        assertEquals(
+                "start jump before jump before jump before +8 after end",
+                result.output.replaceAll("\n", ""));
+    }
 }
