@@ -49,7 +49,7 @@ public class ForTest {
     @Test
     public void testForEnumNested() throws Exception {
         Result result = parse(loadString("/codegen/unit_tests/for_enum_nested.alg"));
-        String s = "+2+5+3+9";
+        String s = "+3+4+5";
         assertEquals(s, result.output.replaceAll("\n", ""));
     }
 
