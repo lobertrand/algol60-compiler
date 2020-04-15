@@ -296,25 +296,6 @@ public class ProcDecTest {
     }
 
     @Test
-    public void testReturnRecursiveAssignment() throws Exception {
-        Content content = new Content();
-        content.line("begin");
-        content.line("  integer procedure f;");
-        content.line("  begin");
-        content.line("    if 5 > 3 then");
-        content.line("      f := f()");
-        content.line("    else");
-        content.line("      f := 2");
-        content.line("  end");
-        content.line("end");
-
-        Result result = checkSemantics(content);
-
-        assertEquals("There should be 1 exception", 1, result.exceptions.size());
-        assertTrue("Missing return", result.exceptions.get(0) instanceof MissingReturnException);
-    }
-
-    @Test
     public void testMissingParameterType() throws Exception {
         Content content = new Content();
         content.line("begin");

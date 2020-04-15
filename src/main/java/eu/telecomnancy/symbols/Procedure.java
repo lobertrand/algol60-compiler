@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 public class Procedure extends Symbol {
 
-    private SymbolTable symbolTable;
+    @Deprecated private SymbolTable symbolTable;
     private List<Type> parameterTypes;
     private String asmLabel;
     private Variable returnValue;
@@ -28,10 +28,12 @@ public class Procedure extends Symbol {
         this.returnValue = returnValue;
     }
 
+    @Deprecated
     public void setSymbolTable(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }
 
+    @Deprecated
     public SymbolTable getSymbolTable() {
         return symbolTable;
     }

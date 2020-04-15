@@ -217,7 +217,6 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         // Define procedure
         Procedure procedure =
                 new Procedure(procName, procType, orderedTypes).withAsmLabel(uniqueReference);
-        procedure.setSymbolTable(currentSymbolTable);
         baseSymbolTable.define(procedure);
 
         // Define result variable

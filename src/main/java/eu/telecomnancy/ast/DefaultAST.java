@@ -78,8 +78,7 @@ public class DefaultAST extends CommonTree implements Iterable<DefaultAST> {
     private boolean isReturnStatement(String procName) {
         if (getType() == Algol60Parser.ASSIGNMENT) {
             if (isIdfWithName(getChild(0), procName)) {
-                return !isIdfWithName(getChild(1), procName)
-                        && !isProcCallWithName(getChild(1), procName);
+                return !isIdfWithName(getChild(1), procName);
             }
         }
         return false;

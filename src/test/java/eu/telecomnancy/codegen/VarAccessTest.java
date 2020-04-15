@@ -33,4 +33,16 @@ public class VarAccessTest {
         Result result = parse(IOUtils.loadString("/codegen/unit_tests/non_local_value_store.alg"));
         assertEquals("+11+22", result.output.replaceAll("\n", ""));
     }
+
+    @Test
+    public void testNonLocalComplex() throws Exception {
+        Result result = parse(IOUtils.loadString("/codegen/unit_tests/non_local_complex.alg"));
+        assertEquals("+5", result.output.replaceAll("\n", ""));
+    }
+
+    @Test
+    public void testNonLocalRecursive() throws Exception {
+        Result result = parse(IOUtils.loadString("/codegen/unit_tests/non_local_recursive.alg"));
+        assertEquals("+24+24+24+24", result.output.replaceAll("\n", ""));
+    }
 }

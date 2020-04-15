@@ -85,6 +85,17 @@ public class SymbolTable {
         }
     }
 
+    public SymbolTable whereIsDeclared(String identifier, Class<?> clazz) {
+        Symbol result = symbols.get(identifier);
+        if (result != null && result.getClass() == clazz) {
+            return this;
+        } else if (parent != null) {
+            return parent.whereIsDeclared(identifier, clazz);
+        } else {
+            return null;
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public <T extends Symbol> T resolve(String identifier, Class<T> clazz) {
         Symbol result = symbols.get(identifier);

@@ -132,6 +132,13 @@ public class Assembly {
         this.code("STW R1, -(SP)", "Push old base pointer on stack (static chaining)");
     }
 
+    public void newProcedureEnvironment() {
+        this.comment("Prepare procedure environment");
+        this.push("BP", "Push old BP on stack (dynamic chaining)");
+        this.code("LDW BP, SP", "New BP is the current SP");
+        this.push("R1", "Push SC computed by the caller (static chaining)");
+    }
+
     public void endEnvironment() {
         this.comment("End environment");
         this.code("LDW SP, BP", "Return to base of current environment");

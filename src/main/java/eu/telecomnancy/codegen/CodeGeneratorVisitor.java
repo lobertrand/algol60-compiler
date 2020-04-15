@@ -121,8 +121,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         Procedure procedure = currentSymbolTable.resolve(procName, Procedure.class);
         String label = procedure.getAsmLabel();
 
-        asm.label(label, "declaration de la fonction");
-        asm.newEnvironment();
+        asm.label(label, "Declaration of procedure '" + procName + "'");
+        asm.newProcedureEnvironment();
 
         if (procedure.returnsAValue()) {
             asm.comment("Put result variable '" + procName + "' on the stack");
@@ -143,7 +143,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         }
 
         asm.endEnvironment();
-        asm.code("RTS ", "retour au programme appelant");
+        asm.code("RTS ", "Return to caller");
         popTable(); // Quit symbol table of procedure
 
         asm.endProcedureDeclaration();
@@ -155,20 +155,37 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String name = ast.getChild(0).getText();
         DefaultAST parameters = ast.getChild(1);
         asm.comment("Call procedure '" + name + "'");
+
+        // Push parameters on stack
         for (DefaultAST param : parameters) {
-            // Evaluate the argument value and put it on the stack (in other visit() methods)
             param.accept(this);
         }
         Procedure procedure = currentSymbolTable.resolve(name, Procedure.class);
+
+        // Compute static chaining into R1
+        asm.comment("Compute static chaining");
+        asm.code("LDW R1, BP", "Put current BP into R1");
+        SymbolTable defTable = currentSymbolTable.whereIsDeclared(name, Procedure.class);
+        int n = currentSymbolTable.getLevel() - defTable.getLevel();
+        System.out.println("n = " + n);
+        for (int i = 0; i < n; i++) {
+            asm.code("ADQ -2, R1", "Point to static chaining");
+            asm.code("LDW R1, (R1)", "Go up by one environment");
+        }
+
         // Call the procedure using the generated procedure label (Procedure::getAsmLabel())
         String label = procedure.getAsmLabel();
         asm.code("JSR @" + label, "Call procedure '" + name + "'");
+
+        // Pop parameters
         int nbParams = parameters.getChildCount();
         int paramSize = nbParams * 2;
         if (nbParams != 0) {
             asm.code("LDW WR, #" + paramSize, "WR = size of '" + name + "' parameters");
             asm.code("ADD WR, SP, SP", "Pop parameters");
         }
+
+        // Push result is there is one and that it is used
         boolean resultIsAssigned = ast.getParent().getType() != Algol60Parser.BLOCK;
         if (procedure.returnsAValue() && resultIsAssigned) {
             asm.code("STW R1, -(SP)", "Save procedure result on the stack");
@@ -357,7 +374,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         DefaultAST leftPart = ast.getChild(0);
         String identifier = leftPart.getText();
         DefaultAST rightPart = ast.getChild(1);
-        asm.comment("Assignment" + getLineOfCode(ast));
+        asm.comment("Assignment " + getLineOfCode(ast));
         rightPart.accept(this); // Puts the value on the stack
         asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
         storeValueOfRegIntoVariableUsingTempReg("R1", identifier, "R2");
