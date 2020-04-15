@@ -569,6 +569,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String labelName = ast.getChild(0).getText();
         Label l = currentSymbolTable.resolve(labelName, Label.class);
         String uniqueLabelName = l.getAsmLabel();
+        asm.code("LDW SP,BP", "");
+        asm.code("LDW BP,(SP)+", "");
         asm.code("JMP #" + uniqueLabelName + "-$-2 ", "jump to the " + uniqueLabelName + " Label");
         return CodeInfo.empty();
     }
