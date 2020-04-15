@@ -10,12 +10,14 @@ public class PredefinedCode {
         asm.equ("WRITE_EXC", "66", "n° d'exception de WRITE (affiche 1 ligne)");
         asm.equ("STACK_ADRS", "0x1000", "base de pile en 1000h (par exemple)");
         asm.equ("LOAD_ADRS", "0xF000", "adresse de chargement de l'exécutable");
+        asm.equ("HEAP_ADRS","0x9000","adresse de base du tas en 9000 h (par exemple)");
 
         asm.comment("Alias de registres");
         asm.equ("SP", "R15", "alias pour R15, pointeur de pile");
         asm.equ("WR", "R14", "Work Register (registre de travail)");
         asm.equ("BP", "R13", "frame Base Pointer (pointage environnement)");
         asm.equ("NUL", "0", "caractère NUL qui doit terminer une chaîne de caractères");
+        asm.equ("HP", "R11", "alias for R11 is HP for the Heap Pointer");
         asm.equ("NULL", "0", "pointeur nul");
         asm.equ("NIL", "0", "fin de liste chaînée");
         asm.equ("ITOA_I", "4", "offset du paramètre i");

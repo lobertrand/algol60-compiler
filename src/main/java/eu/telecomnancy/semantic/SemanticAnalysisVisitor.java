@@ -569,6 +569,7 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             ranges.add(new Array.Range(firstInt, lastInt));
         }
         Array a = new Array(id.toString(), type, ranges);
+        a.withAsmLabel(uniqueReference);
         currentSymbolTable.define(a);
         return Type.VOID;
     }

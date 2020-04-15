@@ -397,29 +397,45 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ArrayDecAST ast) {
+        DefaultAST type = ast.getChild(0);
+        String typeString = type.getText();
 
-        DefaultAST boundList = ast.getChild(2);
-        CodeInfo firstBound = CodeInfo.empty();
-        CodeInfo lastBound = CodeInfo.empty();
-        int a = 1;
-        for (DefaultAST bound : boundList) {
-            DefaultAST first = bound.getChild(0);
-            DefaultAST last = bound.getChild(1);
-            firstBound = first.accept(this);
-            lastBound = last.accept(this);
-            int firstBoundInt = firstBound.getValue();
-            int lastBoundInt = lastBound.getValue();
-            a = a * (lastBoundInt - firstBoundInt + 1);
-            asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
-            asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
-        }
+        asm.code("STW HP, -(SP)", "Store the origin of the array in the heap onto the stack");
+        DefaultAST bound = ast.getChild(2).getChild((0));
+        DefaultAST first = bound.getChild(0);
+        DefaultAST last = bound.getChild(1);
+        first.accept(this);
+        asm.code("LDW R1, (SP)+", "Pop first bound value into R1");
+        last.accept(this);
+        asm.code("LDW R2, (SP)+", "Pop second bound value into R2");
+        // ICI c'est une analyse pour savoir si les bornes sont biens definies
+        /*
+               asm.code(
+                       "CMP R1,R2",
+                       "We check whether the bounds are correct or not (if R2<R1 not correct)");
+               asm.code("JNAE #ERROR-$-2 ", "Jump to the ERROR label if the bounds are incorrects ");
 
-        asm.code(format("LDW R1, #%s", a), "Initialize variable  with the size of the array");
-        asm.code("LDW R1, -(SP)", "Place on the stack");
-        for (int i = 0; i <= a; i++) {
-            asm.code("LDW WR, #0", "Initialize variable  with 0");
-            asm.code("LDW WR, -(SP)", "Place on the stack");
+        */
+        if (typeString.equals("integer") || typeString.equals("real")) {
+            asm.code("LDW R3,#0", "charge R3 avec la valeur par default");
         }
+        if (typeString.equals("string")) {
+            // ICI il faudrait que je stocke des "" mais je sais pas comment faire encore
+            asm.code("LDW R3,#0", "charge R3 avec la valeur par default");
+        }
+        String ArrayName = ast.getChild(1).getText();
+        Array array = currentSymbolTable.resolve(ArrayName, Array.class);
+        String uniqueArrayName = array.getAsmLabel();
+        asm.label(uniqueArrayName, "create label " + uniqueArrayName);
+        asm.code(
+                "STW R3, -(HP)",
+                "Store default string value in the heap the increment heap pointer");
+        asm.code("ADI R1,R1,#1", "increment de starting bound by 1 each time we loop");
+        asm.code("CMP R1,R2", "We check whether it is the end of declaration or not");
+        asm.code(
+                "JBE #" + uniqueArrayName + "-$-2 ",
+                "if we still have elements to initialize we loop");
+
         return CodeInfo.empty();
     }
 

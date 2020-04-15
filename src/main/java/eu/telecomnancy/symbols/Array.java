@@ -1,9 +1,20 @@
 package eu.telecomnancy.symbols;
 
+import eu.telecomnancy.codegen.UniqueReference;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Array extends Symbol {
+    private String asmLabel;
+
+    public String getAsmLabel() {
+        return asmLabel;
+    }
+
+    public Array withAsmLabel(UniqueReference uniqueReference) {
+        this.asmLabel = uniqueReference.forLabel(getIdentifier());
+        return this;
+    }
 
     private List<Range> ranges;
 
