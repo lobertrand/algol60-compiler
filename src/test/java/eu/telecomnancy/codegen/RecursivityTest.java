@@ -12,6 +12,6 @@ public class RecursivityTest {
     @Test
     public void testFactorial() throws Exception {
         Result result = parse(IOUtils.loadString("/codegen/unit_tests/factorial.alg"));
-        assertEquals("+120", result.output);
+        assertEquals("120", result.output);
     }
 }

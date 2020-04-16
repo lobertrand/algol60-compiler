@@ -12,37 +12,37 @@ public class VarAccessTest {
     @Test
     public void testNonLocalValue() throws Exception {
         Result result = parse(IOUtils.loadString("/codegen/unit_tests/non_local_value.alg"));
-        assertEquals("+2+3#+2+3+4+6#+2+3+4+6+5+7", result.output.replaceAll("\n", ""));
+        assertEquals("2 3 # 2 3 4 6 # 2 3 4 6 5 7", result.output.replaceAll("\n", " "));
     }
 
     @Test
     public void testNonLocalValueProcedure() throws Exception {
         Result result = parse(IOUtils.loadString("/codegen/unit_tests/non_local_value_proc.alg"));
-        assertEquals("+7", result.output.replaceAll("\n", ""));
+        assertEquals("7", result.output.replaceAll("\n", ""));
     }
 
     @Test
     public void testNonLocalValueNestedProcedure() throws Exception {
         Result result =
                 parse(IOUtils.loadString("/codegen/unit_tests/non_local_value_nested_proc.alg"));
-        assertEquals("+14", result.output.replaceAll("\n", ""));
+        assertEquals("14", result.output.replaceAll("\n", ""));
     }
 
     @Test
     public void testNonLocalValueStore() throws Exception {
         Result result = parse(IOUtils.loadString("/codegen/unit_tests/non_local_value_store.alg"));
-        assertEquals("+11+22", result.output.replaceAll("\n", ""));
+        assertEquals("11 22", result.output.replaceAll("\n", " "));
     }
 
     @Test
     public void testNonLocalComplex() throws Exception {
         Result result = parse(IOUtils.loadString("/codegen/unit_tests/non_local_complex.alg"));
-        assertEquals("+5", result.output.replaceAll("\n", ""));
+        assertEquals("5", result.output.replaceAll("\n", ""));
     }
 
     @Test
     public void testNonLocalRecursive() throws Exception {
         Result result = parse(IOUtils.loadString("/codegen/unit_tests/non_local_recursive.alg"));
-        assertEquals("+24+24+24+24", result.output.replaceAll("\n", ""));
+        assertEquals("24 24 24 24", result.output.replaceAll("\n", " "));
     }
 }

@@ -18,7 +18,7 @@ public class BasicTest {
     @Test
     public void testOutintegerPositive() throws Exception {
         Result result = parse("begin outinteger(1, 42) end");
-        assertEquals("+42", result.output);
+        assertEquals("42", result.output);
     }
 
     @Test
@@ -30,6 +30,6 @@ public class BasicTest {
         c.line("end");
         Result result = parse(c);
 
-        assertEquals("+42\n+13", result.output);
+        assertEquals("42\n13", result.output);
     }
 }

@@ -20,7 +20,6 @@
 posit
     NOP                 // R3 = code ASCII de signe: SP pour aucun, - ou +
 
-
     // convertit l'entier i en chiffres et les empile de droite à gauche
 nosign
     LDW R2, R0          // R2 <- R0
@@ -57,7 +56,13 @@ stkchr
     // les caractères sont maintenant empilés : gauche en haut et droit en bas
 
     // recopie les caractères dans le tampon dans le bon ordre: de gauche à droite
-    LDW R1, (BP)ITOA_P  // R1 pointe sur le début du tampon déjà alloué 
+    LDW R1, (BP)ITOA_P  // R1 pointe sur le début du tampon déjà alloué
+
+    // si le signe est positif, ne pas ajouter le signe au buffer
+    LDQ ASCII_PLUS, R0  // charge le code ascii du signe + dans R0
+    CMP R3, R0          // compare R3 et R0
+    BEQ cpyloop-$-2     // S'ils sont égaux, on saute l'ajout du signe
+
     STB R3, (R1)+       // copie le signe dans le tampon
 cpyloop
     LDW R0, (SP)+       // dépile code du chiffre gauche (sur un mot) dans R0
@@ -73,5 +78,4 @@ cpyloop
     // UNLINK: fermeture de l'environnement de la fonction itoa
     LDW SP, BP          // SP <- BP : abandonne infos locales; SP pointe sur ancinne valeur de BP
     LDW BP, (SP)+       // dépile ancienne valeur de BP dans BP; SP pointe sur adresse de retour
-
     RTS                 // retourne au programme appelant

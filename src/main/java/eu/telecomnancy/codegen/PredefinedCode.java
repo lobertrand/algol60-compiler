@@ -10,7 +10,7 @@ public class PredefinedCode {
         asm.equ("WRITE_EXC", "66", "n° d'exception de WRITE (affiche 1 ligne)");
         asm.equ("STACK_ADRS", "0x1000", "base de pile en 1000h (par exemple)");
         asm.equ("LOAD_ADRS", "0xF000", "adresse de chargement de l'exécutable");
-        asm.equ("HEAP_ADRS","0x9000","adresse de base du tas en 9000 h (par exemple)");
+        asm.equ("HEAP_ADRS", "0x9000", "adresse de base du tas en 9000 h (par exemple)");
 
         asm.comment("Alias de registres");
         asm.equ("SP", "R15", "alias pour R15, pointeur de pile");
@@ -42,14 +42,14 @@ public class PredefinedCode {
     public static void appendOutstringCode(Assembly asm) {
         asm.beginProcedureDeclaration();
         asm.label("outstring_", "fonction d'affichage (string)");
-        asm.insert(IOUtils.loadString("/code/oustring_risc.asm"));
+        asm.insert(IOUtils.loadString("/code/oustring.asm"));
         asm.endProcedureDeclaration();
     }
 
     public static void appendItoaCode(Assembly asm) {
         asm.beginProcedureDeclaration();
         asm.label("itoa", "fonction de conversion (int to ascii)");
-        asm.insert(IOUtils.loadString("/code/itoa_cisc.asm"));
+        asm.insert(IOUtils.loadString("/code/itoa.asm"));
         asm.endProcedureDeclaration();
     }
 
@@ -58,7 +58,7 @@ public class PredefinedCode {
         asm.label("outinteger_", "print function (integer)");
         asm.code("NOP", "No operation (continue to outreal_ code)");
         asm.label("outreal_", "print function (real)");
-        asm.insert(IOUtils.loadString("/code/outinteger_cisc.asm"));
+        asm.insert(IOUtils.loadString("/code/outinteger.asm"));
         asm.endProcedureDeclaration();
     }
 

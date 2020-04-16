@@ -12,13 +12,9 @@
     ADI SP, SP, #-2     // réserve place pour variable value;
                         // déplacement de value est -10
 
-    // value = -23; 
-    // LDW R0, (R0)
-    // LDW R0, #-23        // charge R0 avec -23 = C2(23) = FFE9
     LDW R0, (BP)4       // Load string parameter of shift 4 into R0
 
     STW R0, (BP)-10     // sauve R0 à l'adresse BP-10
-
 
     LDW R0, BP          // R0 = BP
     ADQ 4, R0           // R0 pointe sur p
@@ -50,6 +46,6 @@
     ADI SP, SP, #2      // nettoie la pile des paramètres
                         // de taille totale 2 octets
 
-    // } // fermeture du bloc englobant de main
+    // fermeture du bloc englobant de main
     LDW SP, BP          // abandonne variables locales de main
     LDW BP, (SP)+       // dépile ancien BP dans BP

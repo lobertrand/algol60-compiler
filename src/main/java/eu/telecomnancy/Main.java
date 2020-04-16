@@ -19,7 +19,7 @@ import projetIUP.Lanceur;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) {
         boolean optimizeCode = true;
         CharStream input = parseArguments(args);
 
