@@ -398,35 +398,40 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(ArrayDecAST ast) {
         DefaultAST type = ast.getChild(0);
         String typeString = type.getText();
-
-        asm.code("STW HP, -(SP)", "Store the origin of the array in the heap onto the stack");
-        DefaultAST bound = ast.getChild(2);
-        int nbChildren = bound.getChildCount();
-        // for(int i =0;i<nbChildren;i++){
-        bound = bound.getChild(0);
-        DefaultAST first = bound.getChild(0);
-        System.out.println(first.getText());
-
-        DefaultAST last = bound.getChild(1);
-        System.out.println(last.getText());
-        first.accept(this);
-        asm.code("LDW R5, (SP)+", "Pop first bound value into R1");
-        last.accept(this);
-        asm.code("LDW R2, (SP)+", "Pop second bound value into R2");
-        asm.code("STW R5, -(SP)", "Store the first bound in the stack");
-        asm.code("STW R2, -(SP)", "Store de the second bound in the stack");
-
-        /*
-        asm.code(
-               "CMP R5,R2",
-               "We check whether the bounds are correct or not (if R2<R1 not correct)");
-        asm.code("JNAE #ERROR-$-2 ", "Jump to the ERROR label if the bounds are incorrects ");
-         */
-
-        asm.code("LDW R3,#0", "charge R3 avec la valeur par default");
         String ArrayName = ast.getChild(1).getText();
         Array array = currentSymbolTable.resolve(ArrayName, Array.class);
         String uniqueArrayName = array.getAsmLabel();
+        asm.code("STW HP, -(SP)", "Store the origin of the array in the heap onto the stack");
+        DefaultAST bound = ast.getChild(2);
+        int nbChildren = bound.getChildCount();
+
+        for (int i = 0; i < nbChildren; i++) {
+            DefaultAST newBound = bound.getChild(i);
+            DefaultAST first = newBound.getChild(0);
+            System.out.println(first.getText());
+
+            DefaultAST last = newBound.getChild(1);
+            System.out.println(last.getText());
+            first.accept(this);
+            asm.code("LDW R5, (SP)+", "Pop first bound value into R1");
+            last.accept(this);
+            asm.code("LDW R2, (SP)+", "Pop second bound value into R2");
+            asm.code("STW R5, -(SP)", "Store the first bound in the stack");
+            asm.code("STW R2, -(SP)", "Store de the second bound in the stack");
+
+            asm.code("SUB R2,R5,R6", "put the result of first bound - last bound in R6");
+            asm.code(
+                    "JGE #" + uniqueArrayName + i + "-$-2 ",
+                    "Jump to the end of this loop if the bounds are corrects ");
+            asm.code("LDW R0, #OUTBOUND", "error out of bound message");
+            asm.code("TRP #WRITE_EXC", "write the error message");
+            asm.code("LDW R0, #NEWLINE", "just to make it cleaner");
+            asm.code("TRP #WRITE_EXC", "write the error message");
+            asm.code("TRP #EXIT_EXC", "quit the program");
+            asm.label(uniqueArrayName + i, "create the end of the " + i + " loop");
+        }
+        asm.code("ADI R5,R5,#-1", "we sub 1 to R5 because else we lack one value");
+        asm.code("LDW R3,#0", "charge R3 avec la valeur par default");
         asm.label(uniqueArrayName, "create label " + uniqueArrayName);
         asm.code(
                 "STW R3, -(HP)",

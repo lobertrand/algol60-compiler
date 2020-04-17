@@ -35,6 +35,7 @@ public class PredefinedCode {
                 "65",
                 "code ASCII de A (les autres lettres jusqu'à Z suivent dans l'ordre alphabétique)");
         asm.string("DIV0", "ERROR: DIVISION BY 0");
+        asm.string("OUTBOUND", "ERROR: ARRAY OUT OF BOUND");
         asm.string("TRUE", "true");
         asm.string("FALSE", "false");
     }
