@@ -488,10 +488,13 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ArrayCallAST ast) {
-        DefaultAST paramList = ast.getChild(1);
-        for (DefaultAST param : paramList) {
-            param.accept(this);
-        }
+        String name = ast.getChild(0).getText();
+        DefaultAST indices = ast.getChild(1);
+        DefaultAST index = indices.getChild(0); // Dimension 1
+        index.accept(this); // Push index on stack using R1
+        asm.pop("R1", "Pop index into R1");
+        putBasePointerOfNonLocalVariableIntoReg(name, "R2");
+
         return CodeInfo.empty();
     }
 
