@@ -448,12 +448,28 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         return CodeInfo.empty();
     }
 
+
+
     @Override
     public CodeInfo visit(ArrayAssignmentAST ast) {
+        String identifier = ast.getChild(0).getText();
+        Array array = currentSymbolTable.resolve(identifier, Array.class);
+        int shift = array.getShift();
+        int lower_bound_ind = array.getRanges().get(0).getStart();
+        asm.comment("Array assignment " + getLineOfCode(ast));
         DefaultAST indices = ast.getChild(1);
         for (DefaultAST index : indices) {
             index.accept(this);
         }
+        ast.getChild(2).accept(this);
+        asm.code("LDW R1, (SP)+", "pop la valeur dans la stack");
+        asm.code("LDW R2, (SP)+", "Pop l'indice dans la stack");
+
+        asm.code("LDW R3, (BP)"+shift, "adrese d'impl"  );
+
+        asm.code("SUB R2, R3, R2", "R2-R3");
+        asm.code("LDQ 2, R3", "R3=2");
+        asm.code("MUL R2, R3, R2", "déplacement");
         DefaultAST rightPart = ast.getChild(2);
         rightPart.accept(this);
         return CodeInfo.empty();
