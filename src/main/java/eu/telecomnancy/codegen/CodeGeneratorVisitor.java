@@ -400,7 +400,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String typeString = type.getText();
 
         asm.code("STW HP, -(SP)", "Store the origin of the array in the heap onto the stack");
-        DefaultAST bound = ast.getChild(2).getChild((0));
+        DefaultAST bound = ast.getChild(2);
+        int nbChildren = bound.getChildCount();
+        // for(int i =0;i<nbChildren;i++){
+        bound = bound.getChild(0);
         DefaultAST first = bound.getChild(0);
         System.out.println(first.getText());
 
@@ -410,14 +413,15 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("LDW R5, (SP)+", "Pop first bound value into R1");
         last.accept(this);
         asm.code("LDW R2, (SP)+", "Pop second bound value into R2");
-        // ICI c'est une analyse pour savoir si les bornes sont biens definies
-        /*
-               asm.code(
-                       "CMP R1,R2",
-                       "We check whether the bounds are correct or not (if R2<R1 not correct)");
-               asm.code("JNAE #ERROR-$-2 ", "Jump to the ERROR label if the bounds are incorrects ");
+        asm.code("STW R5, -(SP)", "Store the first bound in the stack");
+        asm.code("STW R2, -(SP)", "Store de the second bound in the stack");
 
-        */
+        /*
+        asm.code(
+               "CMP R5,R2",
+               "We check whether the bounds are correct or not (if R2<R1 not correct)");
+        asm.code("JNAE #ERROR-$-2 ", "Jump to the ERROR label if the bounds are incorrects ");
+         */
 
         asm.code("LDW R3,#0", "charge R3 avec la valeur par default");
         String ArrayName = ast.getChild(1).getText();
