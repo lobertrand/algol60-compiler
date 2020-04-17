@@ -27,4 +27,11 @@ public class BasicArithmetic {
         String s = "4";
         assertEquals(s, result.output);
     }
+
+    @Test
+    public void testPow10() throws Exception {
+        Result result = parse("begin outreal(1, 2#2) end");
+        String s = "200";
+        assertEquals(s, result.output);
+    }
 }
