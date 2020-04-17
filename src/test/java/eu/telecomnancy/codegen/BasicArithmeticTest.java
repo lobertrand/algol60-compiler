@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-public class BasicArithmetic {
+public class BasicArithmeticTest {
 
     @Test
     public void testBasicCalculus() throws Exception {
@@ -18,6 +18,13 @@ public class BasicArithmetic {
                                 + "outinteger(1, a//b);"
                                 + "outinteger(1, (b*b*b*b*b+a*(b*b+a)+b-a)//b) end");
         String s = "3\n-1\n2\n0\n19";
+        assertEquals(s, result.output);
+    }
+
+    @Test
+    public void testDiv() throws Exception {
+        Result result = parse("begin integer a, b; a:=3; b:=2; outreal(1, a/b) end");
+        String s = "1";
         assertEquals(s, result.output);
     }
 
