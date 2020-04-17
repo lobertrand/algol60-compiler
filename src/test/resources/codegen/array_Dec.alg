@@ -1,5 +1,9 @@
 begin
+    integer a,b;
+    a:= 10;
+    b:=20;
+    begin
 
-    integer array d[25:25];
-
+        integer array d[a:b,25:26];
+    end;
 end

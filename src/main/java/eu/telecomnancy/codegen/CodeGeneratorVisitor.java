@@ -404,7 +404,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("STW HP, -(SP)", "Store the origin of the array in the heap onto the stack");
         DefaultAST bound = ast.getChild(2);
         int nbChildren = bound.getChildCount();
-
+        asm.code("LDQ 1,R7", "reset R7");
         for (int i = 0; i < nbChildren; i++) {
             DefaultAST newBound = bound.getChild(i);
             DefaultAST first = newBound.getChild(0);
@@ -413,6 +413,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             DefaultAST last = newBound.getChild(1);
             System.out.println(last.getText());
             first.accept(this);
+
             asm.code("LDW R5, (SP)+", "Pop first bound value into R1");
             last.accept(this);
             asm.code("LDW R2, (SP)+", "Pop second bound value into R2");
@@ -429,16 +430,17 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("TRP #WRITE_EXC", "write the error message");
             asm.code("TRP #EXIT_EXC", "quit the program");
             asm.label(uniqueArrayName + i, "create the end of the " + i + " loop");
+            asm.code("ADI R6,R6,#1", "R6 now contain the number of element in the index");
+            asm.code(
+                    "MUL R6,R7,R7", "R7 is updated to contain the number of elements in the array");
         }
-        asm.code("ADI R5,R5,#-1", "we sub 1 to R5 because else we lack one value");
         asm.code("LDW R3,#0", "charge R3 avec la valeur par default");
         asm.label(uniqueArrayName, "create label " + uniqueArrayName);
         asm.code(
-                "STW R3, -(HP)",
+                "STW R3, (HP)+",
                 "Store default string value in the heap the increment heap pointer");
-        asm.code("ADI R5,R5,#1", "increment de starting bound by 1 each time we loop");
+        asm.code("ADQ -1,R7", "number of elements left to initialize");
         //   asm.code("CMP R1,R2", "We check whether it is the end of declaration or not");
-        asm.code("SUB R5,R2,R4", "we put R1-R2 in R3");
         asm.code(
                 "JNE #" + uniqueArrayName + "-$-2 ",
                 "if we still have elements to initialize we loop");
