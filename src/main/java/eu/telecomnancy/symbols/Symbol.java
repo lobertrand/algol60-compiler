@@ -43,6 +43,8 @@ public abstract class Symbol {
         return type.getSize();
     }
 
+    public void setSize() {}
+
     public Kind getKind() {
         return kind;
     }

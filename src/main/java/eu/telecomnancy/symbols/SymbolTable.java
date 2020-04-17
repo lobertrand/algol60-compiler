@@ -12,8 +12,8 @@ public class SymbolTable {
     private int tableNumber;
     private int level;
     private AtomicInteger numberOfTables;
-    private int currentVariableShift = -2;
-    private int currentParameterShift = 2;
+    private int currentVariableShift = -4;
+    private int currentParameterShift = 4;
     private int localVariableSize = 0;
 
     /** This constructor is used to create the root of a SymbolTable tree */
@@ -44,11 +44,13 @@ public class SymbolTable {
     public void define(Symbol symbol) {
         if (symbol.getKind() == Kind.VARIABLE || symbol.getKind() == Kind.ARRAY) {
             if (symbol.isParameter()) {
-                this.currentParameterShift += symbol.getSize();
                 symbol.setShift(this.currentParameterShift);
+                this.currentParameterShift += symbol.getSize();
+
             } else {
-                this.currentVariableShift -= symbol.getSize();
                 symbol.setShift(this.currentVariableShift);
+                this.currentVariableShift -= symbol.getSize();
+
                 localVariableSize += symbol.getSize();
             }
         }

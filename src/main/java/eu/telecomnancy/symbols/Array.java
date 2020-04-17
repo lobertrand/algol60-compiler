@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 public class Array extends Symbol {
     private String asmLabel;
+    private int size;
 
     public String getAsmLabel() {
         return asmLabel;
@@ -13,6 +14,7 @@ public class Array extends Symbol {
 
     public Array withAsmLabel(UniqueReference uniqueReference) {
         this.asmLabel = uniqueReference.forLabel(getIdentifier());
+        this.size = 6;
         return this;
     }
 
@@ -30,7 +32,8 @@ public class Array extends Symbol {
     public String toString() {
         String rangesStr = ranges.stream().map(Range::toString).collect(Collectors.joining(", "));
         return String.format(
-                "Array: %s %s[%s] %s", getType(), getIdentifier(), rangesStr, modeToString());
+                "Array: %s %s[%s] %s %d",
+                getType(), getIdentifier(), rangesStr, modeToString(), getShift());
     }
 
     public static class Range {
@@ -68,5 +71,14 @@ public class Array extends Symbol {
         public String toString() {
             return (start == null ? "?" : start) + ":" + (end == null ? "?" : end);
         }
+    }
+
+    @Override
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
     }
 }

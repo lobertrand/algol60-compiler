@@ -1,5 +1,7 @@
 begin
     string array c[5:10];
-    integer array a[2:5];
-    real array b[3:4];
+    integer array d[10:20,1:25];
+    real array e[5:5];
+    integer a,b;
+    string bitch;
 end

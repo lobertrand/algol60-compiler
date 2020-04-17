@@ -27,7 +27,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.newline();
         asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
         asm.def("START", "main", "adresse de démarrage");
-
+        //        asm.code("LDW HP,HEAP_ADRS", "adresse de chargement du tas");
         asm.newline();
         asm.byteDef("NEWLINE", 10);
 
@@ -402,9 +402,12 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("STW HP, -(SP)", "Store the origin of the array in the heap onto the stack");
         DefaultAST bound = ast.getChild(2).getChild((0));
         DefaultAST first = bound.getChild(0);
+        System.out.println(first.getText());
+
         DefaultAST last = bound.getChild(1);
+        System.out.println(last.getText());
         first.accept(this);
-        asm.code("LDW R1, (SP)+", "Pop first bound value into R1");
+        asm.code("LDW R5, (SP)+", "Pop first bound value into R1");
         last.accept(this);
         asm.code("LDW R2, (SP)+", "Pop second bound value into R2");
         // ICI c'est une analyse pour savoir si les bornes sont biens definies
@@ -415,13 +418,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
                asm.code("JNAE #ERROR-$-2 ", "Jump to the ERROR label if the bounds are incorrects ");
 
         */
-        if (typeString.equals("integer") || typeString.equals("real")) {
-            asm.code("LDW R3,#0", "charge R3 avec la valeur par default");
-        }
-        if (typeString.equals("string")) {
-            // ICI il faudrait que je stocke des "" mais je sais pas comment faire encore
-            asm.code("LDW R3,#0", "charge R3 avec la valeur par default");
-        }
+
+        asm.code("LDW R3,#0", "charge R3 avec la valeur par default");
         String ArrayName = ast.getChild(1).getText();
         Array array = currentSymbolTable.resolve(ArrayName, Array.class);
         String uniqueArrayName = array.getAsmLabel();
@@ -429,10 +427,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code(
                 "STW R3, -(HP)",
                 "Store default string value in the heap the increment heap pointer");
-        asm.code("ADI R1,R1,#1", "increment de starting bound by 1 each time we loop");
-        asm.code("CMP R1,R2", "We check whether it is the end of declaration or not");
+        asm.code("ADI R5,R5,#1", "increment de starting bound by 1 each time we loop");
+        //   asm.code("CMP R1,R2", "We check whether it is the end of declaration or not");
+        asm.code("SUB R5,R2,R4", "we put R1-R2 in R3");
         asm.code(
-                "JBE #" + uniqueArrayName + "-$-2 ",
+                "JNE #" + uniqueArrayName + "-$-2 ",
                 "if we still have elements to initialize we loop");
 
         return CodeInfo.empty();
