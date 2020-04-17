@@ -526,7 +526,6 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
 
     @Override
     public Type visit(ArrayDecAST ast) {
-        int size = 2;
         Type type = Type.fromString(ast.getChild(0).getText()).toArrayType();
         DefaultAST id = ast.getChild(1);
         DefaultAST boundList = ast.getChild(2);
@@ -568,11 +567,9 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             }
 
             ranges.add(new Array.Range(firstInt, lastInt));
-            size = size + 4;
         }
         Array a = new Array(id.toString(), type, ranges);
         a.withAsmLabel(uniqueReference);
-        a.setSize(size);
         currentSymbolTable.define(a);
         return Type.VOID;
     }

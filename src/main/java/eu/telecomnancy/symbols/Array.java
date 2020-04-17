@@ -14,7 +14,6 @@ public class Array extends Symbol {
 
     public Array withAsmLabel(UniqueReference uniqueReference) {
         this.asmLabel = uniqueReference.forLabel(getIdentifier());
-        this.size = 6;
         return this;
     }
 
@@ -23,6 +22,7 @@ public class Array extends Symbol {
     public Array(String idf, Type type, List<Range> r) {
         super(idf, type, Kind.ARRAY);
         ranges = r;
+        size = 2 + r.size() * 4;
     }
 
     public List<Range> getRanges() {
@@ -76,9 +76,5 @@ public class Array extends Symbol {
     @Override
     public int getSize() {
         return size;
-    }
-
-    public void setSize(int size) {
-        this.size = size;
     }
 }

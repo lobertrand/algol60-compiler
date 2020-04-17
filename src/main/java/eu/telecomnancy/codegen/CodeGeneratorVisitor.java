@@ -396,6 +396,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ArrayDecAST ast) {
+        asm.comment("Array declaration " + getLineOfCode(ast));
         DefaultAST type = ast.getChild(0);
         String typeString = type.getText();
         String ArrayName = ast.getChild(1).getText();
@@ -408,13 +409,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         for (int i = 0; i < nbChildren; i++) {
             DefaultAST newBound = bound.getChild(i);
             DefaultAST first = newBound.getChild(0);
-            System.out.println(first.getText());
 
             DefaultAST last = newBound.getChild(1);
-            System.out.println(last.getText());
             first.accept(this);
 
-            asm.code("LDW R5, (SP)+", "Pop first bound value into R1");
+            asm.code("LDW R5, (SP)+", "Pop first bound value into R5");
             last.accept(this);
             asm.code("LDW R2, (SP)+", "Pop second bound value into R2");
             asm.code("STW R5, -(SP)", "Store the first bound in the stack");
@@ -448,14 +447,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         return CodeInfo.empty();
     }
 
-
-
     @Override
     public CodeInfo visit(ArrayAssignmentAST ast) {
         String identifier = ast.getChild(0).getText();
         Array array = currentSymbolTable.resolve(identifier, Array.class);
         int shift = array.getShift();
-        int lower_bound_ind = array.getRanges().get(0).getStart();
         asm.comment("Array assignment " + getLineOfCode(ast));
         DefaultAST indices = ast.getChild(1);
         for (DefaultAST index : indices) {
@@ -465,13 +461,14 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("LDW R1, (SP)+", "pop la valeur dans la stack");
         asm.code("LDW R2, (SP)+", "Pop l'indice dans la stack");
 
-        asm.code("LDW R3, (BP)"+shift, "adrese d'impl"  );
+        asm.code("LDW R3, (BP)" + shift, "R3 <- @impl");
+        asm.code("LDW R4, (BP)" + (shift - 2), "R4 <- lower bound");
 
-        asm.code("SUB R2, R3, R2", "R2-R3");
-        asm.code("LDQ 2, R3", "R3=2");
-        asm.code("MUL R2, R3, R2", "déplacement");
-        DefaultAST rightPart = ast.getChild(2);
-        rightPart.accept(this);
+        asm.code("SUB R2, R4, R4", "index - lower bound -> R4");
+        asm.code("ADD R4, R4, R4", "R4 * 2 : element shift");
+        asm.code("ADD R3, R4, R4", "@impl + element shift : @element");
+        asm.code("STW R1, (R4)", "Store value at @element");
+
         return CodeInfo.empty();
     }
 
@@ -532,12 +529,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         DefaultAST rightPart = ast.getChild(1);
         int base = Math.round(Float.parseFloat(leftPart.toString()));
         int power = Math.round(Float.parseFloat(rightPart.toString()));
-        System.out.println(base + power);
         int result = (int) (base * Math.pow(10, power));
         asm.comment("POWER_10");
         asm.code("LDW R1, #" + result, "Loads result in R1");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
-
         return CodeInfo.empty();
     }
 
