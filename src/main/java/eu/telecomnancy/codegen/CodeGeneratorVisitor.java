@@ -503,9 +503,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         DefaultAST rightPart = ast.getChild(1);
         int base = Math.round(Float.parseFloat(leftPart.toString()));
         int power = Math.round(Float.parseFloat(rightPart.toString()));
-        int result = base * 10 ^ power;
+        System.out.println(base + power);
+        int result = (int) (base * Math.pow(10, power));
         asm.comment("POWER_10");
-        asm.code("LDQ" + result + " , R1", "Loads result in R1");
+        asm.code("LDW R1, #" + result, "Loads result in R1");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
 
         return CodeInfo.empty();
