@@ -458,11 +458,17 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             index.accept(this);
         }
         ast.getChild(2).accept(this);
-        asm.code("LDW R1, (SP)+", "pop la valeur dans la stack");
-        asm.code("LDW R2, (SP)+", "Pop l'indice dans la stack");
+        asm.code("LDW R1, (SP)+", "Pop value from stack");
+        asm.code("LDW R2, (SP)+", "Pop index from stack");
 
-        asm.code("LDW R3, (BP)" + shift, "R3 <- @impl");
-        asm.code("LDW R4, (BP)" + (shift - 2), "R4 <- lower bound");
+        if (currentSymbolTable.isDeclaredInScope(identifier)) {
+            asm.code("LDW R3, (BP)" + shift, "R3 <- @impl");
+            asm.code("LDW R4, (BP)" + (shift - 2), "R4 <- lower bound");
+        } else {
+            putBasePointerOfNonLocalVariableIntoReg(identifier, "R4");
+            asm.code("LDW R3, (R4)" + shift, "R3 <- @impl");
+            asm.code("LDW R4, (R4)" + (shift - 2), "R4 <- lower bound");
+        }
 
         asm.code("SUB R2, R4, R4", "index - lower bound -> R4");
         asm.code("ADD R4, R4, R4", "R4 * 2 : element shift");
