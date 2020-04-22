@@ -39,6 +39,10 @@ public class Switch extends Symbol {
         return String.format("Switch: %s [%s]", getIdentifier(), values);
     }
 
+    public int getLabelNumber() {
+        return labels.size();
+    }
+
     public void addLabelName(String string, DefaultAST ast) {
         this.names.add(string);
         this.labelTrees.add(ast);
