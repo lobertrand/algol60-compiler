@@ -602,16 +602,17 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(PowAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
-        int power = Integer.parseInt(rightPart.getText());
+        String label = uniqueReference.forLabel("pow_loop");
         asm.comment("POWER");
         leftPart.accept(this);
-        asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
-        asm.code("MUL R1, R1, R2", "Mul first and second value");
-
-        for (int i = 1; i < power - 1; i++) {
-            asm.code("MUL R1, R2, R2", "Mul first and second value");
-        }
-        asm.code("LDW R1,R2", "");
+        rightPart.accept(this);
+        asm.code("LDW R2, (SP)+", "Pop first value from the stack into R2");
+        asm.code("LDW R1, #1", "Loads 1 in R1");
+        asm.code("LDW R3, (SP)+", "Pop second value from the stack into R3");
+        asm.label(label, "start of pow loop");
+        asm.code("MUL R1, R3, R1", "Mul R1 and R3 values in R1");
+        asm.code("ADQ -1, R2", "Substract 1 to R2");
+        asm.code("JNE #" + label + "-$-2", "Loops back if not last result is not equal 0");
         asm.code("STW R1, -(SP)", "Push resulting value on the stack");
 
         return CodeInfo.empty();
