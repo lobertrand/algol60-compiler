@@ -24,6 +24,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         PredefinedCode.appendDiv0Code(asm);
         PredefinedCode.appendIndexOutOfBoundsCode(asm);
         PredefinedCode.appendOutbooleanCode(asm);
+        PredefinedCode.appendEntierCode(asm);
 
         asm.newline();
         asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
@@ -548,7 +549,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
          */
 
-
         return CodeInfo.empty();
     }
 
@@ -716,7 +716,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     }
 
     private void loadValueOfVariableIntoReg(String name, String reg) {
-        Variable variable = currentSymbolTable.resolve(name, Variable.class);
+        Symbol variable = currentSymbolTable.resolve(name);
         int shift = variable.getShift();
         if (currentSymbolTable.isDeclaredInScope(name)) {
             asm.code(

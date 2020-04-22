@@ -90,4 +90,11 @@ public class PredefinedCode {
         asm.insert(IOUtils.loadString("/code/outboolean.asm"));
         asm.endProcedureDeclaration();
     }
+
+    public static void appendEntierCode(Assembly asm) {
+        asm.beginProcedureDeclaration();
+        asm.label("entier_", "partie entière");
+        asm.insert(IOUtils.loadString("/code/entier.asm"));
+        asm.endProcedureDeclaration();
+    }
 }
