@@ -527,32 +527,30 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("ADD R3, R4, R4", "@impl + element shift : @element");
         asm.code("LDW R1,(R4)", "load the element of the array into R1");
         asm.code("STW R1, -(SP)", "Put it on the stack");
-        
+
         return CodeInfo.empty();
     }
 
-    public void ArrayIndex(int dims,String regImpl){
-        asm.code("LDW R6,#0","");
+    public void ArrayIndex(int dims, String regImpl) {
+        asm.code("LDW R6,#0", "");
         for (int n = 0; n <= dims - 2; n++) {
-            asm.code("LDW R5 ,#"+dims,"");
-            asm.code("LDW R2 , (SP)-(1+"+n+"*2)*2","");
-            asm.code("LDW R3 , (SP)-(1+("+n+"+1)*2)*2","");
-            asm.code("LDW R4 , (SP)-(1+("+n+"+1)*2+1)*2","");
-            asm.code("SUB R2 , R5 ,R2 ","");
-            asm.code("SUB R3 , R4 , R3","");
-            asm.code("ADQ 1 , R1","");
-            asm.code("MULT R2 , R3 , R2","");
-            asm.code("ADD R6 , R2 , R6 ","");
-
+            asm.code("LDW R5 ,#" + dims, "");
+            asm.code("LDW R2 , (SP)-(1+" + n + "*2)*2", "");
+            asm.code("LDW R3 , (SP)-(1+(" + n + "+1)*2)*2", "");
+            asm.code("LDW R4 , (SP)-(1+(" + n + "+1)*2+1)*2", "");
+            asm.code("SUB R2 , R5 ,R2 ", "");
+            asm.code("SUB R3 , R4 , R3", "");
+            asm.code("ADQ 1 , R1", "");
+            asm.code("MULT R2 , R3 , R2", "");
+            asm.code("ADD R6 , R2 , R6 ", "");
         }
-        asm.code("LDQ"+dims+"-1 ,R2","");
-        asm.code("LDW R3 , (SP)-(1+("+dims+"-1)*2)*2","");
-        asm.code("SUB R3 ,R2 ,R2","");
-        asm.code("MULT R2 ,#2,R2","" );
-        asm.code("ADD "+regImpl+",R2 ,R1","");
+        asm.code("LDQ" + dims + "-1 ,R2", "");
+        asm.code("LDW R3 , (SP)-(1+(" + dims + "-1)*2)*2", "");
+        asm.code("SUB R3 ,R2 ,R2", "");
+        asm.code("MULT R2 ,#2,R2", "");
+        asm.code("ADD " + regImpl + ",R2 ,R1", "");
+    }
 
-
-        }
     @Override
     public CodeInfo visit(IntAST ast) {
         String value = ast.getText();

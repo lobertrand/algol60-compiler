@@ -2,6 +2,7 @@ package eu.telecomnancy.codegen;
 
 import static eu.telecomnancy.codegen.Helper.Result;
 import static eu.telecomnancy.codegen.Helper.parse;
+import static eu.telecomnancy.tools.IOUtils.*;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -65,15 +66,15 @@ public class ArrayTest {
 
     @Test
     public void testStringArray() throws Exception {
-        Result result = parse("codegen/unit_tests/basic_string_array.alg");
+        Result result = parse(loadString("/codegen/unit_tests/basic_string_array.alg"));
 
-        String s = "i\nlike\npotatoes";
+        String s = "i like potatoes";
         assertEquals(s, result.output);
     }
 
     @Test
     public void testBoolArray() throws Exception {
-        Result result = parse("codegen/unit_tests/basic_bool_array.alg");
+        Result result = parse(loadString("/codegen/unit_tests/basic_bool_array.alg"));
         String s = "truefalsetrue";
         assertEquals(s, result.output);
     }
