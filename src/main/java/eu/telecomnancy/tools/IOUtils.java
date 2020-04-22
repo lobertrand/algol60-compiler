@@ -15,8 +15,14 @@ import org.antlr.stringtemplate.StringTemplate;
 
 public class IOUtils {
 
+    private static boolean quiet = false;
+
+    public static void setQuiet(boolean quiet) {
+        IOUtils.quiet = quiet;
+    }
+
     public static void log(Object o) {
-        System.out.println(CYAN + "Algol60> " + RESET + o);
+        if (!quiet) System.out.println(CYAN + "Algol60> " + RESET + o);
     }
 
     public static void logError(Object o) {

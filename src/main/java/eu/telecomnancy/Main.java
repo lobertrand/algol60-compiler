@@ -1,5 +1,7 @@
 package eu.telecomnancy;
 
+import static eu.telecomnancy.tools.ArgsParser.*;
+
 import eu.telecomnancy.ast.ASTAdaptor;
 import eu.telecomnancy.ast.DefaultAST;
 import eu.telecomnancy.codegen.Assembly;
@@ -11,17 +13,25 @@ import eu.telecomnancy.semantic.SemanticException;
 import eu.telecomnancy.symbols.PredefinedSymbols;
 import eu.telecomnancy.symbols.SymbolTable;
 import eu.telecomnancy.tools.ASTTools;
+import eu.telecomnancy.tools.ArgsParser;
 import eu.telecomnancy.tools.IOListener;
 import eu.telecomnancy.tools.IOUtils;
 import java.io.*;
 import org.antlr.runtime.*;
+import picocli.CommandLine;
 import projetIUP.Lanceur;
 
 public class Main {
 
     public static void main(String[] args) {
-        boolean optimizeCode = true;
-        CharStream input = parseArguments(args);
+        CommandLine cmd = new CommandLine(new ArgsParser());
+        if (cmd.execute(args) != 0) {
+            return;
+        }
+        Options options = cmd.getExecutionResult();
+        IOUtils.setQuiet(options.shouldBeQuiet());
+
+        CharStream input = options.getCharStream();
 
         // Lexical and syntactic analysis
         Algol60Lexer lexer = new Algol60Lexer(input);
@@ -37,8 +47,12 @@ public class Main {
             IOUtils.exit();
         }
         DefaultAST ast = pr.getTree();
-        ASTTools.print(ast);
-        // IOUtils.generateDotTree(ast, "ast");
+        if (options.shouldPrintAst()) {
+            ASTTools.print(ast);
+        }
+        if (options.shouldGeneratePdfAst()) {
+            IOUtils.generateDotTree(ast, "ast");
+        }
         reportLexicalExceptions(lexer, input);
         reportSyntacticExceptions(parser, input);
         if (lexer.hasExceptions() || parser.hasExceptions()) IOUtils.exit();
@@ -50,7 +64,9 @@ public class Main {
         SemanticAnalysisVisitor semanticAnalysisVisitor =
                 new SemanticAnalysisVisitor(symbolTable, uniqueReference);
         ast.accept(semanticAnalysisVisitor);
-        IOUtils.print(symbolTable);
+        if (options.shouldPrintSymbolTable()) {
+            IOUtils.print(symbolTable);
+        }
         reportSemanticExceptions(semanticAnalysisVisitor, input);
         if (semanticAnalysisVisitor.hasExceptions()) IOUtils.exit();
 
@@ -62,17 +78,17 @@ public class Main {
         IOUtils.log("Generated assembly code");
 
         String code;
-        if (optimizeCode) {
+        if (options.shouldOptimizeCode()) {
             Optimizer optimizer = new Optimizer();
             code = optimizer.optimize(asm.toString());
             IOUtils.log("Applied code optimizations");
         } else {
             code = asm.toString();
         }
-        assembleAndExecute(code);
+        assembleAndExecute(code, options);
     }
 
-    private static void assembleAndExecute(String asm) {
+    private static void assembleAndExecute(String asm, Options options) {
         IOUtils.writeStringToFile(asm, "program.asm");
 
         IOListener.listen(() -> Lanceur.main(new String[] {"-ass", "program.asm"}))
@@ -80,8 +96,10 @@ public class Main {
                 .ifError(IOUtils::exit)
                 .ifNoError(() -> IOUtils.log("Assembly code compiled successfully"));
 
-        IOUtils.log("Executing program...");
-        Lanceur.main(new String[] {"-batch", "program.iup"});
+        if (options.shouldRunIup()) {
+            IOUtils.log("Executing program...");
+            Lanceur.main(new String[] {"-batch", "program.iup"});
+        }
     }
 
     private static void reportSemanticExceptions(
@@ -125,6 +143,7 @@ public class Main {
     }
 
     private static CharStream parseArguments(String[] args) {
+
         try {
             if (args.length == 0) {
                 IOUtils.logError("Possible arguments:");

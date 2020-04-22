@@ -29,8 +29,12 @@ dependencies {
     antlr "org.antlr:antlr-complete:3.5.2"
     compile "org.antlr:antlr-runtime:3.5.2"
 
+    // Assembly code compiler/simulator
     implementation files('lib/microPIUPK.jar')
     runtime fileTree(dir: 'lib', include: 'microPIUPK.jar')
+
+    // Argument parser
+    compile 'info.picocli:picocli:4.2.0'
 }
 
 application {
