@@ -1,7 +1,9 @@
 begin
     integer a,b,c;
-    integer array d[1:10];
-    d[5]:=5;
+    integer array d[10:25,6:59];
+    a:=22;
+    d[a,a]:= 59;
+    b := d[a,a] + 10 ;
+    outinteger(1,b);
 
-    outinteger(1,d[5]);
 end

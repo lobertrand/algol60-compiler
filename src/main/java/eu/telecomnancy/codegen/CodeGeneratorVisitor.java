@@ -35,6 +35,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         asm.comment("Définitions de constantes");
         asm.putStringDefinitionsHere();
+        asm.code("LDW HP, @0xA000", "initializing heap pointer");
 
         this.currentSymbolTable = symbolTable;
         this.currentTableNumber = 0;
@@ -445,6 +446,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ArrayAssignmentAST ast) {
+        /*
+        //FONCTIONNEL 1 DIMENSION
         String identifier = ast.getChild(0).getText();
         Array array = currentSymbolTable.resolve(identifier, Array.class);
         int shift = array.getShift();
@@ -470,6 +473,67 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("ADD R4, R4, R4", "R4 * 2 : element shift");
         asm.code("ADD R3, R4, R4", "@impl + element shift : @element");
         asm.code("STW R1, (R4)", "Store value at @element");
+
+         */
+        // TEST MULTI DIMENTIONNEL
+        String name = ast.getChild(0).getText();
+        DefaultAST indices = ast.getChild(1);
+        int dim = indices.getChildCount();
+        Array array = currentSymbolTable.resolve(name, Array.class);
+        int shift = array.getShift();
+        if (currentSymbolTable.isDeclaredInScope(name)) {
+            asm.code("LDW R3, (BP)" + shift, "R3 <- @impl");
+            asm.code("LDW R4,(BP)" + (shift - 2), "Lower bound");
+            asm.code("LDW R5,(BP)" + (shift - 4), "R5 <- Upper bound for the index");
+        } else {
+            putBasePointerOfNonLocalVariableIntoReg(name, "R4");
+            asm.code("LDW R3, (R4)" + shift, "R3 <- @impl");
+            asm.code("LDW R4,(BP)" + (shift - 2), "Lower bound");
+            asm.code("LDW R5,(BP)" + (shift - 4), "R5 <- Upper bound for the index");
+        }
+        DefaultAST index = indices.getChild(0); // Dimension 1
+        index.accept(this); // Push index on stack using R1
+        asm.comment("Array call " + getLineOfCode(ast));
+        asm.pop("R1", "Pop index into R1");
+        asm.code("SUB R5,R1,R9", "just to check if the bound are correct");
+        asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+        asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+        asm.code("SUB R1,R4,R10", "R10 now contain Index(N)-Inf(N)");
+        asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+        asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+        for (int i = 1; i < dim; i++) {
+            index = indices.getChild(i);
+            index.accept(this); // Push index on stack using R1
+            asm.comment("Array call " + getLineOfCode(ast));
+            asm.pop("R1", "Pop index into R1");
+            if (currentSymbolTable.isDeclaredInScope(name)) {
+                asm.code("LDW R4, (BP)" + (shift - 4 * i - 2), "R4 <- lower bound for the index");
+                asm.code("LDW R5,(BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
+            } else {
+                putBasePointerOfNonLocalVariableIntoReg(name, "R4");
+                asm.code("LDW R4, (R4)" + (shift - 2), "R4 <- lower bound");
+                asm.code("LDW R5,(BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
+            }
+            asm.code(
+                    "SUB R5,R4,R9",
+                    "load R9 with upper-lower (here if R9<0 there is a problem with bounds");
+            asm.code("ADQ 1,R9", "add 1 to it ");
+            asm.code("MUL R10,R9,R10", "R10 now contain R10* (upper-lower)");
+            asm.code("SUB R5,R1,R9", "just to check if the bound are correct");
+            asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+            asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+            asm.code("SUB R1,R4,R9", "R9 now contain index-lower");
+            asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+            asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+            asm.code("ADD R10,R9,R10", "R10 now contain R10 + index - lower");
+        }
+        asm.code("ADD R10,R10,R10", "R10 *2 because 1 elt size is 2");
+        asm.code("ADD R3, R10, R10", "@impl + element shift : @element");
+
+        ast.getChild(2).accept(this);
+        asm.code("LDW R1, (SP)+", "Pop value from stack");
+
+        asm.code("STW R1, (R10)", "Store value at @element");
 
         return CodeInfo.empty();
     }
@@ -505,6 +569,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ArrayCallAST ast) {
+        /*
         String name = ast.getChild(0).getText();
         DefaultAST indices = ast.getChild(1);
         int dims = indices.getChildCount();
@@ -521,6 +586,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             ArrayIndex(dims, "R1");
             asm.code("STW R1, -(SP)", "Put it on the stack");
         } else {
+
             // FONCTIONNEL à 1 DIM
 
             DefaultAST index = indices.getChild(0); // Dimension 1
@@ -539,12 +605,95 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
                 asm.code("LDW R4, (R4)" + (shift - 2), "R4 <- lower bound");
             }
 
+            putBasePointerOfNonLocalVariableIntoReg(name, "R4");
+            asm.code("LDW R1, (R4)" + shift, "R1 <- @impl");
+        }
+        // R1 contient l'indice de l'élément à recup si j'ai bien compris
+        ArrayIndex(dims, "R1");
+        asm.code("STW R1, -(SP)", "Put it on the stack");
+         */
+        /*
+        //FONCTIONNEL à 1 DIM
+        String name = ast.getChild(0).getText();
+        DefaultAST indices = ast.getChild(1);
+
+        DefaultAST index = indices.getChild(0); // Dimension 1
+        index.accept(this); // Push index on stack using R1
+        asm.comment("Array call " + getLineOfCode(ast));
+        asm.pop("R1", "Pop index into R1");
+
+
             asm.code("SUB R1, R4, R4", "index - lower bound -> R4");
             asm.code("ADD R4, R4, R4", "R4 * 2 : element shift");
             asm.code("ADD R3, R4, R4", "@impl + element shift : @element");
             asm.code("LDW R1,(R4)", "load the element of the array into R1");
             asm.code("STW R1, -(SP)", "Put it on the stack");
         }
+
+        asm.code("SUB R1, R4, R4", "index - lower bound -> R4");
+        asm.code("ADD R4, R4, R4", "R4 * 2 : element shift");
+        asm.code("ADD R3, R4, R4", "@impl + element shift : @element");
+        asm.code("LDW R1,(R4)", "load the element of the array into R1");
+        asm.code("STW R1, -(SP)", "Put it on the stack");
+
+         */
+
+        // TEST MULTI DIMENTIONNEL
+        String name = ast.getChild(0).getText();
+        DefaultAST indices = ast.getChild(1);
+        int dim = indices.getChildCount();
+        Array array = currentSymbolTable.resolve(name, Array.class);
+        int shift = array.getShift();
+        if (currentSymbolTable.isDeclaredInScope(name)) {
+            asm.code("LDW R3, (BP)" + shift, "R3 <- @impl");
+            asm.code("LDW R4,(BP)" + (shift - 2), "Lower bound");
+            asm.code("LDW R5,(BP)" + (shift - 4), "R5 <- Upper bound for the index");
+        } else {
+            putBasePointerOfNonLocalVariableIntoReg(name, "R4");
+            asm.code("LDW R3, (R4)" + shift, "R3 <- @impl");
+            asm.code("LDW R4,(BP)" + (shift - 2), "Lower bound");
+            asm.code("LDW R5,(BP)" + (shift - 4), "R5 <- Upper bound for the index");
+        }
+        DefaultAST index = indices.getChild(0); // Dimension 1
+        index.accept(this); // Push index on stack using R1
+        asm.comment("Array call " + getLineOfCode(ast));
+        asm.pop("R1", "Pop index into R1");
+        asm.code("SUB R5,R1,R9", "just to check if the bound are correct");
+        asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+        asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+        asm.code("SUB R1,R4,R10", "R10 now contain Index(N)-Inf(N)");
+        asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+        asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+        for (int i = 1; i < dim; i++) {
+            index = indices.getChild(i);
+            index.accept(this); // Push index on stack using R1
+            asm.comment("Array call " + getLineOfCode(ast));
+            asm.pop("R1", "Pop index into R1");
+            if (currentSymbolTable.isDeclaredInScope(name)) {
+                asm.code("LDW R4, (BP)" + (shift - 4 * i - 2), "R4 <- lower bound for the index");
+                asm.code("LDW R5,(BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
+            } else {
+                putBasePointerOfNonLocalVariableIntoReg(name, "R4");
+                asm.code("LDW R4, (R4)" + (shift - 2), "R4 <- lower bound");
+                asm.code("LDW R5,(BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
+            }
+            asm.code(
+                    "SUB R5,R4,R9",
+                    "load R9 with upper-lower (here if R9<0 there is a problem with bounds");
+            asm.code("ADQ 1,R9", "add 1 to it ");
+            asm.code("MUL R10,R9,R10", "R10 now contain R10* (upper-lower)");
+            asm.code("SUB R5,R1,R9", "just to check if the bound are correct");
+            asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+            asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+            asm.code("SUB R1,R4,R9", "R9 now contain index-lower");
+            asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+            asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+            asm.code("ADD R10,R9,R10", "R10 now contain R10 + index - lower");
+        }
+        asm.code("ADD R10,R10,R10", "R10 *2 because 1 elt size is 2");
+        asm.code("ADD R3, R10, R10", "@impl + element shift : @element");
+        asm.code("LDW R1,(R10)", "load the element of the array into R1");
+        asm.code("STW R1, -(SP)", "Put it on the stack");
 
         return CodeInfo.empty();
     }
