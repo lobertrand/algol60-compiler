@@ -1,6 +1,7 @@
 package eu.telecomnancy;
 
 import static eu.telecomnancy.tools.ArgsParser.*;
+import static picocli.CommandLine.*;
 
 import eu.telecomnancy.ast.ASTAdaptor;
 import eu.telecomnancy.ast.DefaultAST;
@@ -16,15 +17,16 @@ import eu.telecomnancy.tools.ASTTools;
 import eu.telecomnancy.tools.ArgsParser;
 import eu.telecomnancy.tools.IOListener;
 import eu.telecomnancy.tools.IOUtils;
-import java.io.*;
 import org.antlr.runtime.*;
 import picocli.CommandLine;
+import picocli.CommandLine.Help.Ansi.Style;
 import projetIUP.Lanceur;
 
 public class Main {
 
     public static void main(String[] args) {
         CommandLine cmd = new CommandLine(new ArgsParser());
+        cmd.setColorScheme(createColorScheme());
         if (cmd.execute(args) != 0) {
             return;
         }
@@ -142,23 +144,11 @@ public class Main {
         }
     }
 
-    private static CharStream parseArguments(String[] args) {
-
-        try {
-            if (args.length == 0) {
-                IOUtils.logError("Possible arguments:");
-                IOUtils.logError("    <Path to Algol60 file>");
-                IOUtils.logError("    <begin> <integer> <a> <;> ... <end>");
-                IOUtils.exit();
-            } else if (args.length == 1) {
-                return new ANTLRInputStream(new FileInputStream(args[0]));
-            } else {
-                return new ANTLRStringStream(String.join(" ", args));
-            }
-        } catch (Exception e) {
-            IOUtils.logError(e);
-            IOUtils.exit();
-        }
-        return null;
+    private static Help.ColorScheme createColorScheme() {
+        return new Help.ColorScheme.Builder()
+                .commands(Style.bold)
+                .options(Style.fg_cyan)
+                .parameters(Style.fg_yellow)
+                .build();
     }
 }
