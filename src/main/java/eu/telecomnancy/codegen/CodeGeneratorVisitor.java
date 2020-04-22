@@ -553,6 +553,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     }
 
     public void ArrayIndex(int dims, String regImpl) {
+        asm.push("R1");
         asm.code("LDW R6,#0", "");
         for (int n = 0; n <= dims - 2; n++) {
             int shift1 = (1 + n * 2) * 2;
@@ -567,17 +568,16 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("ADQ 1 , R1", "");
             asm.code("MULT R2 , R3 , R2", "");
             asm.code("ADD R6 , R2 , R6 ", "");
-
         }
         int shift = (1 + (dims - 1) * 2) * 2;
         int dim = dims - 1;
-        asm.code("LDQ" + dim + ",R2", "");
+        asm.code("LDQ " + dim + ",R2", "");
         asm.code("LDW R3 , (SP)-" + shift, "");
         asm.code("SUB R3 ,R2 ,R2", "");
         asm.code("ADD R2 ,R2,R2", "");
         asm.code("ADD " + regImpl + ",R2 ,R1", "");
-
     }
+
     @Override
     public CodeInfo visit(IntAST ast) {
         String value = ast.getText();
