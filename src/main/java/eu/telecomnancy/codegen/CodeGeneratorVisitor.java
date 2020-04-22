@@ -486,10 +486,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("LDW R4,(BP)" + (shift - 2), "Lower bound");
             asm.code("LDW R5,(BP)" + (shift - 4), "R5 <- Upper bound for the index");
         } else {
-            putBasePointerOfNonLocalVariableIntoReg(name, "R4");
-            asm.code("LDW R3, (R4)" + shift, "R3 <- @impl");
-            asm.code("LDW R4,(BP)" + (shift - 2), "Lower bound");
-            asm.code("LDW R5,(BP)" + (shift - 4), "R5 <- Upper bound for the index");
+            putBasePointerOfNonLocalVariableIntoReg(name, "R5");
+            asm.code("LDW R3, (R5)" + shift, "R3 <- @impl");
+            asm.code("LDW R4,(R5)" + (shift - 2), "Lower bound");
+            asm.code("LDW R5,(R5)" + (shift - 4), "R5 <- Upper bound for the index");
         }
         DefaultAST index = indices.getChild(0); // Dimension 1
         index.accept(this); // Push index on stack using R1
@@ -510,9 +510,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
                 asm.code("LDW R4, (BP)" + (shift - 4 * i - 2), "R4 <- lower bound for the index");
                 asm.code("LDW R5,(BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
             } else {
-                putBasePointerOfNonLocalVariableIntoReg(name, "R4");
-                asm.code("LDW R4, (R4)" + (shift - 2), "R4 <- lower bound");
-                asm.code("LDW R5,(BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
+                putBasePointerOfNonLocalVariableIntoReg(name, "R5");
+                asm.code("LDW R4, (R5)" + (shift - 2), "R4 <- lower bound");
+                asm.code("LDW R5,(R5)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
             }
             asm.code(
                     "SUB R5,R4,R9",
@@ -649,10 +649,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("LDW R4,(BP)" + (shift - 2), "Lower bound");
             asm.code("LDW R5,(BP)" + (shift - 4), "R5 <- Upper bound for the index");
         } else {
-            putBasePointerOfNonLocalVariableIntoReg(name, "R4");
-            asm.code("LDW R3, (R4)" + shift, "R3 <- @impl");
-            asm.code("LDW R4,(BP)" + (shift - 2), "Lower bound");
-            asm.code("LDW R5,(BP)" + (shift - 4), "R5 <- Upper bound for the index");
+            putBasePointerOfNonLocalVariableIntoReg(name, "R5");
+            asm.code("LDW R3, (R5)" + shift, "R3 <- @impl");
+            asm.code("LDW R4,(R5)" + (shift - 2), "Lower bound");
+            asm.code("LDW R5,(R5)" + (shift - 4), "R5 <- Upper bound for the index");
         }
         DefaultAST index = indices.getChild(0); // Dimension 1
         index.accept(this); // Push index on stack using R1
@@ -673,9 +673,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
                 asm.code("LDW R4, (BP)" + (shift - 4 * i - 2), "R4 <- lower bound for the index");
                 asm.code("LDW R5,(BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
             } else {
-                putBasePointerOfNonLocalVariableIntoReg(name, "R4");
-                asm.code("LDW R4, (R4)" + (shift - 2), "R4 <- lower bound");
-                asm.code("LDW R5,(BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
+                putBasePointerOfNonLocalVariableIntoReg(name, "R5");
+                asm.code("LDW R4, (R5)" + (shift - 2), "R4 <- lower bound");
+                asm.code("LDW R5,(R5)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
             }
             asm.code(
                     "SUB R5,R4,R9",

@@ -27,6 +27,7 @@ obj/
 /*.asm
 /*.src
 *.iup
+src/test/resources/codegen/**/*.src
 
 
 # AntlrWorks

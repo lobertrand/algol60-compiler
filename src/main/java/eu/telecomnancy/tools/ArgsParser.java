@@ -1,6 +1,7 @@
 package eu.telecomnancy.tools;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import org.antlr.runtime.ANTLRInputStream;
@@ -15,8 +16,14 @@ import picocli.CommandLine.*;
         optionListHeading = "%nOptions:%n")
 public class ArgsParser implements Callable<ArgsParser.Options> {
 
-    @Parameters(index = "0", description = "algol60 file to parse and compile to an .iup file")
+    @Parameters(index = "0", description = "name or path of the algol60 file to compile")
     private String fileName;
+
+    @Option(
+            names = {"-o", "--output"},
+            paramLabel = "output_name",
+            description = "name or path of the output file")
+    private String outputName;
 
     @Option(
             names = {"-a", "--print-ast"},
@@ -41,8 +48,8 @@ public class ArgsParser implements Callable<ArgsParser.Options> {
 
     @Option(
             names = {"-r", "--run-iup"},
-            description = "run generated .iup file immediately after compilation")
-    private boolean runIup;
+            description = "generate an .iup file and run it")
+    private boolean runProgram;
 
     @Option(
             names = {"-n", "--no-optimization"},
@@ -54,16 +61,20 @@ public class ArgsParser implements Callable<ArgsParser.Options> {
         Options result = new Options();
         try {
             result.charStream = new ANTLRInputStream(new FileInputStream(fileName));
+        } catch (FileNotFoundException e) {
+            IOUtils.logError("No such file: " + fileName);
+            IOUtils.exit();
         } catch (IOException e) {
-            IOUtils.logError(e);
+            IOUtils.logError(e.getClass().getSimpleName() + ": " + e.getMessage());
             IOUtils.exit();
         }
         result.fileName = fileName;
+        result.outputName = outputName;
         result.pdfAst = pdfAst;
         result.printAst = printAst;
         result.printSymbolTable = printSymbolTable;
         result.quiet = quiet;
-        result.runIup = runIup;
+        result.runProgram = runProgram;
         result.optimizeCode = !noCodeOptimization;
         return result;
     }
@@ -71,11 +82,12 @@ public class ArgsParser implements Callable<ArgsParser.Options> {
     public static class Options {
         private CharStream charStream;
         private String fileName;
+        private String outputName;
         private boolean printAst;
         private boolean pdfAst;
         private boolean printSymbolTable;
         private boolean quiet;
-        private boolean runIup;
+        private boolean runProgram;
         private boolean optimizeCode;
 
         public CharStream getCharStream() {
@@ -84,6 +96,10 @@ public class ArgsParser implements Callable<ArgsParser.Options> {
 
         public String getFileName() {
             return fileName;
+        }
+
+        public String getOutputName() {
+            return outputName;
         }
 
         public boolean shouldPrintAst() {
@@ -102,8 +118,8 @@ public class ArgsParser implements Callable<ArgsParser.Options> {
             return quiet;
         }
 
-        public boolean shouldRunIup() {
-            return runIup;
+        public boolean shouldRunProgram() {
+            return runProgram;
         }
 
         public boolean shouldOptimizeCode() {

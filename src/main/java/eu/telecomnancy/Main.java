@@ -91,21 +91,36 @@ public class Main {
     }
 
     private static void assembleAndExecute(String asm, Options options) {
-        String name = options.getFileName();
-        String baseName = name.matches("^.*\\.[^.]*$") ? name.replaceAll("\\.[^.]*$", "") : name;
-        String srcFile = baseName + ".src";
-        String iupFile = baseName + ".iup";
+        String srcName, outName;
+        if (options.getOutputName() == null) {
+            String baseName = trimExtension(options.getFileName());
+            srcName = baseName + ".src";
+            outName = baseName + ".iup";
+        } else {
+            srcName = options.getOutputName();
+            outName = trimExtension(srcName) + ".iup";
+        }
 
-        IOUtils.writeStringToFile(asm, srcFile);
+        IOUtils.writeStringToFile(asm, srcName);
 
-        IOListener.listen(() -> Lanceur.main(new String[] {"-ass", srcFile}))
-                .ifError(IOUtils::logError)
-                .ifError(IOUtils::exit)
-                .ifNoError(() -> IOUtils.log("Assembly code compiled successfully"));
+        if (options.shouldRunProgram()) {
+            String[] compilation = {"-ass", srcName};
+            IOListener.listen(() -> Lanceur.main(compilation))
+                    .ifError(IOUtils::logError)
+                    .ifError(IOUtils::exit)
+                    .ifNoError(() -> IOUtils.log("Assembly code compiled successfully"));
 
-        if (options.shouldRunIup()) {
+            String[] execution = {"-batch", outName};
             IOUtils.log("Executing program...");
-            Lanceur.main(new String[] {"-batch", iupFile});
+            Lanceur.main(execution);
+        }
+    }
+
+    private static String trimExtension(String fileName) {
+        if (fileName.matches("^.*\\.[^.]*$")) {
+            return fileName.replaceAll("\\.[^.]*$", "");
+        } else {
+            return fileName;
         }
     }
 
