@@ -515,11 +515,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         index.accept(this); // Push index on stack using R1
         asm.pop("R1", "Pop index into R1");
         putBasePointerOfNonLocalVariableIntoReg(name, "R2");
-
         return CodeInfo.empty();
     }
 
-    public void ArrayIndex(int dims,int impl){
+    public void ArrayIndex(int dims,String regImpl){
         asm.code("LDW R6,#0","");
         for (int n = 0; n <= dims - 2; n++) {
             asm.code("LDW R5 ,#"+dims,"");
@@ -537,8 +536,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("LDW R3 , (SP)-(1+("+dims+"-1)*2)*2","");
         asm.code("SUB R3 ,R2 ,R2","");
         asm.code("MULT R2 ,#2,R2","" );
-        asm.code("ADD #"+impl+",R2 ,R1","");
-        
+        asm.code("ADD "+regImpl+",R2 ,R1","");
+
 
         }
     @Override
