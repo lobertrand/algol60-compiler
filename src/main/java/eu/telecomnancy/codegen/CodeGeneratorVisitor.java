@@ -508,46 +508,43 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String name = ast.getChild(0).getText();
         DefaultAST indices = ast.getChild(1);
         int dims = indices.getChildCount();
-        Array array = currentSymbolTable.resolve(name, Array.class);
-        int shift = array.getShift();
-        if (currentSymbolTable.isDeclaredInScope(name)) {
-            asm.code("LDW R1, (BP)" + shift, "R1 <- @impl");
+        if (dims > 1) {
+            Array array = currentSymbolTable.resolve(name, Array.class);
+            int shift = array.getShift();
+            if (currentSymbolTable.isDeclaredInScope(name)) {
+                asm.code("LDW R1, (BP)" + shift, "R1 <- @impl");
+            } else {
+                putBasePointerOfNonLocalVariableIntoReg(name, "R4");
+                asm.code("LDW R1, (R4)" + shift, "R1 <- @impl");
+            }
+            // R1 contient l'indice de l'élément à recup si j'ai bien compris
+            ArrayIndex(dims, "R1");
+            asm.code("STW R1, -(SP)", "Put it on the stack");
         } else {
-            putBasePointerOfNonLocalVariableIntoReg(name, "R4");
-            asm.code("LDW R1, (R4)" + shift, "R1 <- @impl");
+            // FONCTIONNEL à 1 DIM
+
+            DefaultAST index = indices.getChild(0); // Dimension 1
+            index.accept(this); // Push index on stack using R1
+            asm.comment("Array call " + getLineOfCode(ast));
+            asm.pop("R1", "Pop index into R1");
+
+            Array array = currentSymbolTable.resolve(name, Array.class);
+            int shift = array.getShift();
+            if (currentSymbolTable.isDeclaredInScope(name)) {
+                asm.code("LDW R3, (BP)" + shift, "R3 <- @impl");
+                asm.code("LDW R4, (BP)" + (shift - 2), "R4 <- lower bound");
+            } else {
+                putBasePointerOfNonLocalVariableIntoReg(name, "R4");
+                asm.code("LDW R3, (R4)" + shift, "R3 <- @impl");
+                asm.code("LDW R4, (R4)" + (shift - 2), "R4 <- lower bound");
+            }
+
+            asm.code("SUB R1, R4, R4", "index - lower bound -> R4");
+            asm.code("ADD R4, R4, R4", "R4 * 2 : element shift");
+            asm.code("ADD R3, R4, R4", "@impl + element shift : @element");
+            asm.code("LDW R1,(R4)", "load the element of the array into R1");
+            asm.code("STW R1, -(SP)", "Put it on the stack");
         }
-        // R1 contient l'indice de l'élément à recup si j'ai bien compris
-        ArrayIndex(dims, "R1");
-        asm.code("STW R1, -(SP)", "Put it on the stack");
-
-        /*
-        //FONCTIONNEL à 1 DIM
-        String name = ast.getChild(0).getText();
-        DefaultAST indices = ast.getChild(1);
-
-        DefaultAST index = indices.getChild(0); // Dimension 1
-        index.accept(this); // Push index on stack using R1
-        asm.comment("Array call " + getLineOfCode(ast));
-        asm.pop("R1", "Pop index into R1");
-
-        Array array = currentSymbolTable.resolve(name, Array.class);
-        int shift = array.getShift();
-        if (currentSymbolTable.isDeclaredInScope(name)) {
-            asm.code("LDW R3, (BP)" + shift, "R3 <- @impl");
-            asm.code("LDW R4, (BP)" + (shift - 2), "R4 <- lower bound");
-        } else {
-            putBasePointerOfNonLocalVariableIntoReg(name, "R4");
-            asm.code("LDW R3, (R4)" + shift, "R3 <- @impl");
-            asm.code("LDW R4, (R4)" + (shift - 2), "R4 <- lower bound");
-        }
-
-        asm.code("SUB R1, R4, R4", "index - lower bound -> R4");
-        asm.code("ADD R4, R4, R4", "R4 * 2 : element shift");
-        asm.code("ADD R3, R4, R4", "@impl + element shift : @element");
-        asm.code("LDW R1,(R4)", "load the element of the array into R1");
-        asm.code("STW R1, -(SP)", "Put it on the stack");
-
-         */
 
         return CodeInfo.empty();
     }

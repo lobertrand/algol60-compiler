@@ -15,7 +15,7 @@ begin
 		for i :=1 step 1 until ndim do
 		begin
 			s := s*a+b; r := entier(s/m); s := s - r*m; 
-			v[i] := (entier((s+1)/(m+1)*10000)) / 10000 ;
+			v[i] := (entier((s+1)/(m+1)*10000)) / 10000 
 		end
 	end;
 	
@@ -33,7 +33,7 @@ start:;
 			end
 		end;
 		comment outinteger (1, flag);
-		if flag <> 0 then goto start
+		if flag <> 0 then goto start;
 	end;
 	
 	dim := 20;
@@ -41,8 +41,9 @@ start:;
 	vectRandom(a, dim, 0);
 	vectBubbleSort(a,dim);
 	
-	line();
-	for i := 1 step 1 until dim do outreal(1, a[i]);
-	line()
+	outstring(1,"\n");
+	for i := 1 step 1 until dim do outreal (1, a[i]);
+	outstring(1,"\n")
 	
 end
+
