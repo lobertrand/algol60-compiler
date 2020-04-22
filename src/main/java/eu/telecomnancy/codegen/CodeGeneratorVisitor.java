@@ -1029,9 +1029,14 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         Switch s = currentSymbolTable.resolve(switchString, Switch.class);
         DefaultAST index = ast.getChild(1);
         index.accept(this);
-
         asm.comment(getLineOfCode(ast));
         asm.code("LDW R1, (SP)+", "Pop first value from the stack into R1");
+        asm.code("JGT #4 ", "Jump to the end of this loop if the bounds are corrects ");
+        asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+        int nbLabels = s.getLabelNumber();
+        asm.code("ADI R1,R3,#-" + nbLabels, "check if the bounds are corrects");
+        asm.code("JLE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+        asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
         asm.code("LDW R2, #4 ", "Put int value 4 into R2");
         asm.code("MUL R1, R2, R1", "R1 becomes 4*R1 so the index is ok");
         asm.code("ADQ -4, R1", "R1 becomes R1-4 so the index is perfect");
