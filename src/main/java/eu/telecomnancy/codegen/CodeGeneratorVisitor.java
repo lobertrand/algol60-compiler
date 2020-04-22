@@ -506,6 +506,24 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(ArrayCallAST ast) {
         String name = ast.getChild(0).getText();
         DefaultAST indices = ast.getChild(1);
+        int dims = indices.getChildCount();
+        Array array = currentSymbolTable.resolve(name, Array.class);
+        int shift = array.getShift();
+        if (currentSymbolTable.isDeclaredInScope(name)) {
+            asm.code("LDW R1, (BP)" + shift, "R1 <- @impl");
+        } else {
+            putBasePointerOfNonLocalVariableIntoReg(name, "R4");
+            asm.code("LDW R1, (R4)" + shift, "R1 <- @impl");
+        }
+        // R1 contient l'indice de l'élément à recup si j'ai bien compris
+        ArrayIndex(dims, "R1");
+        asm.code("STW R1, -(SP)", "Put it on the stack");
+
+        /*
+        //FONCTIONNEL à 1 DIM
+        String name = ast.getChild(0).getText();
+        DefaultAST indices = ast.getChild(1);
+
         DefaultAST index = indices.getChild(0); // Dimension 1
         index.accept(this); // Push index on stack using R1
         asm.comment("Array call " + getLineOfCode(ast));
@@ -528,6 +546,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("LDW R1,(R4)", "load the element of the array into R1");
         asm.code("STW R1, -(SP)", "Put it on the stack");
 
+         */
+
+
         return CodeInfo.empty();
     }
 
@@ -544,10 +565,11 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("MULT R2 , R3 , R2", "");
             asm.code("ADD R6 , R2 , R6 ", "");
         }
-        asm.code("LDQ" + dims + "-1 ,R2", "");
+
+        asm.code("LDQ " + dims + "-1 ,R2", "");
         asm.code("LDW R3 , (SP)-(1+(" + dims + "-1)*2)*2", "");
         asm.code("SUB R3 ,R2 ,R2", "");
-        asm.code("MULT R2 ,#2,R2", "");
+        asm.code("ADD R2 ,R2,R2", "");
         asm.code("ADD " + regImpl + ",R2 ,R1", "");
     }
 
