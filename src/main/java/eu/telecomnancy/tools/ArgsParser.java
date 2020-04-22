@@ -16,7 +16,7 @@ import picocli.CommandLine.*;
 public class ArgsParser implements Callable<ArgsParser.Options> {
 
     @Parameters(index = "0", description = "algol60 file to parse and compile to an .iup file")
-    private String file;
+    private String fileName;
 
     @Option(
             names = {"-a", "--print-ast"},
@@ -53,11 +53,12 @@ public class ArgsParser implements Callable<ArgsParser.Options> {
     public Options call() {
         Options result = new Options();
         try {
-            result.charStream = new ANTLRInputStream(new FileInputStream(file));
+            result.charStream = new ANTLRInputStream(new FileInputStream(fileName));
         } catch (IOException e) {
             IOUtils.logError(e);
             IOUtils.exit();
         }
+        result.fileName = fileName;
         result.pdfAst = pdfAst;
         result.printAst = printAst;
         result.printSymbolTable = printSymbolTable;
@@ -69,6 +70,7 @@ public class ArgsParser implements Callable<ArgsParser.Options> {
 
     public static class Options {
         private CharStream charStream;
+        private String fileName;
         private boolean printAst;
         private boolean pdfAst;
         private boolean printSymbolTable;
@@ -78,6 +80,10 @@ public class ArgsParser implements Callable<ArgsParser.Options> {
 
         public CharStream getCharStream() {
             return charStream;
+        }
+
+        public String getFileName() {
+            return fileName;
         }
 
         public boolean shouldPrintAst() {

@@ -91,16 +91,21 @@ public class Main {
     }
 
     private static void assembleAndExecute(String asm, Options options) {
-        IOUtils.writeStringToFile(asm, "program.asm");
+        String name = options.getFileName();
+        String baseName = name.matches("^.*\\.[^.]*$") ? name.replaceAll("\\.[^.]*$", "") : name;
+        String srcFile = baseName + ".src";
+        String iupFile = baseName + ".iup";
 
-        IOListener.listen(() -> Lanceur.main(new String[] {"-ass", "program.asm"}))
+        IOUtils.writeStringToFile(asm, srcFile);
+
+        IOListener.listen(() -> Lanceur.main(new String[] {"-ass", srcFile}))
                 .ifError(IOUtils::logError)
                 .ifError(IOUtils::exit)
                 .ifNoError(() -> IOUtils.log("Assembly code compiled successfully"));
 
         if (options.shouldRunIup()) {
             IOUtils.log("Executing program...");
-            Lanceur.main(new String[] {"-batch", "program.iup"});
+            Lanceur.main(new String[] {"-batch", iupFile});
         }
     }
 

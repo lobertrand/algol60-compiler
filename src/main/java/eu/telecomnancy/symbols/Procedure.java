@@ -16,6 +16,10 @@ public class Procedure extends Symbol {
         this.parameterTypes = parameterTypes;
     }
 
+    public int nbParameters() {
+        return parameterTypes.size();
+    }
+
     public boolean returnsAValue() {
         return getType() != Type.VOID;
     }

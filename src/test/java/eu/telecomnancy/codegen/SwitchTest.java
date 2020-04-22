@@ -20,4 +20,10 @@ public class SwitchTest {
         Result result = parse(IOUtils.loadString("/codegen/unit_tests/switch2.alg"));
         assertEquals("second third", result.output);
     }
+
+    @Test
+    public void testBasicSwitchOutOfBounds() throws Exception {
+        Result result = parse(IOUtils.loadString("/codegen/unit_tests/switch3.alg"));
+        assertEquals("Error: Index out of bounds", result.output);
+    }
 }

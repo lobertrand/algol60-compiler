@@ -173,6 +173,8 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             }
         }
 
+        currentSymbolTable.setParameterSize(paramNames.size() * 2);
+
         // Check specification part and define parameters
         List<Type> orderedTypes = new ArrayList<>();
         for (String name : paramNames) {

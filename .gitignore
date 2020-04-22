@@ -25,7 +25,9 @@ obj/
 /*.pdf
 /*.alg
 /*.asm
+/*.src
 *.iup
+
 
 # AntlrWorks
 output/

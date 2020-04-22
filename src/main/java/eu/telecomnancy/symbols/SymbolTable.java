@@ -15,6 +15,7 @@ public class SymbolTable {
     private int currentVariableShift = -4;
     private int currentParameterShift = 4;
     private int localVariableSize = 0;
+    private int parameterSize = 0;
 
     /** This constructor is used to create the root of a SymbolTable tree */
     public SymbolTable() {
@@ -45,8 +46,7 @@ public class SymbolTable {
         if (symbol.getKind() == Kind.VARIABLE || symbol.getKind() == Kind.ARRAY) {
             if (symbol.isParameter()) {
                 symbol.setShift(this.currentParameterShift);
-                this.currentParameterShift += symbol.getSize();
-
+                this.currentParameterShift -= symbol.getSize();
             } else {
                 symbol.setShift(this.currentVariableShift);
                 this.currentVariableShift -= symbol.getSize();
@@ -57,8 +57,13 @@ public class SymbolTable {
         symbols.put(symbol.getIdentifier(), symbol);
     }
 
-    public int getLocalVariableSize() {
-        return localVariableSize;
+    public void setParameterSize(int parameterSize) {
+        this.parameterSize = parameterSize;
+        this.currentParameterShift = parameterSize + 2;
+    }
+
+    public void setParent(SymbolTable parent) {
+        this.parent = parent;
     }
 
     public boolean isDeclaredInScope(String idf) {
