@@ -34,8 +34,8 @@ public class PredefinedCode {
                 "ASCII_A",
                 "65",
                 "code ASCII de A (les autres lettres jusqu'à Z suivent dans l'ordre alphabétique)");
-        asm.string("DIV0", "ERROR: DIVISION BY 0");
-        asm.string("OUTBOUND", "ERROR: ARRAY OUT OF BOUND");
+        asm.string("DIV0", "Error: Division by zero");
+        asm.string("OUTBOUND", "Error: Index out of bounds");
         asm.string("TRUE", "true");
         asm.string("FALSE", "false");
     }
@@ -74,6 +74,13 @@ public class PredefinedCode {
         asm.beginProcedureDeclaration();
         asm.label("div0", "Erreur de division par 0");
         asm.insert(IOUtils.loadString("/code/div0.asm"));
+        asm.endProcedureDeclaration();
+    }
+
+    public static void appendIndexOutOfBoundsCode(Assembly asm) {
+        asm.beginProcedureDeclaration();
+        asm.label("index_oob", "Index out of bounds error message");
+        asm.insert(IOUtils.loadString("/code/index_oob.asm"));
         asm.endProcedureDeclaration();
     }
 
