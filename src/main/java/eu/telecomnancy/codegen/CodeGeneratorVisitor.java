@@ -534,29 +534,29 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public void ArrayIndex(int dims, String regImpl) {
         asm.code("LDW R6,#0", "");
         for (int n = 0; n <= dims - 2; n++) {
-            int shift1 = (1+n*2)*2;
-            int shift2 = (1+(n+1)*2)*2;
-            int shift3 = (1+(n+1)*2+1)*2;
-            asm.code("LDW R5 ,#"+dims,"");
-            asm.code("LDW R2 , (SP)-"+shift1,"");
-            asm.code("LDW R3 , (SP)-"+shift2,"");
-            asm.code("LDW R4 , (SP)-"+shift3,"");
-            asm.code("SUB R2 , R5 ,R2 ","");
-            asm.code("SUB R3 , R4 , R3","");
-            asm.code("ADQ 1 , R1","");
-            asm.code("MULT R2 , R3 , R2","");
-            asm.code("ADD R6 , R2 , R6 ","");
+            int shift1 = (1 + n * 2) * 2;
+            int shift2 = (1 + (n + 1) * 2) * 2;
+            int shift3 = (1 + (n + 1) * 2 + 1) * 2;
+            asm.code("LDW R5 ,#" + dims, "");
+            asm.code("LDW R2 , (SP)-" + shift1, "");
+            asm.code("LDW R3 , (SP)-" + shift2, "");
+            asm.code("LDW R4 , (SP)-" + shift3, "");
+            asm.code("SUB R2 , R5 ,R2 ", "");
+            asm.code("SUB R3 , R4 , R3", "");
+            asm.code("ADQ 1 , R1", "");
+            asm.code("MULT R2 , R3 , R2", "");
+            asm.code("ADD R6 , R2 , R6 ", "");
 
         }
-        int shift = (1+(dims-1)*2)*2;
-        int dim = dims-1;
-        asm.code("LDQ"+dim +",R2","");
-        asm.code("LDW R3 , (SP)-"+shift,"");
-        asm.code("SUB R3 ,R2 ,R2","");
-        asm.code("MULT R2 ,#2,R2","" );
-        asm.code("ADD "+regImpl+",R2 ,R1","");
+        int shift = (1 + (dims - 1) * 2) * 2;
+        int dim = dims - 1;
+        asm.code("LDQ" + dim + ",R2", "");
+        asm.code("LDW R3 , (SP)-" + shift, "");
+        asm.code("SUB R3 ,R2 ,R2", "");
+        asm.code("MULT R2 ,#2,R2", "");
+        asm.code("ADD " + regImpl + ",R2 ,R1", "");
 
-
+    }
     @Override
     public CodeInfo visit(IntAST ast) {
         String value = ast.getText();
