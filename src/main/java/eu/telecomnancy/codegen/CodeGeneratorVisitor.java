@@ -22,6 +22,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         PredefinedCode.appendOutintegerOrRealCode(asm);
         PredefinedCode.appendLineCode(asm);
         PredefinedCode.appendDiv0Code(asm);
+        PredefinedCode.appendIndexOutOfBoundsCode(asm);
         PredefinedCode.appendOutbooleanCode(asm);
 
         asm.newline();
@@ -398,7 +399,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(ArrayDecAST ast) {
         asm.comment("Array declaration " + getLineOfCode(ast));
         DefaultAST type = ast.getChild(0);
-        String typeString = type.getText();
         String ArrayName = ast.getChild(1).getText();
         Array array = currentSymbolTable.resolve(ArrayName, Array.class);
         String uniqueArrayName = array.getAsmLabel();
@@ -423,11 +423,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code(
                     "JGE #" + uniqueArrayName + i + "-$-2 ",
                     "Jump to the end of this loop if the bounds are corrects ");
-            asm.code("LDW R0, #OUTBOUND", "error out of bound message");
-            asm.code("TRP #WRITE_EXC", "write the error message");
-            asm.code("LDW R0, #NEWLINE", "just to make it cleaner");
-            asm.code("TRP #WRITE_EXC", "write the error message");
-            asm.code("TRP #EXIT_EXC", "quit the program");
+            asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
             asm.label(uniqueArrayName + i, "create the end of the " + i + " loop");
             asm.code("ADI R6,R6,#1", "R6 now contain the number of element in the index");
             asm.code(
@@ -439,7 +435,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
                 "STW R3, (HP)+",
                 "Store default string value in the heap the increment heap pointer");
         asm.code("ADQ -1,R7", "number of elements left to initialize");
-        //   asm.code("CMP R1,R2", "We check whether it is the end of declaration or not");
         asm.code(
                 "JNE #" + uniqueArrayName + "-$-2 ",
                 "if we still have elements to initialize we loop");
