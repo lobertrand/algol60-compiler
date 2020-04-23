@@ -27,9 +27,7 @@ public class Main {
     public static void main(String[] args) {
         CommandLine cmd = new CommandLine(new ArgsParser());
         cmd.setColorScheme(createColorScheme());
-        if (cmd.execute(args) != 0) {
-            return;
-        }
+        if (cmd.execute(args) != 0 || cmd.isUsageHelpRequested()) return;
         Options options = cmd.getExecutionResult();
         IOUtils.setQuiet(options.shouldBeQuiet());
 

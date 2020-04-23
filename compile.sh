@@ -5,4 +5,4 @@ if [ $# -ne 2 ] ; then
   exit 1
 fi
 
-java -jar build/libs/algol60_compiler.jar $1 -q
+java -jar build/libs/algol60_compiler.jar $1 -o $2 -q

@@ -173,10 +173,9 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
             }
         }
 
-        currentSymbolTable.setParameterSize(paramNames.size() * 2);
-
         // Check specification part and define parameters
         List<Type> orderedTypes = new ArrayList<>();
+        List<Symbol> parameters = new ArrayList<>();
         for (String name : paramNames) {
             int index = specNames.indexOf(name);
             Type type;
@@ -206,7 +205,18 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
                     valueNames.contains(name) ? Symbol.Mode.VALUE : Symbol.Mode.REFERENCE);
 
             orderedTypes.add(type);
+            parameters.add(parameter);
             currentSymbolTable.define(parameter);
+        }
+
+        // Compute shift for every parameter of the procedure
+        if (!parameters.isEmpty()) {
+            int currentParameterShift = 2;
+            for (int i = parameters.size() - 1; i >= 0; i--) {
+                Symbol p = parameters.get(i);
+                currentParameterShift += p.getType().getSize();
+                p.setShift(currentParameterShift);
+            }
         }
 
         // Check for orphan declarations in specification part

@@ -22,7 +22,7 @@ public class ArgsParser implements Callable<ArgsParser.Options> {
     @Option(
             names = {"-o", "--output"},
             paramLabel = "output_name",
-            description = "name or path of the output file")
+            description = "name of the output file")
     private String outputName;
 
     @Option(
@@ -55,6 +55,12 @@ public class ArgsParser implements Callable<ArgsParser.Options> {
             names = {"-n", "--no-optimization"},
             description = "disable assembly code optimization")
     private boolean noCodeOptimization;
+
+    @Option(
+            names = {"-h", "--help"},
+            usageHelp = true,
+            description = "display this help message")
+    private boolean helpRequested;
 
     @Override
     public Options call() {

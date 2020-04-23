@@ -95,6 +95,12 @@ public enum Type {
             case REAL:
             case STRING:
                 return 2;
+            case BOOLEAN_ARRAY:
+            case INTEGER_ARRAY:
+            case REAL_ARRAY:
+            case STRING_ARRAY:
+                // DEFAULT SIZE FOR A 1D ARRAY
+                return 6;
             default:
                 return 0;
         }
