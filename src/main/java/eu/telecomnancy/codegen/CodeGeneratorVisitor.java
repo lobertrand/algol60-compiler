@@ -480,21 +480,21 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         DefaultAST indices = ast.getChild(1);
         int dim = indices.getChildCount();
         Array array = currentSymbolTable.resolve(name, Array.class);
+        DefaultAST index = indices.getChild(0); // Dimension 1
+        asm.comment("Array call " + getLineOfCode(ast));
+        index.accept(this); // Push index on stack using R1
+        asm.pop("R1", "Pop index into R1");
         int shift = array.getShift();
         if (currentSymbolTable.isDeclaredInScope(name)) {
             asm.code("LDW R3, (BP)" + shift, "R3 <- @impl");
-            asm.code("LDW R4,(BP)" + (shift - 2), "Lower bound");
-            asm.code("LDW R5,(BP)" + (shift - 4), "R5 <- Upper bound for the index");
+            asm.code("LDW R4, (BP)" + (shift - 2), "Lower bound");
+            asm.code("LDW R5, (BP)" + (shift - 4), "R5 <- Upper bound for the index");
         } else {
             putBasePointerOfNonLocalVariableIntoReg(name, "R5");
             asm.code("LDW R3, (R5)" + shift, "R3 <- @impl");
-            asm.code("LDW R4,(R5)" + (shift - 2), "Lower bound");
-            asm.code("LDW R5,(R5)" + (shift - 4), "R5 <- Upper bound for the index");
+            asm.code("LDW R4, (R5)" + (shift - 2), "Lower bound");
+            asm.code("LDW R5, (R5)" + (shift - 4), "R5 <- Upper bound for the index");
         }
-        DefaultAST index = indices.getChild(0); // Dimension 1
-        index.accept(this); // Push index on stack using R1
-        asm.comment("Array call " + getLineOfCode(ast));
-        asm.pop("R1", "Pop index into R1");
         asm.code("SUB R5,R1,R9", "just to check if the bound are correct");
         asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
         asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
@@ -503,16 +503,17 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
         for (int i = 1; i < dim; i++) {
             index = indices.getChild(i);
+            asm.push("R3", "Save @impl on stack");
             index.accept(this); // Push index on stack using R1
-            asm.comment("Array call " + getLineOfCode(ast));
             asm.pop("R1", "Pop index into R1");
+            asm.pop("R3", "Pop @impl into R3");
             if (currentSymbolTable.isDeclaredInScope(name)) {
                 asm.code("LDW R4, (BP)" + (shift - 4 * i - 2), "R4 <- lower bound for the index");
-                asm.code("LDW R5,(BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
+                asm.code("LDW R5, (BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
             } else {
                 putBasePointerOfNonLocalVariableIntoReg(name, "R5");
                 asm.code("LDW R4, (R5)" + (shift - 2), "R4 <- lower bound");
-                asm.code("LDW R5,(R5)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
+                asm.code("LDW R5, (R5)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
             }
             asm.code(
                     "SUB R5,R4,R9",
@@ -530,9 +531,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("ADD R10,R10,R10", "R10 *2 because 1 elt size is 2");
         asm.code("ADD R3, R10, R10", "@impl + element shift : @element");
 
+        asm.push("R10", "Save @element on stack");
         ast.getChild(2).accept(this);
-        asm.code("LDW R1, (SP)+", "Pop value from stack");
-
+        asm.pop("R1", "Pop right value of assignment into R1");
+        asm.pop("R10", "Pop @element into R10");
         asm.code("STW R1, (R10)", "Store value at @element");
 
         return CodeInfo.empty();

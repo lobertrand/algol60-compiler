@@ -1,6 +1,6 @@
 # Projet de compilation (2019-2020)
 
-**Niveau atteint sur le projet : 4** *(avec quelques fonctionnalités partiellement implémentées, précisées dans la partie "PCL2 (génération de code)".)*
+**Niveau atteint sur le projet : 4** *(avec quelques fonctionnalités partiellement implémentées, précisées dans la partie "**Étapes du projet > PCL2 (génération de code)**" de ce README).*
 
 Réalisation d'un compilateur pour le language Algol60.
 
@@ -17,43 +17,33 @@ Réalisation d'un compilateur pour le language Algol60.
 
 ## Commandes
 
-### Exécution rapide d'un programme Algol60
+### Exécuter avec Gradle
 
-Compiler et exécuter un programme Algol60 :
 <pre>
-# -r pour exécuter le programme automatiquement
+# Compiler et exécuter un programme (-r exécute le programme automatiquement)
 ./gradlew run --args="<i>prog.alg -r</i>"
-</pre>
 
-Afficher l'aide :
-<pre>
+# Afficher l'aide
 ./gradlew run --args="-h"
+
+# Exécution des tests unitaires
+./gradlew test
 </pre>
 
-### Exécution des tests unitaires
-
-<pre>./gradlew test</pre>
-Permet de compiler le projet et d'exécuter tous les tests unitaires
-
-### Création d'un jar exécutable du compilateur
-
-<pre>./gradlew jar</pre>
-Permet de créer un jar exécutable contenant tous les éléments nécessaires pour pouvoir être exécuté (ANTLR est inclu dedans). Ce fichier est généré à l'emplacement `build/libs/algol60_compiler.jar`
-
-**Exécution du jar :**
-
-Générer le code assembleur :
+### Créer un jar exécutable
 
 <pre>
-java -jar build/libs/algol60_compiler.jar <i>prog.alg</i>
-</pre> 
+# Créer un jar : build/libs/algol60_compiler.jar
+./gradlew jar
 
-Afficher l'aide :
-<pre>
+# Compiler et exécuter un programme (-r exécute le programme automatiquement)
+java -jar build/libs/algol60_compiler.jar <i>prog.alg</i> -r
+
+# Afficher l'aide
 java -jar build/libs/algol60_compiler.jar -h
 </pre>
 
-## Observations
+## Étapes du projet
 
 ### PCL1 (analyse syntaxique)
 
@@ -67,7 +57,7 @@ java -jar build/libs/algol60_compiler.jar -h
 
 - Les 3 types de boucle `for` on été implémentés
 - Le `switch` a été implémenté
-- Toutes les combinaisons de réels, entiers et puissances positifs ou négatifs ont été ajoutées (`-3.14`, `-3#-5`, `3.14#5`, `-3.14#-5`...)
+- Notation scientifique complétée (`-3.14`, `-3#-5`, `3.14#5`, `-3.14#-5`...)
 - Les if-expression ont été implémentées
 - Pas de mot clé `own`
 - Nous avons implémenté des contrôles sémantiques pour tous les éléments de notre grammaire
@@ -76,13 +66,36 @@ java -jar build/libs/algol60_compiler.jar -h
 
 Non (ou partiellement) implémentés :
 
-- Passage de tableaux en paramètre de fonction (notre stockage des tableaux en pile n'a pas une taille constante)
+- Passage de tableau de dimension autre que 1 en paramètre de procédure *(notre stockage des tableaux en pile a une taille variable selon leur dimension)*
 - `goto` sur un indice de `switch` correspondant à une étiquette non locale (pas de dépilement d'environnement dans ce cas précis). *(Les `goto` classiques sont quant à eux entièrement fonctionnels.)*
 - Passage de paramètres par nom et gestion des réels (bonus)
 - Gestion des entrées clavier (non demandé)
 - Mot clé `own`
 
-## Membres du groupe
+## Autres informations
+
+### Table des opérateurs de notre grammaire
+
+| Op.   | Description         | Op.  | Description        |
+|:-----:|---------------------|:----:|--------------------|
+| `+`   | Addition            | `-`  | Soustraction       |
+| `*`   | Multiplication      | `**` | Puissance          |
+| `/`   | Division            | `//` | Division entière   | 
+|       |                     |      |                    |
+| `<=>` | Équivalence         | `=>` | Implication        |
+| `\/`  | Ou logique          | `/\ `| Et logique         |
+| `~`   | Non logique         |      |                    |
+|       |                     |      |                    |
+| `<`   | Inférieur scrict    | `>`  | Supérieur strict   |
+| `<=`  | Inférieur ou égal   | `>=` | Supérieur ou égal  |
+| `=`   | Égalité             | `<>` | Non-égalité        |
+
+*Notes :*
+- La notation scientifique s'écrit `3#8` et ne supporte que des constantes entière et réelles.
+- Toute constante réelle est transformée en entier par un arrondi à l'entier le plus proche
+- La division réelle est implémentée comme une division entière
+
+### Membres du groupe
 
 - Loïc Bertrand *(Chef de projet)*
 - Timon Fugier

@@ -44,24 +44,24 @@ public class ArrayTest {
         Result result =
                 parse(
                         "begin "
-                                + "real array r[1:10, 1:10]; "
-                                + "integer i, j; "
-                                + "for i := 1 step 1 until 10 do "
-                                + "begin "
-                                + "for j := 0 step 1 until 10 do "
-                                + "begin "
-                                + "r[i,j] := i*j;"
-                                + "outreal(1, r[i,j]);"
-                                + "end; "
-                                + "end ;"
-                                + "end");
+                                + "  real array r[1:10, 1:10]; "
+                                + "  integer i, j; "
+                                + "  for i := 1 step 1 until 10 do "
+                                + "  begin "
+                                + "    for j := 1 step 1 until 10 do "
+                                + "    begin "
+                                + "      r[i,j] := i*j;"
+                                + "      outreal(1, r[i,j]);"
+                                + "    end "
+                                + "  end "
+                                + "end ");
         String s = "";
         for (int i = 1; i <= 10; i++) {
             for (int j = 1; j <= 10; j++) {
                 s = s + (i * j) + " ";
             }
         }
-        assertEquals(s, result.output.replaceAll("\n", " "));
+        assertEquals(s.trim(), result.output.replaceAll("\n", " "));
     }
 
     @Test

@@ -26,11 +26,11 @@ public class Assembly {
     }
 
     public void push(String srcReg) {
-        push("STW " + srcReg + ", -(SP)", "Push value of " + srcReg + " on stack");
+        push(srcReg, "Push value of " + srcReg + " on stack");
     }
 
     public void pop(String dstReg, String comment) {
-        this.code("LDW " + dstReg + ", (SP)+", "Pop stack value into " + dstReg);
+        this.code("LDW " + dstReg + ", (SP)+", comment);
     }
 
     public void pop(String dstReg) {
