@@ -867,11 +867,23 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         String name = ast.getText();
         Symbol symbol = currentSymbolTable.resolve(name);
         if (symbol.getType().isArrayType()) {
-            for (int i = 0; i < ast.getChildCount(); i++) {
-                ast.getChild(i).accept(this);
-                if (i == 0) {
-                    asm.push("R1", "Push address of '" + name + "' on stack");
-                }
+            Array array = currentSymbolTable.resolve(name, Array.class);
+            int shift = array.getShift();
+            if (currentSymbolTable.isDeclaredInScope(name)) {
+                asm.code("LDW R1, (BP)" + shift, "Load value of '" + name + "' into R1");
+                asm.push("R1", "Push value of '" + name + "' on stack");
+                asm.code("LDW R1, (BP)" + (shift - 2), "Load value of lower bound into R1");
+                asm.push("R1", "Push lower bound on stack");
+                asm.code("LDW R1, (BP)" + (shift - 4), "Load value of upper bound into R1");
+                asm.push("R1", "Push upper bound on stack");
+            } else {
+                putBasePointerOfNonLocalVariableIntoReg(name, "R2");
+                asm.code("LDW R1, (R2)" + shift, "Load value of '" + name + "' into R1");
+                asm.push("R1", "Push value of '" + name + "' on stack");
+                asm.code("LDW R1, (R2)" + (shift - 2), "Load value of lower bound into R1");
+                asm.push("R1", "Push lower bound on stack");
+                asm.code("LDW R1, (R2)" + (shift - 4), "Load value of upper bound into R1");
+                asm.push("R1", "Push upper bound on stack");
             }
         } else {
             loadValueOfVariableIntoReg(name, "R1");

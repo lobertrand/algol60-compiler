@@ -14,15 +14,19 @@ public class ArrayTest {
         Result result =
                 parse(
                         "begin "
-                                + "integer array a[1:3];"
-                                + "procedure test(v); integer array v;"
-                                + "begin "
-                                + "v[1]:=2;"
-                                + "outinteger(1, v[1]);"
-                                + "end;"
-                                + "test(a);"
+                                + "  integer array a[1:3];"
+                                + "  procedure test(v); integer array v;"
+                                + "  begin "
+                                + "    v[1]:=2;"
+                                + "    v[2]:=4;"
+                                + "    v[3]:=6;"
+                                + "    outinteger(1, v[1]);"
+                                + "    outinteger(1, v[2]);"
+                                + "    outinteger(1, v[3]);"
+                                + "  end;"
+                                + "  test(a);"
                                 + "end");
-        assertEquals("2", result.output);
+        assertEquals("2 4 6", result.output.replaceAll("\n", " "));
     }
 
     @Test
