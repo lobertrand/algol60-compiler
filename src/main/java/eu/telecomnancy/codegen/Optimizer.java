@@ -7,12 +7,12 @@ public class Optimizer {
     }
 
     private String suppressRedundantPushPop(String assemblyCode) {
-        String regex = " STW (R\\d+) , -\\(SP\\) \n LDW \\1 , \\(SP\\)\\+ ";
+        String regex = " STW (R\\d+) , -\\(SP\\).*\n LDW \\1 , \\(SP\\)\\+.*";
         regex = spacesAreAnyWhitespace(regex);
         return assemblyCode.replaceAll(regex, "");
     }
 
     private String spacesAreAnyWhitespace(String regex) {
-        return regex.replaceAll(" ", "[^\n]*");
+        return regex.replaceAll(" ", "\\\\s*");
     }
 }

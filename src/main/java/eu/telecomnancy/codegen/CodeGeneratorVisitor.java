@@ -401,7 +401,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(ArrayDecAST ast) {
         asm.comment("Array declaration " + getLineOfCode(ast));
-        DefaultAST type = ast.getChild(0);
         String ArrayName = ast.getChild(1).getText();
         Array array = currentSymbolTable.resolve(ArrayName, Array.class);
         String uniqueArrayName = array.getAsmLabel();
@@ -414,11 +413,13 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             DefaultAST first = newBound.getChild(0);
 
             DefaultAST last = newBound.getChild(1);
+            asm.push("R7", "Save R7 on stack");
             first.accept(this);
 
             asm.code("LDW R5, (SP)+", "Pop first bound value into R5");
             last.accept(this);
             asm.code("LDW R2, (SP)+", "Pop second bound value into R2");
+            asm.pop("R7", "Restore R7");
             asm.code("STW R5, -(SP)", "Store the first bound in the stack");
             asm.code("STW R2, -(SP)", "Store de the second bound in the stack");
 
@@ -434,9 +435,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         }
         asm.code("LDW R3,#0", "charge R3 avec la valeur par default");
         asm.label(uniqueArrayName, "create label " + uniqueArrayName);
-        asm.code(
-                "STW R3, (HP)+",
-                "Store default string value in the heap the increment heap pointer");
+        asm.code("STW R3, (HP)+", "Store default value in and heap the increment heap pointer");
         asm.code("ADQ -1,R7", "number of elements left to initialize");
         asm.code(
                 "JNE #" + uniqueArrayName + "-$-2 ",
@@ -478,12 +477,13 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
          */
         // TEST MULTI DIMENTIONNEL
         String inf1_end = uniqueReference.forLabel("inf1_end");
+        String sup1_end = uniqueReference.forLabel("sup1_end");
         String name = ast.getChild(0).getText();
         DefaultAST indices = ast.getChild(1);
         int dim = indices.getChildCount();
         Array array = currentSymbolTable.resolve(name, Array.class);
         DefaultAST index = indices.getChild(0); // Dimension 1
-        asm.comment("Array call " + getLineOfCode(ast));
+        asm.comment("Array assignment " + getLineOfCode(ast));
         index.accept(this); // Push index on stack using R1
         asm.pop("R1", "Pop index into R1");
         int shift = array.getShift();
@@ -498,13 +498,18 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("LDW R5, (R5)" + (shift - 4), "R5 <- Upper bound for the index");
         }
         asm.code("SUB R5,R1,R9", "just to check if the bound are correct");
-        asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+        asm.code(
+                "JGE #" + sup1_end + "-$-2",
+                "Jump to the end of this loop if the bounds are corrects ");
         asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+        asm.label(sup1_end, "End of check for upper bound of first index");
         asm.code("SUB R1,R4,R10", "R10 now contain Index(N)-Inf(N)");
         asm.code("JGE #" + inf1_end + "-$-2", "Skip error if the bounds are corrects");
         asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
         asm.label(inf1_end, "End of check for lower bound of first index");
         for (int i = 1; i < dim; i++) {
+            String infi_end = uniqueReference.forLabel("inf" + (i + 1) + "_end");
+            String supi_end = uniqueReference.forLabel("sup" + (i + 1) + "_end");
             index = indices.getChild(i);
             asm.push("R3", "Save @impl on stack");
             index.accept(this); // Push index on stack using R1
@@ -524,11 +529,17 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("ADQ 1,R9", "add 1 to it ");
             asm.code("MUL R10,R9,R10", "R10 now contain R10* (upper-lower)");
             asm.code("SUB R5,R1,R9", "just to check if the bound are correct");
-            asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+            asm.code(
+                    "JGE #" + supi_end + "-$-2",
+                    "Jump to the end of this loop if the bounds are corrects ");
             asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+            asm.label(supi_end, "End of check for upper bound of index " + (i + 1));
             asm.code("SUB R1,R4,R9", "R9 now contain index-lower");
-            asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+            asm.code(
+                    "JGE #" + infi_end + "-$-2",
+                    "Jump to the end of this loop if the bounds are corrects ");
             asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+            asm.label(infi_end, "End of check for lower bound of index " + (i + 1));
             asm.code("ADD R10,R9,R10", "R10 now contain R10 + index - lower");
         }
         asm.code("ADD R10,R10,R10", "R10 *2 because 1 elt size is 2");
@@ -645,6 +656,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         // TEST MULTI DIMENTIONNEL
         String inf1_end = uniqueReference.forLabel("inf1_end");
+        String sup1_end = uniqueReference.forLabel("sup1_end");
         String name = ast.getChild(0).getText();
         DefaultAST indices = ast.getChild(1);
         int dim = indices.getChildCount();
@@ -665,13 +677,18 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("LDW R5, (R5)" + (shift - 4), "R5 <- Upper bound for the index");
         }
         asm.code("SUB R5,R1,R9", "just to check if the bound are correct");
-        asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+        asm.code(
+                "JGE #" + sup1_end + "-$-2",
+                "Jump to the end of this loop if the bounds are corrects ");
         asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+        asm.label(sup1_end, "End of check for upper bound of first index");
         asm.code("SUB R1,R4,R10", "R10 now contain Index(N)-Inf(N)");
         asm.code("JGE #" + inf1_end + "-$-2", "Skip error if the bounds are corrects");
         asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
         asm.label(inf1_end, "End of check for lower bound of first index");
         for (int i = 1; i < dim; i++) {
+            String infi_end = uniqueReference.forLabel("inf" + (i + 1) + "_end");
+            String supi_end = uniqueReference.forLabel("sup" + (i + 1) + "_end");
             index = indices.getChild(i);
             asm.push("R3", "Save @impl on stack");
             index.accept(this); // Push index on stack
@@ -691,11 +708,17 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             asm.code("ADQ 1,R9", "add 1 to it ");
             asm.code("MUL R10,R9,R10", "R10 now contain R10* (upper-lower)");
             asm.code("SUB R5,R1,R9", "just to check if the bound are correct");
-            asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+            asm.code(
+                    "JGE #" + supi_end + "-$-2",
+                    "Jump to the end of this loop if the bounds are corrects ");
             asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+            asm.label(supi_end, "End of check for upper bound of index " + (i + 1));
             asm.code("SUB R1,R4,R9", "R9 now contain index-lower");
-            asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+            asm.code(
+                    "JGE #" + infi_end + "-$-2",
+                    "Jump to the end of this loop if the bounds are corrects ");
             asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+            asm.label(infi_end, "End of check for lower bound of index " + (i + 1));
             asm.code("ADD R10,R9,R10", "R10 now contain R10 + index - lower");
         }
         asm.code("ADD R10,R10,R10", "R10 *2 because 1 elt size is 2");

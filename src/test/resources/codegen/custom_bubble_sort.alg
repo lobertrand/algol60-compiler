@@ -24,29 +24,45 @@ begin
 
   N := 10; comment Length of vector;
   begin
-  	real array a[1:N];
-  	integer i, j;
 
-    outstring(1, "Pseudo-random numbers:"); line();
-    for i := 1 step 1 until N do
+    procedure fillVector(v, length);
+    value v, length; real array v; integer length;
     begin
-      a[i] := random();
-      outreal(1, a[i])
+      for i := 1 step 1 until length do
+        v[i] := random();
     end;
 
-    comment Do the Bubble Sort;
-    for i := 1 step 1 until N-1 do
-      for j := 1 step 1 until N-i do
-        if a[j] > a[j+1] then
-        begin
-          real temp;
-          temp := a[j];
-          a[j] := a[j+1];
-          a[j+1] := temp
-        end;
+    procedure printVector(v, length);
+    value v, length; real array v; integer length;
+    begin
+      for i := 1 step 1 until length do
+        outreal(1, v[i]);
+    end;
+
+    procedure bubbleSort(v, length);
+    value v, length; real array v; integer length;
+    begin
+      integer i, j;
+      for i := 1 step 1 until N-1 do
+        for j := 1 step 1 until N-i do
+          if v[j] > v[j+1] then
+          begin
+            real temp;
+            temp := v[j];
+            v[j] := v[j+1];
+            v[j+1] := temp
+          end;
+    end;
+
+    real array a[1:N];
+
+    fillVector(a, N);
+    outstring(1, "Pseudo-random numbers:"); line();
+    printVector(a, N);
+    
+    bubbleSort(a, N);
 
     outstring(1, "After bubble sort:"); line();
-    for i := 1 step 1 until N do
-      outreal(1, a[i])
+    printVector(a, N);
   end
 end
