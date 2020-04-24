@@ -19,7 +19,8 @@ public class ArrayTest {
                                 + "begin "
                                 + "v[1]:=2;"
                                 + "outinteger(1, v[1]);"
-                                + "end "
+                                + "end;"
+                                + "test(a);"
                                 + "end");
         assertEquals("2", result.output);
     }
