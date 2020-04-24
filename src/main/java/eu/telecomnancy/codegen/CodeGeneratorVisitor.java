@@ -181,7 +181,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         // Pop parameters
         int nbParams = parameters.getChildCount();
-        int paramSize = nbParams * 2;
+        int paramSize = procedure.sizeOfParameters();
         if (nbParams != 0) {
             asm.code("LDW WR, #" + paramSize, "WR = size of '" + name + "' parameters");
             asm.code("ADD WR, SP, SP", "Pop parameters");
@@ -267,10 +267,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ForClauseAST ast) {
-        asm.comment("ForClause");
-        String startfor0 = uniqueReference.forLabel("startfor0");
-        String startfor1 = uniqueReference.forLabel("startfor1");
-        String endfor1 = uniqueReference.forLabel("endfor1");
+        asm.comment("ForClause " + getLineOfCode(ast));
+        String startfor = uniqueReference.forLabel("startfor");
+        String endfor = uniqueReference.forLabel("endfor");
         DefaultAST whileClause = ast.findFirst(Algol60Parser.WHILE);
         DefaultAST action = ast.findFirst(Algol60Parser.DO).getChild(0);
         DefaultAST init = ast.findFirst(Algol60Parser.INIT);
@@ -283,11 +282,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         int nbChildren = init.getChildCount();
         if (nbChildren > 2) {
             asm.comment("iteration " + 1 + " of enum");
-            DefaultAST leftPart = init.getChild(0);
-            leftPart.accept(this);
-            init.getChild(1).accept(this);
-            asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-            storeValueOfRegIntoVariableUsingTempReg("R1", identifier, "R2");
+            init.accept(this);
             asm.code("LDW R12, #0", "Preparation for looping");
             String do_smth = uniqueReference.forLabel("action");
             String start_enum = uniqueReference.forLabel("enum_loop");
@@ -312,38 +307,38 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         if (whileClause != null) {
             whileClause.accept(this);
             asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-            asm.code("JLE #" + endfor1 + "-$-2", "Loops out when last result equals 0");
-            asm.code("JNE #" + startfor1 + "-$-2", "Loops back when last result equals 1");
+            asm.code("JLE #" + endfor + "-$-2", "Loops out when last result equals 0");
+            asm.code("JNE #" + startfor + "-$-2", "Loops back when last result equals 1");
 
-            asm.label(startfor1, "Start of loop");
+            asm.label(startfor, "Start of loop");
             action.accept(this);
             whileClause.accept(this);
             asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-            asm.code("JNE #" + startfor1 + "-$-2", "Loops back when last result equals 1");
+            asm.code("JNE #" + startfor + "-$-2", "Loops back when last result equals 1");
 
-            asm.label(endfor1, "End of loop");
+            asm.label(endfor, "End of loop");
             asm.newline();
         }
 
         if (step != null) {
-            step.getChild(0).accept(this);
+            step.getChild(0).accept(this); // push 'step' value
         }
 
         if (until != null) {
-            until.getChild(0).accept(this);
-            asm.label(startfor0, "Start of loop");
-            action.accept(this);
+            until.getChild(0).accept(this); // push 'until' value
+            asm.label(startfor, "Start of loop " + getLineOfCode(ast));
+            action.accept(this); // include 'do' code
             // chargement des valeurs de boucle
-            asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-            asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
+            asm.pop("R1", "Pop 'until' value into R1");
+            asm.pop("R2", "Pop 'step' value into R2");
             loadValueOfVariableIntoReg(identifier, "R3");
             // calcul des valeurs de boucles
-            asm.code("ADD R2, R3, R3", "Add R2 and R3 in R3");
+            asm.code("ADD R2, R3, R3", "Increment '" + identifier + "' by 'step' value");
             storeValueOfRegIntoVariableUsingTempReg("R3", identifier, "R4");
-            asm.code("STW R2, -(SP)", "Push R2 value on the stack");
-            asm.code("STW R1, -(SP)", "Push R1 value on the stack");
-            asm.code("SUB R1, R3, R1", "Subtract R1 by R3 in R1");
-            asm.code("JGE #" + startfor0 + "-$-2", "Loops back when results is not equal to 0");
+            asm.push("R2", "Save 'step' value on stack");
+            asm.push("R1", "Save 'until' value on stack");
+            asm.code("CMP R1, R3", "Compare R1-R3 to 0");
+            asm.code("JGE #" + startfor + "-$-2", "Loops back when results is not equal to 0");
             asm.newline();
         }
         return CodeInfo.empty();
@@ -353,21 +348,10 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(InitAST ast) {
         DefaultAST leftPart = ast.getChild(0);
         String identifier = leftPart.getText();
-        Variable variable = currentSymbolTable.resolve(identifier, Variable.class);
-        int shift = variable.getShift();
         DefaultAST rightPart = ast.getChild(1);
-        asm.comment("Init" + getLineOfCode(ast));
         rightPart.accept(this); // Puts the value on the stack
-
-        if (currentSymbolTable.isDeclaredInScope(identifier)) {
-            asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-            asm.code("STW R1, (BP)" + shift, "Store value into '" + identifier + "'");
-        } else {
-            asm.code("LDW R2, (SP)+", "Pop value off the stack into R2");
-            putBasePointerOfNonLocalVariableIntoReg(identifier, "R1");
-            asm.code("STW R2, (R1)" + shift, "Store value into '" + identifier + "'");
-        }
-
+        asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
+        storeValueOfRegIntoVariableUsingTempReg("R1", identifier, "R2");
         return CodeInfo.empty();
     }
 
@@ -386,7 +370,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     private void storeValueOfRegIntoVariableUsingTempReg(String reg, String idf, String tmpReg) {
         if (reg.equals(tmpReg))
             throw new IllegalArgumentException("reg and tmpReg must be two different registers!");
-        Variable variable = currentSymbolTable.resolve(idf, Variable.class);
+        Symbol variable = currentSymbolTable.resolve(idf);
         int shift = variable.getShift();
         if (currentSymbolTable.isDeclaredInScope(idf)) {
             asm.code(format("STW %s, (BP)%d", reg, shift), "Store value into '" + idf + "'");

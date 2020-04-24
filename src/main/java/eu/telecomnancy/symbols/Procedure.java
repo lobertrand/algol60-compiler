@@ -16,8 +16,8 @@ public class Procedure extends Symbol {
         this.parameterTypes = parameterTypes;
     }
 
-    public int nbParameters() {
-        return parameterTypes.size();
+    public int sizeOfParameters() {
+        return parameterTypes.stream().mapToInt(Type::getSize).sum();
     }
 
     public boolean returnsAValue() {

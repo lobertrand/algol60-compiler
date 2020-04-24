@@ -526,6 +526,10 @@ public class SemanticAnalysisVisitor implements ASTVisitor<Type> {
         DefaultAST rightPart = ast.getChild(1);
         Type rightType = rightPart.accept(this);
 
+        if (leftType.isArrayType()) {
+            throw new TypeMismatchException("Cannot assign an array into another", ast);
+        }
+
         if (Types.cannotAssign(leftType, rightType)) {
             throw new TypeMismatchException(
                     String.format(
