@@ -8,6 +8,22 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 public class ArrayTest {
+
+    @Test
+    public void testArrayProcCall() throws Exception {
+        Result result =
+                parse(
+                        "begin "
+                                + "integer array a[1:3];"
+                                + "procedure test(v); integer array v;"
+                                + "begin "
+                                + "v[1]:=2;"
+                                + "outinteger(1, v[1]);"
+                                + "end "
+                                + "end");
+        assertEquals("2", result.output);
+    }
+
     @Test
     public void testArrayDeclaration() throws Exception {
         Result result =
