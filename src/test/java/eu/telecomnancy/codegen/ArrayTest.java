@@ -64,13 +64,13 @@ public class ArrayTest {
                                 + "  real array r[1:10, 1:10]; "
                                 + "  integer i, j; "
                                 + "  for i := 1 step 1 until 10 do "
-                                + "  begin "
+                                // + "  begin "
                                 + "    for j := 1 step 1 until 10 do "
                                 + "    begin "
                                 + "      r[i,j] := i*j;"
                                 + "      outreal(1, r[i,j]);"
                                 + "    end "
-                                + "  end "
+                                // + "  end "
                                 + "end ");
         String s = "";
         for (int i = 1; i <= 10; i++) {

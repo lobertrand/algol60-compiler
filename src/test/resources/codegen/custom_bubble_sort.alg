@@ -36,7 +36,7 @@ begin
 
     comment Do the Bubble Sort;
     for i := 1 step 1 until N-1 do
-      for j := 1 step 1 until N-i-1 do
+      for j := 1 step 1 until N-i do
         if a[j] > a[j+1] then
         begin
           real temp;

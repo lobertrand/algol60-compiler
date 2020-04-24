@@ -268,9 +268,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(ForClauseAST ast) {
         asm.comment("ForClause");
-        String startfor0 = uniqueReference.forLabel("startfor0");
-        String startfor1 = uniqueReference.forLabel("startfor1");
-        String endfor1 = uniqueReference.forLabel("endfor1");
+        String startfor = uniqueReference.forLabel("startfor");
+        String endfor = uniqueReference.forLabel("endfor");
         DefaultAST whileClause = ast.findFirst(Algol60Parser.WHILE);
         DefaultAST action = ast.findFirst(Algol60Parser.DO).getChild(0);
         DefaultAST init = ast.findFirst(Algol60Parser.INIT);
@@ -312,16 +311,16 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         if (whileClause != null) {
             whileClause.accept(this);
             asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-            asm.code("JLE #" + endfor1 + "-$-2", "Loops out when last result equals 0");
-            asm.code("JNE #" + startfor1 + "-$-2", "Loops back when last result equals 1");
+            asm.code("JLE #" + endfor + "-$-2", "Loops out when last result equals 0");
+            asm.code("JNE #" + startfor + "-$-2", "Loops back when last result equals 1");
 
-            asm.label(startfor1, "Start of loop");
+            asm.label(startfor, "Start of loop");
             action.accept(this);
             whileClause.accept(this);
             asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
-            asm.code("JNE #" + startfor1 + "-$-2", "Loops back when last result equals 1");
+            asm.code("JNE #" + startfor + "-$-2", "Loops back when last result equals 1");
 
-            asm.label(endfor1, "End of loop");
+            asm.label(endfor, "End of loop");
             asm.newline();
         }
 
@@ -331,7 +330,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         if (until != null) {
             until.getChild(0).accept(this);
-            asm.label(startfor0, "Start of loop");
+            asm.label(startfor, "Start of loop");
             action.accept(this);
             // chargement des valeurs de boucle
             asm.code("LDW R1, (SP)+", "Pop value off the stack into R1");
@@ -340,10 +339,12 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             // calcul des valeurs de boucles
             asm.code("ADD R2, R3, R3", "Add R2 and R3 in R3");
             storeValueOfRegIntoVariableUsingTempReg("R3", identifier, "R4");
-            asm.code("STW R2, -(SP)", "Push R2 value on the stack");
-            asm.code("STW R1, -(SP)", "Push R1 value on the stack");
-            asm.code("SUB R1, R3, R1", "Subtract R1 by R3 in R1");
-            asm.code("JGE #" + startfor0 + "-$-2", "Loops back when results is not equal to 0");
+            asm.push("R2", "Save 'step' value on stack");
+            asm.push("R1", "Save 'until' value on stack");
+            asm.code("CMP R1, R3", "Compare R1-R3 to 0");
+            asm.code("JGE #" + startfor + "-$-2", "Loops back when results is not equal to 0");
+            asm.pop("R1", "Pop 'until' value into R1");
+            asm.pop("R2", "Pop 'step' value into R2");
             asm.newline();
         }
         return CodeInfo.empty();
@@ -476,6 +477,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
          */
         // TEST MULTI DIMENTIONNEL
+        String inf1_end = uniqueReference.forLabel("inf1_end");
         String name = ast.getChild(0).getText();
         DefaultAST indices = ast.getChild(1);
         int dim = indices.getChildCount();
@@ -499,8 +501,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
         asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
         asm.code("SUB R1,R4,R10", "R10 now contain Index(N)-Inf(N)");
-        asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+        asm.code("JGE #" + inf1_end + "-$-2", "Skip error if the bounds are corrects");
         asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+        asm.label(inf1_end, "End of check for lower bound of first index");
         for (int i = 1; i < dim; i++) {
             index = indices.getChild(i);
             asm.push("R3", "Save @impl on stack");
@@ -641,6 +644,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
          */
 
         // TEST MULTI DIMENTIONNEL
+        String inf1_end = uniqueReference.forLabel("inf1_end");
         String name = ast.getChild(0).getText();
         DefaultAST indices = ast.getChild(1);
         int dim = indices.getChildCount();
@@ -664,8 +668,9 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
         asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
         asm.code("SUB R1,R4,R10", "R10 now contain Index(N)-Inf(N)");
-        asm.code("JGE #4 ", "Jump to the end of this loop if the bounds are corrects ");
+        asm.code("JGE #" + inf1_end + "-$-2", "Skip error if the bounds are corrects");
         asm.code("JMP #index_oob-$-2", "Print error out of bound message and exit");
+        asm.label(inf1_end, "End of check for lower bound of first index");
         for (int i = 1; i < dim; i++) {
             index = indices.getChild(i);
             asm.push("R3", "Save @impl on stack");

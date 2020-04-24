@@ -69,7 +69,9 @@ public class Helper {
         codeGenerator.setInput(String.valueOf(input));
         ast.accept(codeGenerator);
 
-        IOUtils.writeStringToFile(asm.toString(), TEMP_PROGRAM_NAME + ".asm");
+        String asmCode = asm.toString();
+        asmCode = new Optimizer().optimize(asmCode);
+        IOUtils.writeStringToFile(asmCode, TEMP_PROGRAM_NAME + ".asm");
         String[] compileCmd = {
             "java", "-jar", "lib/microPIUPK.jar", "-ass", TEMP_PROGRAM_NAME + ".asm"
         };
