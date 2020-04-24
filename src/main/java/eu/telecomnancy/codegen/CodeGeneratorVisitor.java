@@ -512,7 +512,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
                 asm.code("LDW R5, (BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
             } else {
                 putBasePointerOfNonLocalVariableIntoReg(name, "R5");
-                asm.code("LDW R4, (R5)" + (shift - 2), "R4 <- lower bound");
+                asm.code("LDW R4, (R5)" + (shift - 4 * i - 2), "R4 <- lower bound");
                 asm.code("LDW R5, (R5)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
             }
             asm.code(
@@ -677,7 +677,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
                 asm.code("LDW R5, (BP)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
             } else {
                 putBasePointerOfNonLocalVariableIntoReg(name, "R5");
-                asm.code("LDW R4, (R5)" + (shift - 2), "R4 <- lower bound");
+                asm.code("LDW R4, (R5)" + (shift - 4 * i - 2), "R4 <- lower bound");
                 asm.code("LDW R5, (R5)" + (shift - 4 * (i + 1)), "R5 <- Upper bound for the index");
             }
             asm.code(
