@@ -16,7 +16,10 @@ import picocli.CommandLine.*;
         optionListHeading = "%nOptions:%n")
 public class ArgsParser implements Callable<ArgsParser.Options> {
 
-    @Parameters(index = "0", description = "name or path of the algol60 file to compile")
+    @Parameters(
+            index = "0",
+            paramLabel = "algol60_file",
+            description = "name or path of the algol60 file to compile")
     private String fileName;
 
     @Option(

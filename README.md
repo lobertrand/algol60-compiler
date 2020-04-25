@@ -66,7 +66,7 @@ java -jar build/libs/algol60_compiler.jar -h
 
 - L'ordre opératoire a été revu, il est maintenant opérationnel.
 - Seuls les tableaux de **dimension** 1 peuvent être passés en paramètre d'une procédure *(nos tableaux occupent une taille variable en pile selon leur **dimension**)*
-- Les `goto` sur un indice de `switch` correspondant à une étiquette non locale ne sont pas gérés (pas de dépilement d'environnement dans ce cas précis). *(Les `goto` classiques sont quant à eux entièrement fonctionnels, étiquettes locales et non locales.)*
+- Les `goto` sur un indice de `switch` correspondant à une étiquette non locale ne sont pas gérés (pas de dépilement d'environnement dans ce cas précis). *(Les `goto` classiques quant à eux, peuvent sauter sur n'importe qui niveau d'imbrication.)*
 - Toujours pas de mot clé `own`
 - Pas de passage de paramètres par nom et gestion des réels *(bonus)*
 - Pas de gestion des entrées clavier *(non demandé)*

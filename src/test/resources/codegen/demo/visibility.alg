@@ -62,8 +62,7 @@ begin
     comment TEST des Goto imbriqués;
     goto startBlock;
     hello:;
-    outstring(1,"YOU JUMPED TO THE WRONG HELLO ");
-    outstring(1,"\n");
+    outstring(1,"YOU JUMPED TO THE WRONG HELLO "); line();
     startBlock:;
     begin
         outstring(1,"WELCOME TO THE NEW BLOCK ");

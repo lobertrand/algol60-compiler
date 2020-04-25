@@ -181,7 +181,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         // Pop parameters
         int nbParams = parameters.getChildCount();
-        int paramSize = nbParams * 2;
+        int paramSize = procedure.sizeOfParameters();
         if (nbParams != 0) {
             asm.code("LDW WR, #" + paramSize, "WR = size of '" + name + "' parameters");
             asm.code("ADD WR, SP, SP", "Pop parameters");

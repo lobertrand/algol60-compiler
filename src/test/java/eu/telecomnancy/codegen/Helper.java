@@ -24,6 +24,10 @@ public class Helper {
 
     public static class Result {
         public String output;
+
+        public String withLinesAsSpaces() {
+            return output.replaceAll("\n", " ");
+        }
     }
 
     public static Result parse(Object source) throws Exception {
