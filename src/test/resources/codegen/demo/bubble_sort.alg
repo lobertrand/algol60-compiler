@@ -1,4 +1,9 @@
 begin
+  comment Bubble sort algorithm on a vector :
+          - 1D array passed as procedure parameter
+          - for .. step .. until loops
+          - non local variable N used as size of dynamic array 'a' ;
+
   integer N;
   N := 6; comment Length of vector a;
   begin

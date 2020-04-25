@@ -14,4 +14,11 @@ public class DemoTest {
         String expected = "Original vector: 3 8 2 7 1 4 Bubble-sorted: 1 2 3 4 7 8";
         assertEquals(expected, result.withLinesAsSpaces());
     }
+
+    @Test
+    public void testFactorial() throws Exception {
+        Helper.Result result = parse(loadString("/codegen/demo/factorial.alg"));
+        String expected = "6 720  4 24  7 5040  3 6";
+        assertEquals(expected, result.withLinesAsSpaces());
+    }
 }
