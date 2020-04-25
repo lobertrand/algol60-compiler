@@ -21,6 +21,17 @@ public class ForTest {
     }
 
     @Test
+    public void testForUntilReverse() throws Exception {
+        Result result = parse("begin integer i; for i:= 20 step -1 until 1 do outinteger(1,i) end");
+        String s = "";
+        for (int i = 20; i > 1; i--) {
+            s = s + i + "\n";
+        }
+        s = s + "1";
+        assertEquals(s, result.output);
+    }
+
+    @Test
     public void testForUntilNested() throws Exception {
         Result result = parse(loadString("/codegen/unit_tests/for_until_nested.alg"));
         assertEquals("3 5 7 9", result.output.replaceAll("\n", " "));

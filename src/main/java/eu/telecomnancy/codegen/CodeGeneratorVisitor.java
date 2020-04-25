@@ -341,8 +341,12 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
             storeValueOfRegIntoVariableUsingTempReg("R3", identifier, "R4");
             asm.push("R2", "Save 'step' value on stack");
             asm.push("R1", "Save 'until' value on stack");
-            asm.code("CMP R1, R3", "Compare R1-R3 to 0");
-            asm.code("JGE #" + startfor + "-$-2", "Loops back when results is not equal to 0");
+            asm.code("CMP R1, R3", "R1-R3 compared to 0");
+            if (Integer.parseInt(step.getChild(0).getText()) > 0) {
+                asm.code("JGE #" + startfor + "-$-2", "Loops back when results is not equal to 0");
+            } else {
+                asm.code("JLE #" + startfor + "-$-2", "Loops back when results is not equal to 0");
+            }
             asm.pop("R1", "Pop 'until' value into R1");
             asm.pop("R2", "Pop 'step' value into R2");
             asm.newline();
