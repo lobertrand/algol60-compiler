@@ -15,8 +15,7 @@ begin
   integer i;
   for i := 6, 4, 7, 3 do
   begin
-    outinteger(1, i);
-    outinteger(1, factorial(i));
-    line();
+    outinteger(1, i); outstring(1, "! = ");
+    outinteger(1, factorial(i)); line();
   end
 end

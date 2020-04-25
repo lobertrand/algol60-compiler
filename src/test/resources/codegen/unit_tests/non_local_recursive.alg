@@ -10,7 +10,7 @@ begin
     else
       begin
         rec := rec(a * n);
-        outinteger(1, rec);
+        outinteger(1, rec); space();
       end
   end;
 

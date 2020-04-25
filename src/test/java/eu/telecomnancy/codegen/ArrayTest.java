@@ -26,7 +26,7 @@ public class ArrayTest {
                                 + "  end;"
                                 + "  test(a);"
                                 + "end");
-        assertEquals("2 4 6", result.output.replaceAll("\n", " "));
+        assertEquals("246", result.output);
     }
 
     @Test
@@ -40,8 +40,8 @@ public class ArrayTest {
                                 + "outinteger(1, nArr[5]); "
                                 + "outinteger(1, nArr[3]) "
                                 + "end");
-        String s = "5 0";
-        assertEquals(s, result.output.replaceAll("\n", " "));
+        String s = "50";
+        assertEquals(s, result.output);
     }
 
     @Test
@@ -53,7 +53,8 @@ public class ArrayTest {
                                 + "integer i; "
                                 + "for i := 1 step 1 until 10 do "
                                 + "begin nArr[i] := i*i; "
-                                + "outinteger (1, nArr[i]) "
+                                + "outinteger (1, nArr[i]); "
+                                + "space () "
                                 + "end ; "
                                 + "end");
         String s = "1 4 9 16 25 36 49 64 81 100";
@@ -73,6 +74,7 @@ public class ArrayTest {
                                 + "    begin "
                                 + "      r[i,j] := i*j;"
                                 + "      outreal(1, r[i,j]);"
+                                + "      space();"
                                 + "    end "
                                 + "  end "
                                 + "end ");
@@ -97,6 +99,7 @@ public class ArrayTest {
                                 + "    begin "
                                 + "      r[i,j] := i*j;"
                                 + "      outreal(1, r[i,j]);"
+                                + "      space();"
                                 + "    end "
                                 + "end ");
         String s = "";

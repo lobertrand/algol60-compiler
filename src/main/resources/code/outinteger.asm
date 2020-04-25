@@ -49,3 +49,4 @@
     // fermeture du bloc englobant de main
     LDW SP, BP          // abandonne variables locales de main
     LDW BP, (SP)+       // dépile ancien BP dans BP
+    RTS

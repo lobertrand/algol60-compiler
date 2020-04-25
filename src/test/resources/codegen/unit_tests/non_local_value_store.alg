@@ -6,7 +6,7 @@ begin
     b := 8;
     a := b + 3;
     begin
-      outinteger(1, a);
+      outinteger(1, a); space();
       a := a * 2;
     end
   end;

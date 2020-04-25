@@ -7,6 +7,7 @@ begin
       for i := 3 step 2 until 9 do
       begin
         outinteger(1, i);
+        space();
       end
     end
   end

@@ -26,10 +26,11 @@ public class BasicTest {
         Content c = new Content();
         c.line("begin");
         c.line("  outinteger(1, 42);");
+        c.line("  space();");
         c.line("  outinteger(1, 13)");
         c.line("end");
         Result result = parse(c);
 
-        assertEquals("42\n13", result.output);
+        assertEquals("42 13", result.output);
     }
 }

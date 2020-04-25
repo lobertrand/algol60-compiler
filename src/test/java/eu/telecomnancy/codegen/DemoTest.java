@@ -11,14 +11,14 @@ public class DemoTest {
     @Test
     public void testBubbleSort() throws Exception {
         Helper.Result result = parse(loadString("/codegen/demo/bubble_sort.alg"));
-        String expected = "Original vector: 3 8 2 7 1 4 Bubble-sorted: 1 2 3 4 7 8";
-        assertEquals(expected, result.withLinesAsSpaces());
+        String expected = "Original vector:\n3 8 2 7 1 4 \nBubble-sorted:\n1 2 3 4 7 8";
+        assertEquals(expected, result.output);
     }
 
     @Test
     public void testFactorial() throws Exception {
         Helper.Result result = parse(loadString("/codegen/demo/factorial.alg"));
-        String expected = "6 720  4 24  7 5040  3 6";
+        String expected = "6! = 720 4! = 24 7! = 5040 3! = 6";
         assertEquals(expected, result.withLinesAsSpaces());
     }
 }

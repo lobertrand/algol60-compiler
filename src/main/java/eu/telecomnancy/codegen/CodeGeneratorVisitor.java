@@ -16,11 +16,12 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     public CodeGeneratorVisitor(
             SymbolTable symbolTable, Assembly asm, UniqueReference uniqueReference) {
+        PredefinedCode.appendItoaCode(asm);
         PredefinedCode.appendAliases(asm);
         PredefinedCode.appendOutstringCode(asm);
-        PredefinedCode.appendItoaCode(asm);
         PredefinedCode.appendOutintegerOrRealCode(asm);
         PredefinedCode.appendLineCode(asm);
+        PredefinedCode.appendSpaceCode(asm);
         PredefinedCode.appendDiv0Code(asm);
         PredefinedCode.appendIndexOutOfBoundsCode(asm);
         PredefinedCode.appendOutbooleanCode(asm);
@@ -35,7 +36,6 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         asm.comment("Définitions de constantes");
         asm.putStringDefinitionsHere();
-        asm.code("LDW HP, @0xA000", "initializing heap pointer");
 
         this.currentSymbolTable = symbolTable;
         this.currentTableNumber = 0;
@@ -76,6 +76,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     public CodeInfo visit(RootAST ast) {
         // Beginning of the program
         asm.label("main", "Entry point");
+        asm.code("LDW HP, @0xA000", "initializing heap pointer");
 
         // Main block instructions
         ast.getChild(0).accept(this);
@@ -183,8 +184,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         int nbParams = parameters.getChildCount();
         int paramSize = procedure.sizeOfParameters();
         if (nbParams != 0) {
-            asm.code("LDW WR, #" + paramSize, "WR = size of '" + name + "' parameters");
-            asm.code("ADD WR, SP, SP", "Pop parameters");
+            asm.code("ADQ " + paramSize + ", SP", "Pop parameters");
         }
 
         // Push result is there is one and that it is used

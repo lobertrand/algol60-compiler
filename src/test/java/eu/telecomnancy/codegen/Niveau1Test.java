@@ -12,6 +12,6 @@ public class Niveau1Test {
     @Test
     public void testNiveau1() throws Exception {
         Result result = parse(IOUtils.loadString("/codegen/unit_tests/niveau1.alg"));
-        assertEquals("0\n1\n2\n3\n4\n5", result.output);
+        assertEquals("012345", result.output);
     }
 }

@@ -4,7 +4,7 @@ begin
   b := 3;
   outinteger(1, a); comment 2;
   outinteger(1, b); comment 3;
-  outstring(1, "#"); line();
+  outstring(1, " # ");
   begin
     integer c, d;
     c := 4;
@@ -13,7 +13,7 @@ begin
     outinteger(1, b); comment 3;
     outinteger(1, c); comment 4;
     outinteger(1, d); comment 6;
-    outstring(1, "#"); line();
+    outstring(1, " # ");
     begin
       integer e, f;
       e := 5;

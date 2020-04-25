@@ -12,7 +12,10 @@ begin
     begin
       integer i;
       for i := 1 step 1 until length do
-        outreal(1, v[i]);
+      begin
+        outreal(1, v[i]); space();
+      end;
+      line();
     end;
 
     procedure swap(v, a, b);

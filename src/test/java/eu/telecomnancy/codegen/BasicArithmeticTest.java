@@ -12,12 +12,12 @@ public class BasicArithmeticTest {
     public void testBasicCalculus() throws Exception {
         Result result =
                 parse(
-                        "begin integer a, b; a:=1; b:=2; outinteger(1, a+b);"
-                                + "outinteger(1, a-b);"
-                                + "outinteger(1, a*b);"
-                                + "outinteger(1, a//b);"
+                        "begin integer a, b; a:=1; b:=2; outinteger(1, a+b); space();"
+                                + "outinteger(1, a-b); space();"
+                                + "outinteger(1, a*b); space();"
+                                + "outinteger(1, a//b); space();"
                                 + "outinteger(1, (b*b*b*b*b+a*(b*b+a)+b-a)//b) end");
-        String s = "3\n-1\n2\n0\n19";
+        String s = "3 -1 2 0 19";
         assertEquals(s, result.output);
     }
 

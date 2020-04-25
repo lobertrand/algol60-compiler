@@ -75,9 +75,9 @@ public class Helper {
 
         String asmCode = asm.toString();
         asmCode = new Optimizer().optimize(asmCode);
-        IOUtils.writeStringToFile(asmCode, TEMP_PROGRAM_NAME + ".asm");
+        IOUtils.writeStringToFile(asmCode, TEMP_PROGRAM_NAME + ".src");
         String[] compileCmd = {
-            "java", "-jar", "lib/microPIUPK.jar", "-ass", TEMP_PROGRAM_NAME + ".asm"
+            "java", "-jar", "lib/microPIUPK.jar", "-ass", TEMP_PROGRAM_NAME + ".src"
         };
         CommandResult compileRes = exec(compileCmd);
         if (compileRes.hadError) {
@@ -110,9 +110,9 @@ public class Helper {
         try {
             ProcessBuilder pb = new ProcessBuilder(cmd);
             final Process p = pb.start();
-            p.waitFor();
             res.output = inputStreamToString(p.getInputStream());
             res.error = inputStreamToString(p.getErrorStream());
+            p.waitFor();
             res.hadError = p.exitValue() != 0;
         } catch (Exception e) {
             e.printStackTrace();

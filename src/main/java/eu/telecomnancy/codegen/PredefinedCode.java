@@ -38,6 +38,7 @@ public class PredefinedCode {
         asm.string("OUTBOUND", "Error: Index out of bounds");
         asm.string("TRUE", "true");
         asm.string("FALSE", "false");
+        asm.string("SPACE", " ");
     }
 
     public static void appendOutstringCode(Assembly asm) {
@@ -67,6 +68,13 @@ public class PredefinedCode {
         asm.beginProcedureDeclaration();
         asm.label("line_", "fonction de retour à la ligne");
         asm.insert(IOUtils.loadString("/code/line.asm"));
+        asm.endProcedureDeclaration();
+    }
+
+    public static void appendSpaceCode(Assembly asm) {
+        asm.beginProcedureDeclaration();
+        asm.label("space_", "fonction imprimant un espace");
+        asm.insert(IOUtils.loadString("/code/space.asm"));
         asm.endProcedureDeclaration();
     }
 

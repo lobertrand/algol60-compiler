@@ -33,6 +33,7 @@ public class PredefinedSymbols {
                 new Procedure("entier", Type.INTEGER, asList(Type.REAL))
                         .withAsmLabel(uniqueReference));
         result.add(new Procedure("line", Type.VOID, asList()).withAsmLabel(uniqueReference));
+        result.add(new Procedure("space", Type.VOID, asList()).withAsmLabel(uniqueReference));
         return result;
     }
 }
