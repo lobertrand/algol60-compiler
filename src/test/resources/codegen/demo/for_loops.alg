@@ -3,7 +3,7 @@ begin
             - for .. step .. until .. do
             - for .. while .. do
             - for .., .., .. do ;
-    
+
     integer a, i;
     a := 4;
     begin
@@ -15,8 +15,8 @@ begin
             end;
             line();
 
-            outstring(1, "for i := 1 while a <= 5 do = ");
-            for i := 1 while a <= 5 do
+            outstring(1, "for i := 1 while a <= 7 do = ");
+            for i := 1 while a <= 7 do
             begin
                 outinteger(1, a); space();
                 a := a + 1

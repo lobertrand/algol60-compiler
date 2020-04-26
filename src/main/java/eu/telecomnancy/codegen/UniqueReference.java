@@ -18,7 +18,13 @@ public final class UniqueReference {
         }
     }
 
-    public String forString() {
-        return forLabel("STR");
+    private Map<String, String> definedStrings = new HashMap<>();
+
+    public String forString(String content) {
+        return definedStrings.computeIfAbsent(content, c -> forLabel("STR"));
+    }
+
+    static class StringRef {
+        boolean alreadyDefined;
     }
 }

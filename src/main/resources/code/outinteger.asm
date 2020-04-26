@@ -39,12 +39,8 @@
     // print(text);
 
     ADI BP, R0, #-8     // R0 = BP - 8 = adresse du tableau text
-    STW R0, -(SP)       // empile contenu de R0 (paramètre p)
-    
-    JSR @outstring_     // appelle fonction print d'adresse print_
 
-    ADI SP, SP, #2      // nettoie la pile des paramètres
-                        // de taille totale 2 octets
+    TRP #WRITE_EXC      // Imprime le string qui est dans R0
 
     // fermeture du bloc englobant de main
     LDW SP, BP          // abandonne variables locales de main

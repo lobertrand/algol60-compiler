@@ -16,8 +16,8 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     public CodeGeneratorVisitor(
             SymbolTable symbolTable, Assembly asm, UniqueReference uniqueReference) {
-        PredefinedCode.appendItoaCode(asm);
         PredefinedCode.appendAliases(asm);
+        /*   PredefinedCode.appendItoaCode(asm);
         PredefinedCode.appendOutstringCode(asm);
         PredefinedCode.appendOutintegerOrRealCode(asm);
         PredefinedCode.appendLineCode(asm);
@@ -25,12 +25,12 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         PredefinedCode.appendDiv0Code(asm);
         PredefinedCode.appendIndexOutOfBoundsCode(asm);
         PredefinedCode.appendOutbooleanCode(asm);
-        PredefinedCode.appendEntierCode(asm);
+        PredefinedCode.appendEntierCode(asm);*/
 
         asm.newline();
         asm.def("ORG", "LOAD_ADRS", "adresse de chargement");
         asm.def("START", "main", "adresse de démarrage");
-        //        asm.code("LDW HP,HEAP_ADRS", "adresse de chargement du tas");
+
         asm.newline();
         asm.byteDef("NEWLINE", 10);
 
@@ -178,6 +178,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
         // Call the procedure using the generated procedure label (Procedure::getAsmLabel())
         String label = procedure.getAsmLabel();
+        PredefinedCode.require(label, asm);
         asm.code("JSR @" + label, "Call procedure '" + name + "'");
 
         // Pop parameters
@@ -267,6 +268,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ForClauseAST ast) {
+        PredefinedCode.require(PredefinedCode.INDEX_OOB, asm);
         asm.comment("ForClause");
         String startfor = uniqueReference.forLabel("startfor");
         String endfor = uniqueReference.forLabel("endfor");
@@ -404,6 +406,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(ArrayDecAST ast) {
+        PredefinedCode.require(PredefinedCode.INDEX_OOB, asm);
         asm.comment("Array declaration " + getLineOfCode(ast));
         String ArrayName = ast.getChild(1).getText();
         Array array = currentSymbolTable.resolve(ArrayName, Array.class);
@@ -479,6 +482,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
         asm.code("STW R1, (R4)", "Store value at @element");
 
          */
+        PredefinedCode.require(PredefinedCode.INDEX_OOB, asm);
         // TEST MULTI DIMENTIONNEL
         String inf1_end = uniqueReference.forLabel("inf1_end");
         String sup1_end = uniqueReference.forLabel("sup1_end");
@@ -574,6 +578,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(DivAST ast) {
+        PredefinedCode.require(PredefinedCode.DIV_0, asm);
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
         asm.comment("Division");
@@ -658,6 +663,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
          */
 
+        PredefinedCode.require(PredefinedCode.INDEX_OOB, asm);
         // TEST MULTI DIMENTIONNEL
         String inf1_end = uniqueReference.forLabel("inf1_end");
         String sup1_end = uniqueReference.forLabel("sup1_end");
@@ -815,7 +821,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     @Override
     public CodeInfo visit(StrAST ast) {
         String content = ast.getText();
-        String label = uniqueReference.forString();
+        String label = uniqueReference.forString(content);
         asm.string(label, content);
         asm.code("LDW R1, #" + label, "Load address of string into R1");
         asm.code("STW R1, -(SP)", "Stack string pointer");
@@ -824,6 +830,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
 
     @Override
     public CodeInfo visit(IntDivAST ast) {
+        PredefinedCode.require(PredefinedCode.DIV_0, asm);
         DefaultAST leftPart = ast.getChild(0);
         DefaultAST rightPart = ast.getChild(1);
         asm.comment("Division");
@@ -1229,6 +1236,7 @@ public class CodeGeneratorVisitor implements ASTVisitor<CodeInfo> {
     }
 
     public CodeInfo visit(SwitchCallAST ast) {
+        PredefinedCode.require(PredefinedCode.INDEX_OOB, asm);
         DefaultAST switchName = ast.getChild(0);
         String switchString = switchName.getText();
         Switch s = currentSymbolTable.resolve(switchString, Switch.class);

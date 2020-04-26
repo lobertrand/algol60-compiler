@@ -4,6 +4,52 @@ import eu.telecomnancy.tools.IOUtils;
 
 public class PredefinedCode {
 
+    public static final String OUTSTRING_ = "outstring_";
+    public static final String OUTBOOLEAN_ = "outboolean_";
+    public static final String OUTINTEGER_ = "outinteger_";
+    public static final String OUTREAL_ = "outreal_";
+    public static final String ENTIER_ = "entier_";
+    public static final String ITOA = "itoa";
+    public static final String LINE_ = "line_";
+    public static final String SPACE_ = "space_";
+    public static final String DIV_0 = "div0";
+    public static final String INDEX_OOB = "index_oob";
+
+    public static void require(String label, Assembly asm) {
+        switch (label) {
+            case OUTSTRING_:
+                appendOutstringCode(asm);
+                break;
+            case OUTBOOLEAN_:
+                appendOutbooleanCode(asm);
+                break;
+            case OUTINTEGER_:
+            case OUTREAL_:
+                appendOutintegerOrRealCode(asm);
+                break;
+            case ENTIER_:
+                appendEntierCode(asm);
+                break;
+            case LINE_:
+                appendLineCode(asm);
+                break;
+            case SPACE_:
+                appendSpaceCode(asm);
+                break;
+            case DIV_0:
+                appendDiv0Code(asm);
+                break;
+            case INDEX_OOB:
+                appendIndexOutOfBoundsCode(asm);
+                break;
+            case ITOA:
+                appendItoaCode(asm);
+                break;
+            default:
+                break;
+        }
+    }
+
     public static void appendAliases(Assembly asm) {
         asm.equ("EXIT_EXC", "64", "n° d'exceptoin de EXIT");
         asm.equ("READ_EXC", "65", "n° d'exception de READ (lit 1 ligne)");
@@ -41,67 +87,77 @@ public class PredefinedCode {
         asm.string("SPACE", " ");
     }
 
-    public static void appendOutstringCode(Assembly asm) {
+    private static void appendOutstringCode(Assembly asm) {
+        if (asm.isLabelDefined(OUTSTRING_)) return;
         asm.beginProcedureDeclaration();
-        asm.label("outstring_", "fonction d'affichage (string)");
+        asm.label(OUTSTRING_, "fonction d'affichage (string)");
         asm.insert(IOUtils.loadString("/code/oustring.asm"));
         asm.endProcedureDeclaration();
     }
 
-    public static void appendItoaCode(Assembly asm) {
+    private static void appendItoaCode(Assembly asm) {
+        if (asm.isLabelDefined(ITOA)) return;
         asm.beginProcedureDeclaration();
-        asm.label("itoa", "fonction de conversion (int to ascii)");
+        asm.label(ITOA, "fonction de conversion (int to ascii)");
         asm.insert(IOUtils.loadString("/code/itoa.asm"));
         asm.endProcedureDeclaration();
     }
 
-    public static void appendOutintegerOrRealCode(Assembly asm) {
+    private static void appendOutintegerOrRealCode(Assembly asm) {
+        if (asm.isLabelDefined(OUTINTEGER_)) return;
+        require(ITOA, asm);
         asm.beginProcedureDeclaration();
-        asm.label("outinteger_", "print function (integer)");
+        asm.label(OUTINTEGER_, "print function (integer)");
         asm.code("NOP", "No operation (continue to outreal_ code)");
-        asm.label("outreal_", "print function (real)");
+        asm.label(OUTREAL_, "print function (real)");
         asm.insert(IOUtils.loadString("/code/outinteger.asm"));
         asm.endProcedureDeclaration();
     }
 
-    public static void appendLineCode(Assembly asm) {
+    private static void appendLineCode(Assembly asm) {
+        if (asm.isLabelDefined(LINE_)) return;
         asm.beginProcedureDeclaration();
-        asm.label("line_", "fonction de retour à la ligne");
+        asm.label(LINE_, "fonction de retour à la ligne");
         asm.insert(IOUtils.loadString("/code/line.asm"));
         asm.endProcedureDeclaration();
     }
 
-    public static void appendSpaceCode(Assembly asm) {
+    private static void appendSpaceCode(Assembly asm) {
+        if (asm.isLabelDefined(SPACE_)) return;
         asm.beginProcedureDeclaration();
-        asm.label("space_", "fonction imprimant un espace");
+        asm.label(SPACE_, "fonction imprimant un espace");
         asm.insert(IOUtils.loadString("/code/space.asm"));
         asm.endProcedureDeclaration();
     }
 
-    public static void appendDiv0Code(Assembly asm) {
+    private static void appendDiv0Code(Assembly asm) {
+        if (asm.isLabelDefined(DIV_0)) return;
         asm.beginProcedureDeclaration();
-        asm.label("div0", "Erreur de division par 0");
+        asm.label(DIV_0, "Erreur de division par 0");
         asm.insert(IOUtils.loadString("/code/div0.asm"));
         asm.endProcedureDeclaration();
     }
 
-    public static void appendIndexOutOfBoundsCode(Assembly asm) {
+    private static void appendIndexOutOfBoundsCode(Assembly asm) {
+        if (asm.isLabelDefined(INDEX_OOB)) return;
         asm.beginProcedureDeclaration();
-        asm.label("index_oob", "Index out of bounds error message");
+        asm.label(INDEX_OOB, "Index out of bounds error message");
         asm.insert(IOUtils.loadString("/code/index_oob.asm"));
         asm.endProcedureDeclaration();
     }
 
-    public static void appendOutbooleanCode(Assembly asm) {
+    private static void appendOutbooleanCode(Assembly asm) {
+        if (asm.isLabelDefined(OUTBOOLEAN_)) return;
         asm.beginProcedureDeclaration();
-        asm.label("outboolean_", "print boolean");
+        asm.label(OUTBOOLEAN_, "print boolean");
         asm.insert(IOUtils.loadString("/code/outboolean.asm"));
         asm.endProcedureDeclaration();
     }
 
-    public static void appendEntierCode(Assembly asm) {
+    private static void appendEntierCode(Assembly asm) {
+        if (asm.isLabelDefined(ENTIER_)) return;
         asm.beginProcedureDeclaration();
-        asm.label("entier_", "partie entière");
+        asm.label(ENTIER_, "partie entière");
         asm.insert(IOUtils.loadString("/code/entier.asm"));
         asm.endProcedureDeclaration();
     }

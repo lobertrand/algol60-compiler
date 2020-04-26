@@ -1,5 +1,7 @@
 package eu.telecomnancy.codegen;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Stack;
 
 public class Assembly {
@@ -12,6 +14,7 @@ public class Assembly {
     private StringBuilder procedures;
     private Stack<StringBuilder> procedureStack;
     private Mode mode;
+    private Set<String> definedLabels = new HashSet<>();
 
     public Assembly() {
         normalLines = new StringBuilder();
@@ -19,6 +22,10 @@ public class Assembly {
         procedures = new StringBuilder();
         procedureStack = new Stack<>();
         mode = Mode.NORMAL;
+    }
+
+    public boolean isLabelDefined(String label) {
+        return definedLabels.contains(label);
     }
 
     public void push(String srcReg, String comment) {
@@ -59,6 +66,7 @@ public class Assembly {
     }
 
     public void label(String label, String comment) {
+        definedLabels.add(label);
         StringBuilder b = getBuilder(mode);
         b.append(LINE_SEPARATOR);
         b.append(label);
@@ -82,7 +90,11 @@ public class Assembly {
         b.append(LINE_SEPARATOR);
     }
 
+    private Set<String> stringConstants = new HashSet<>();
+
     public void string(String constant, String value) {
+        if (stringConstants.contains(constant)) return;
+        stringConstants.add(constant);
         constants.append(INDENT);
         String quotedStr = '"' + value + '"';
         String pattern = "%-12s string  %-8s";
