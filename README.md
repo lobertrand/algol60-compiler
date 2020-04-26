@@ -43,6 +43,19 @@ java -jar build/libs/algol60_compiler.jar <i>prog.alg</i> -r
 java -jar build/libs/algol60_compiler.jar -h
 </pre>
 
+### Scripts demandés
+
+<pre>
+# Compiler notre compilateur (crée un jar exécutable)
+./build.sh
+
+# Compiler un programme écrit en Algol60
+./compile.sh <i>prog.alg prog.src</i>
+
+# Compiler et exécuter un programme écrit en code assembleur
+./run.sh <i>prog.src</i>
+</pre>
+
 ## Étapes du projet
 
 ### PCL1 (analyse syntaxique)
@@ -66,7 +79,7 @@ java -jar build/libs/algol60_compiler.jar -h
 
 - L'ordre opératoire a été revu, il est maintenant opérationnel.
 - Seuls les tableaux de **dimension** 1 peuvent être passés en paramètre d'une procédure *(nos tableaux occupent une taille variable en pile selon leur **dimension**)*
-- Les `goto` sur un indice de `switch` correspondant à une étiquette non locale ne sont pas gérés (pas de dépilement d'environnement dans ce cas précis). *(Les `goto` classiques quant à eux, peuvent sauter sur n'importe qui niveau d'imbrication.)*
+- Les `goto` sur un indice de `switch` correspondant à une étiquette non locale ne sont pas gérés (pas de dépilement d'environnement dans ce cas précis). *(Les `goto` classiques quant à eux, peuvent sauter sur une étiquelle de n'importe quel niveau d'imbrication, tant qu'elle est à portée.)*
 - Toujours pas de mot clé `own`
 - Pas de passage de paramètres par nom et gestion des réels *(bonus)*
 - Pas de gestion des entrées clavier *(non demandé)*

@@ -5,4 +5,4 @@ if [ $# -ne 0 ] ; then
   exit 1
 fi
 
-./gradlew jar # generates build/libs/algol60_compiler.jar
+./gradlew jar --console=plain -q # generates build/libs/algol60_compiler.jar
