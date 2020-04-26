@@ -8,12 +8,12 @@ Réalisation d'un compilateur pour le language Algol60.
 
 | Description | Chemin et lien |
 |--- | --- |
-| Rapport PCL1 | [`doc/PCL1_report.pdf`](doc/PCL1_report.pdf) |
-| Rapport PCL2 | [`doc/PCL2_report.pdf`](doc/PCL2_report.pdf) |
 | Fichier de grammaire | [`src/main/antlr/eu/telecomnancy/Algol60.g`](src/main/antlr/eu/telecomnancy/Algol60.g) |
 | Programmes de démonstration PCL1 (analyse syntaxique) | [`src/test/resources/syntax/demo`](src/test/resources/syntax/demo) |
 | Programmes de démonstration PCL2 (analyse sémantique) | [`src/test/resources/semantics/demo`](src/test/resources/semantics/demo) |
 | Programmes de démonstration PCL2 (génération de code) | [`src/test/resources/codegen/demo`](src/test/resources/codegen/demo) |
+| Rapport PCL1 (téléchargement au clic) | [`doc/PCL1_report.pdf`](https://gitlab.telecomnancy.univ-lorraine.fr/LoA-c.Bertrand/bertra182u/-/raw/master/doc/PCL1_report.pdf?inline=false) |
+| Rapport PCL2 (téléchargement au clic) | [`doc/PCL2_report.pdf`](https://gitlab.telecomnancy.univ-lorraine.fr/LoA-c.Bertrand/bertra182u/-/raw/master/doc/PCL2_report.pdf?inline=false) |
 
 ## Commandes
 
